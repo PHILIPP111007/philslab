@@ -198,5 +198,6 @@ DJOSER: dict[str, str] = {
 USE_TZ = True
 TIME_ZONE = "UTC"
 
-DATETIME_FORMAT: str = environ.get("DATETIME_FORMAT", "%Y-%m-%d %H:%M")
 API_VERSION = 1
+TOKEN_CREATE_CACHE_KEY = "token_create_ip_{}"
+DATETIME_FORMAT: str = environ.get("DATETIME_FORMAT", "%Y-%m-%d %H:%M")
