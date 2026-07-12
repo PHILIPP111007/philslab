@@ -1,10 +1,4 @@
-/* ========================================
-   STICKY HEADER - VSCODE STYLE
-   ======================================== */
-
-/* ========================================
-   ОСНОВНОЙ КОНТЕЙНЕР
-   ======================================== */
+/* Основной контейнер */
 .sticky-header {
     position: sticky;
     top: 0;
@@ -20,122 +14,22 @@
 
 .sticky-header__content {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    /* вся навигация справа */
     align-items: center;
     gap: 16px;
     max-width: 1400px;
     margin: 0 auto;
 }
 
-/* ========================================
-   ЛЕВАЯ ЧАСТЬ
-   ======================================== */
-.sticky-header__left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex: 1;
-    min-width: 0;
-}
-
-/* ========================================
-   АВАТАР
-   ======================================== */
-.sticky-header__avatar {
-    flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    transition: var(--transition);
-}
-
-.sticky-header__avatar:hover {
-    border-color: var(--blue);
-}
-
-.sticky-header__avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.sticky-header__avatar-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-white);
-    background: var(--blue);
-}
-
-/* ========================================
-   ИНФОРМАЦИЯ
-   ======================================== */
-.sticky-header__info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.sticky-header__name-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.sticky-header__name {
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--text-white);
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sticky-header__details {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.sticky-header__detail {
-    font-size: 13px;
-    color: var(--text-dark);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-}
-
-.sticky-header__detail--highlight {
-    color: var(--green);
-    font-weight: 500;
-}
-
-/* ========================================
-   ПРАВАЯ ЧАСТЬ
-   ======================================== */
+/* Правая часть */
 .sticky-header__right {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-shrink: 0;
 }
 
-/* ========================================
-   КНОПКА НАСТРОЕК (ОБНОВЛЕННАЯ)
-   ======================================== */
+/* Кнопка настроек */
 .sticky-header__settings-wrapper {
     position: relative;
 }
@@ -185,15 +79,12 @@
     transform: rotate(180deg);
 }
 
-/* ========================================
-   ВСПЛЫВАЮЩЕЕ ОКНО НАСТРОЕК
-   ======================================== */
+/* Всплывающее окно */
 .sticky-header__settings-popup {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    min-width: 320px;
-    max-width: 380px;
+    min-width: 280px;
     background: var(--bg-light);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -215,7 +106,7 @@
     }
 }
 
-/* Заголовок настроек */
+/* Заголовок попапа */
 .sticky-header__settings-header {
     display: flex;
     justify-content: space-between;
@@ -246,10 +137,10 @@
     color: var(--text-white);
 }
 
-/* Тело настроек */
+/* Тело попапа */
 .sticky-header__settings-body {
     padding: 12px 16px;
-    max-height: 400px;
+    max-height: 350px;
     overflow-y: auto;
 }
 
@@ -274,37 +165,14 @@
     margin-bottom: 6px;
 }
 
-.sticky-header__setting {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text);
-    cursor: pointer;
-    padding: 4px 0;
-    transition: var(--transition);
-}
-
-.sticky-header__setting:hover {
-    color: var(--text-white);
-}
-
-.sticky-header__setting input[type="checkbox"] {
-    accent-color: var(--blue);
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-/* ThemeToggle в настройках */
+/* Тема в попапе */
 .sticky-header__theme-toggle-wrapper {
     display: flex;
     align-items: center;
     padding: 4px 0;
 }
 
-/* Футер настроек */
+/* Футер попапа */
 .sticky-header__settings-footer {
     display: flex;
     gap: 8px;
@@ -347,157 +215,11 @@
     border-color: var(--border-light);
 }
 
-/* ========================================
-   ИНДИКАТОР ЗАКРЕПЛЕНИЯ
-   ======================================== */
-.sticky-header__pin-indicator {
-    position: absolute;
-    left: 50%;
-    bottom: -12px;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 10px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    font-size: 10px;
-    color: var(--text-dark);
-    opacity: 0.6;
-    transition: var(--transition);
-}
+/* Убраны неиспользуемые стили для левой части, аватара, информации, статусов,
+   компактного режима и адаптивности, так как в текущей реализации Header их нет.
+   При необходимости их можно вернуть. */
 
-.sticky-header__pin-indicator:hover {
-    opacity: 1;
-}
-
-.sticky-header__pin-text {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* ========================================
-   КОМПАКТНЫЙ РЕЖИМ
-   ======================================== */
-.sticky-header--compact {
-    padding: 8px 16px;
-}
-
-.sticky-header--compact .sticky-header__avatar {
-    width: 32px;
-    height: 32px;
-}
-
-.sticky-header--compact .sticky-header__avatar-placeholder {
-    font-size: 12px;
-}
-
-.sticky-header--compact .sticky-header__name {
-    font-size: 15px;
-}
-
-.sticky-header--compact .sticky-header__detail {
-    font-size: 12px;
-}
-
-.sticky-header--compact .sticky-header__settings-btn {
-    padding: 4px 12px;
-    font-size: 12px;
-    min-height: 30px;
-}
-
-.sticky-header--compact .sticky-header__settings-label {
-    display: none;
-}
-
-/* ========================================
-   АДАПТИВНОСТЬ
-   ======================================== */
-@media (max-width: 768px) {
-    .sticky-header {
-        padding: 10px 14px;
-    }
-
-    .sticky-header__left {
-        gap: 10px;
-    }
-
-    .sticky-header__avatar {
-        width: 36px;
-        height: 36px;
-    }
-
-    .sticky-header__avatar-placeholder {
-        font-size: 14px;
-    }
-
-    .sticky-header__name {
-        font-size: 15px;
-    }
-
-    .sticky-header__details {
-        gap: 6px;
-    }
-
-    .sticky-header__detail {
-        font-size: 11px;
-    }
-
-    .sticky-header__settings-popup {
-        right: -10px;
-        min-width: 280px;
-    }
-
-    .sticky-header__settings-label {
-        display: none;
-    }
-
-    .sticky-header__settings-btn {
-        padding: 8px 12px;
-    }
-
-    .sticky-header__pin-indicator {
-        display: none;
-    }
-}
-
-@media (max-width: 480px) {
-    .sticky-header {
-        padding: 8px 10px;
-    }
-
-    .sticky-header__avatar {
-        width: 28px;
-        height: 28px;
-    }
-
-    .sticky-header__avatar-placeholder {
-        font-size: 10px;
-    }
-
-    .sticky-header__name {
-        font-size: 13px;
-    }
-
-    .sticky-header__detail {
-        font-size: 10px;
-    }
-
-    .sticky-header__details {
-        gap: 4px;
-    }
-
-    .sticky-header__settings-popup {
-        right: -5px;
-        min-width: 260px;
-    }
-}
-
-/* ========================================
-   СКРОЛЛБАР ДЛЯ НАСТРОЕК
-   ======================================== */
+/* Скроллбар внутри попапа */
 .sticky-header__settings-body::-webkit-scrollbar {
     width: 4px;
 }

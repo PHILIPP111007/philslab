@@ -38,7 +38,7 @@
 /* ========================================
    КАРТОЧКА ПОЛЬЗОВАТЕЛЯ
    ======================================== */
-.user-card {
+.user-card-main-page {
     display: flex;
     gap: 24px;
     padding: 24px;
@@ -50,7 +50,7 @@
     box-sizing: border-box;
 }
 
-.user-card:hover {
+.user-card-main-page:hover {
     border-color: var(--border-light);
     box-shadow: var(--shadow);
 }
@@ -58,7 +58,7 @@
 /* ========================================
    АВАТАР
    ======================================== */
-.user-card__avatar {
+.user-card-main-page__avatar {
     flex-shrink: 0;
     width: 80px;
     height: 80px;
@@ -68,11 +68,11 @@
     transition: var(--transition);
 }
 
-.user-card__avatar:hover {
+.user-card-main-page__avatar:hover {
     border-color: var(--blue);
 }
 
-.user-card__avatar-placeholder {
+.user-card-main-page__avatar-placeholder {
     width: 100%;
     height: 100%;
     display: flex;
@@ -87,7 +87,7 @@
 /* ========================================
    ТЕЛО КАРТОЧКИ
    ======================================== */
-.user-card__body {
+.user-card-main-page__body {
     flex: 1;
     min-width: 0;
     display: flex;
@@ -98,7 +98,7 @@
 /* ========================================
    ЗАГОЛОВОК
    ======================================== */
-.user-card__header {
+.user-card-main-page__header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -106,20 +106,20 @@
     flex-wrap: wrap;
 }
 
-.user-card__header-left {
+.user-card-main-page__header-left {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
 }
 
-.user-card__header-right {
+.user-card-main-page__header-right {
     display: flex;
     gap: 4px;
     flex-shrink: 0;
 }
 
-.user-card__name {
+.user-card-main-page__name {
     font-size: 20px;
     font-weight: 500;
     color: var(--text-white);
@@ -129,7 +129,7 @@
 /* ========================================
    КНОПКИ ДЕЙСТВИЙ
    ======================================== */
-.user-card__action {
+.user-card-main-page__action {
     padding: 4px 8px;
     border: none;
     border-radius: var(--radius-sm);
@@ -140,22 +140,22 @@
     transition: var(--transition);
 }
 
-.user-card__action:hover {
+.user-card-main-page__action:hover {
     background: var(--bg-hover);
     color: var(--text);
 }
 
-.user-card__action--edit:hover {
+.user-card-main-page__action--edit:hover {
     background: rgba(55, 148, 255, 0.15);
     color: var(--blue);
 }
 
-.user-card__action--delete:hover {
+.user-card-main-page__action--delete:hover {
     background: rgba(244, 71, 71, 0.15);
     color: var(--red);
 }
 
-.user-card__action--expand:hover {
+.user-card-main-page__action--expand:hover {
     background: var(--bg-hover);
     color: var(--text-white);
 }
@@ -163,13 +163,13 @@
 /* ========================================
    ДЕТАЛИ
    ======================================== */
-.user-card__details {
+.user-card-main-page__details {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 6px 16px;
 }
 
-.user-card__detail {
+.user-card-main-page__detail {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -178,14 +178,14 @@
     padding: 2px 0;
 }
 
-.user-card__detail-icon {
+.user-card-main-page__detail-icon {
     font-size: 14px;
     width: 20px;
     text-align: center;
     flex-shrink: 0;
 }
 
-.user-card__detail--highlight {
+.user-card-main-page__detail--highlight {
     color: var(--green);
     font-weight: 500;
 }
@@ -193,7 +193,7 @@
 /* ========================================
    ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ
    ======================================== */
-.user-card__extra {
+.user-card-main-page__extra {
     margin-top: 8px;
     padding-top: 16px;
     border-top: 1px solid var(--border);
@@ -215,7 +215,7 @@
     }
 }
 
-.user-card__extra-section h4 {
+.user-card-main-page__extra-section h4 {
     font-size: 13px;
     font-weight: 500;
     color: var(--text-dark);
@@ -224,7 +224,7 @@
     letter-spacing: 0.3px;
 }
 
-.user-card__bio {
+.user-card-main-page__bio {
     font-size: 14px;
     color: var(--text);
     line-height: 1.6;
@@ -238,13 +238,13 @@
 /* ========================================
    КНОПКИ СТАТУСА
    ======================================== */
-.user-card__status-buttons {
+.user-card-main-page__status-buttons {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
 }
 
-.user-card__status-btn {
+.user-card-main-page__status-btn {
     padding: 4px 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
@@ -256,12 +256,12 @@
     font-family: inherit;
 }
 
-.user-card__status-btn:hover {
+.user-card-main-page__status-btn:hover {
     background: var(--bg-hover);
     border-color: var(--border-light);
 }
 
-.user-card__status-btn--active {
+.user-card-main-page__status-btn--active {
     border-color: var(--blue);
     background: var(--bg-selected);
     color: var(--text-white);
@@ -435,41 +435,41 @@
         padding: 12px;
     }
 
-    .user-card {
+    .user-card-main-page {
         flex-direction: column;
         align-items: center;
         text-align: center;
         padding: 16px;
     }
 
-    .user-card__avatar {
+    .user-card-main-page__avatar {
         width: 60px;
         height: 60px;
     }
 
-    .user-card__avatar-placeholder {
+    .user-card-main-page__avatar-placeholder {
         font-size: 20px;
     }
 
-    .user-card__header {
+    .user-card-main-page__header {
         flex-direction: column;
         align-items: center;
     }
 
-    .user-card__header-left {
+    .user-card-main-page__header-left {
         justify-content: center;
     }
 
-    .user-card__details {
+    .user-card-main-page__details {
         grid-template-columns: 1fr;
         justify-items: center;
     }
 
-    .user-card__detail {
+    .user-card-main-page__detail {
         justify-content: center;
     }
 
-    .user-card__status-buttons {
+    .user-card-main-page__status-buttons {
         justify-content: center;
     }
 
@@ -484,11 +484,11 @@
         padding: 8px;
     }
 
-    .user-card__name {
+    .user-card-main-page__name {
         font-size: 17px;
     }
 
-    .user-card__detail {
+    .user-card-main-page__detail {
         font-size: 13px;
     }
 

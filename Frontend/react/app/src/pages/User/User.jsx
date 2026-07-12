@@ -67,24 +67,24 @@ export default function User() {
             <Header />
             <div className="user-container">
                 <br />
-                <div className="user-card">
-                    <div className="user-card__avatar">
-                        <div className="user-card__avatar-placeholder">
+                <div className="user-card-main-page">
+                    <div className="user-card-main-page__avatar">
+                        <div className="user-card-main-page__avatar-placeholder">
                             {getInitials(user.first_name, user.last_name)}
                         </div>
                     </div>
 
-                    <div className="user-card__body">
-                        <div className="user-card__header">
-                            <div className="user-card__header-left">
-                                <h2 className="user-card__name">
+                    <div className="user-card-main-page__body">
+                        <div className="user-card-main-page__header">
+                            <div className="user-card-main-page__header-left">
+                                <h2 className="user-card-main-page__name">
                                     {user.first_name} {user.last_name}
                                 </h2>
-                                <span className="user-card__username">@{user.username}</span>
+                                <span className="user-card-main-page__username">@{user.username}</span>
                             </div>
-                            <div className="user-card__header-right">
+                            <div className="user-card-main-page__header-right">
                                 <button
-                                    className="user-card__action user-card__action--edit"
+                                    className="user-card-main-page__action user-card-main-page__action--edit"
                                     onClick={handleEdit}
                                     title="Редактировать"
                                 >
@@ -93,13 +93,13 @@ export default function User() {
                             </div>
                         </div>
 
-                        <div className="user-card__details">
-                            <div className="user-card__detail">
-                                <span className="user-card__detail-icon">📧</span>
+                        <div className="user-card-main-page__details">
+                            <div className="user-card-main-page__detail">
+                                <span className="user-card-main-page__detail-icon">📧</span>
                                 <span>{user.email}</span>
                             </div>
-                            <div className="user-card__detail">
-                                <span className="user-card__detail-icon">📝</span>
+                            <div className="user-card-main-page__detail">
+                                <span className="user-card-main-page__detail-icon">📝</span>
                                 <span>{user.descr || '—'}</span>
                             </div>
                         </div>
