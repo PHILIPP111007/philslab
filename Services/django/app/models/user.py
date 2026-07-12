@@ -27,7 +27,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(_("first name"), max_length=150, blank=True)
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
     email = models.EmailField(_("email address"), blank=True)
-    descr = models.TextField(max_length=5_000, default=None, blank=True, null=True)
+    descr = models.TextField(
+        _("description"), max_length=5_000, default=None, blank=True, null=True
+    )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
     is_staff = models.BooleanField(
         _("staff status"),
