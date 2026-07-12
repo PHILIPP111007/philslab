@@ -11,7 +11,8 @@ class User(SQLModel, table=True):
     email: str
     first_name: str
     last_name: str
+    descr: str
 
     # Relations
     tokens: list["Token"] = Relationship(back_populates="user")
-    posts: list["Post"] = Relationship(back_populates="user")
+    samples: list["Sample"] = Relationship(back_populates="user")

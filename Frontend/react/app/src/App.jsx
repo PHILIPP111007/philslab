@@ -1,10 +1,9 @@
 import './pages/components/Theme/Theme.css'
 import './App.css'
-import { Suspense, useState, useEffect } from "react"
+import { Suspense, useState } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { AuthContext, UserContext } from "./data/context.js"
-import { CacheKeys } from './data/enums.js'
 import { PrivateRoutes, PublicRoutes } from "./data/routes.jsx"
 import { useAuth } from "./hooks/useAuth.js"
 import { ThemeProvider } from './pages/components/Theme/ThemeContext'
@@ -24,12 +23,6 @@ export default function App() {
     })
 
     useAuth({ username: user.username, setIsAuth: setIsAuth })
-
-    useEffect(() => {
-        if (user && user.username) {
-            localStorage.setItem(CacheKeys.GLOBAL_USER_USERNAME, user.username)
-        }
-    }, [user])
 
     return (
         <AuthContext.Provider value={{ isAuth, setIsAuth }}>

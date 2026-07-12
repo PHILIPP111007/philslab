@@ -45,7 +45,7 @@ async def get_user(session: SessionDep, request: Request, username: str):
     return result
 
 
-@router.put("/user/")
+@router.put("/user/{username}/")
 async def put_user(session: SessionDep, request: Request, user_body: UserBody):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
@@ -58,9 +58,7 @@ async def put_user(session: SessionDep, request: Request, user_body: UserBody):
     user.first_name = user_body.first_name
     user.last_name = user_body.last_name
     user.email = user_body.email
-
-    user.ethereum_address = user_body.ethereum_address
-    user.infura_api_key = user_body.infura_api_key
+    user.descr = user_body.descr
 
     session.add(user)
     await session.commit()

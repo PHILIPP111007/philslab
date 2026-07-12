@@ -78,69 +78,7 @@ export default function Header({
         <div className={`sticky-header ${settings.compact ? 'sticky-header--compact' : ''} ${className}`}>
             <div className="sticky-header__content">
                 {/* Левая часть - аватар и основная информация */}
-                <div className="sticky-header__left">
-                    {settings.showAvatar && (
-                        <div className="sticky-header__avatar">
-                            {user?.avatar ? (
-                                <img
-                                    src={user.avatar}
-                                    alt={user.name}
-                                    className="sticky-header__avatar-img"
-                                />
-                            ) : (
-                                <div className="sticky-header__avatar-placeholder">
-                                    {getInitials(user?.name)}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <div className="sticky-header__info">
-                        <div className="sticky-header__name-row">
-                            <h2 className="sticky-header__name">
-                                {user?.name || 'Пользователь не выбран'}
-                            </h2>
-                            {settings.showStatus && user?.status && (
-                                <span className={`badge ${statusInfo.class}`}>
-                                    {statusInfo.emoji} {statusInfo.label}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="sticky-header__details">
-                            {settings.showEmail && user?.email && (
-                                <span className="sticky-header__detail">
-                                    📧 {user.email}
-                                </span>
-                            )}
-                            {settings.showDepartment && user?.department && (
-                                <span className="sticky-header__detail">
-                                    🏢 {user.department}
-                                </span>
-                            )}
-                            {user?.age && (
-                                <span className="sticky-header__detail">
-                                    🎂 {user.age} лет
-                                </span>
-                            )}
-                            {user?.city && (
-                                <span className="sticky-header__detail">
-                                    📍 {user.city}
-                                </span>
-                            )}
-                            {user?.experience && (
-                                <span className="sticky-header__detail">
-                                    📅 Опыт: {user.experience} лет
-                                </span>
-                            )}
-                            {user?.salary && (
-                                <span className="sticky-header__detail sticky-header__detail--highlight">
-                                    💰 {formatSalary(user.salary)}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                <div className="sticky-header__left"></div>
 
                 {/* Правая часть - кнопки действий */}
                 <div className="sticky-header__right">

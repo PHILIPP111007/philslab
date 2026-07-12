@@ -13,4 +13,4 @@ class Sample(SQLModel, table=True):
     timestamp: datetime = Field(default_factory=lambda: datetime.now())
     content: str
     user_id: int = Field(foreign_key="app_user.id", index=True)
-    user: "User" = Relationship(back_populates="posts")
+    user: "User" = Relationship(back_populates="samples")

@@ -11,7 +11,7 @@ from app.constants import (
 )
 from app.database import engine
 from app.models import Token, User
-from app.views import online_status, session
+from app.views import user
 
 app = FastAPI(
     title="PhilsLab",
@@ -37,7 +37,7 @@ app.openapi_version = "3.0.0"
 #########################################
 
 if DEVELOPMENT == "1":
-    origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 else:
     # TODO: add
     origins = ["https://ваш-домен.com"]
@@ -63,7 +63,7 @@ async def attach_user_to_request(request: Request, call_next: Callable):
     request.state.user = None
 
     # Базовая валидация наличия учетных данных
-    if not (token or " " not in token):
+    if not (token and " " in token):
         return await call_next(request)
 
     # Извлекаем токен из заголовка Authorization (формат: "Bearer <token>")
@@ -87,5 +87,4 @@ async def attach_user_to_request(request: Request, call_next: Callable):
     return await call_next(request)
 
 
-app.include_router(session.router, prefix=API_PREFIX)
-app.include_router(online_status.router, prefix=API_PREFIX)
+app.include_router(user.router, prefix=API_PREFIX)
