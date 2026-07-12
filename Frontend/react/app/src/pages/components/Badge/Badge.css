@@ -1,0 +1,66 @@
+/* ========================================
+   БЭЙДЖИ
+   ======================================== */
+.badge {
+    padding: 4px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.badge-primary {
+    background: rgba(55, 148, 255, 0.15);
+    color: var(--blue);
+}
+
+.badge-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dark);
+}
+
+.badge-success {
+    background: rgba(78, 201, 176, 0.15);
+    color: var(--green);
+}
+
+.badge-danger {
+    background: rgba(244, 71, 71, 0.15);
+    color: var(--red);
+}
+
+.badge-warning {
+    background: rgba(206, 145, 120, 0.15);
+    color: var(--orange);
+}
+
+.badge-info {
+    background: rgba(55, 148, 255, 0.1);
+    color: var(--blue);
+}
+
+.badge-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.status-active {
+    background: rgba(78, 201, 176, 0.15);
+    color: var(--green);
+}
+
+.status-inactive {
+    background: rgba(244, 71, 71, 0.15);
+    color: var(--red);
+}
+
+.status-pending {
+    background: rgba(206, 145, 120, 0.15);
+    color: var(--orange);
+}
+
+.status-blocked {
+    background: rgba(133, 133, 133, 0.15);
+    color: var(--text-dark);
+}

@@ -1,0 +1,1166 @@
+/* ========================================
+   TABLE.CSS - VSCODE DARK THEME
+   Версия: 2.0
+   ======================================== */
+
+/* ========================================
+   2. АНИМАЦИИ
+   ======================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-15px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes filterPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* ========================================
+   3. КОНТЕЙНЕР ТАБЛИЦЫ
+   ======================================== */
+.table-container {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ========================================
+   4. ТУЛБАР
+   ======================================== */
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.table-toolbar-left,
+.table-toolbar-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Информация о фильтрации */
+.table-filter-info {
+    font-size: 13px;
+    color: var(--text-dark);
+    padding: 4px 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.table-filter-info strong {
+    color: var(--text-white);
+}
+
+/* ========================================
+   5. ПОЛЯ ВВОДА
+   ======================================== */
+.table-search-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 6px 14px;
+    min-height: 32px;
+    font-size: 13px;
+    outline: none;
+    transition: var(--transition);
+    font-family: inherit;
+    width: 240px;
+}
+
+.table-search-input::placeholder {
+    color: var(--text-dark);
+}
+
+.table-search-input:focus {
+    border-color: var(--blue);
+}
+
+.table-search-input:hover {
+    border-color: var(--border-light);
+}
+
+/* ========================================
+   6. SELECT (ВЫПАДАЮЩИЕ СПИСКИ)
+   ======================================== */
+.table-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 6px 32px 6px 14px;
+    min-height: 32px;
+    font-size: 13px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23858585' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+    outline: none;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.table-select:hover {
+    border-color: var(--border-light);
+}
+
+.table-select:focus {
+    border-color: var(--blue);
+}
+
+.table-select option {
+    background: var(--bg);
+    color: var(--text);
+    padding: 4px 12px;
+}
+
+/* Стили для option при наведении */
+.table-select option:hover {
+    background: var(--bg-selected);
+    color: var(--text-white);
+}
+
+/* ========================================
+   7. КНОПКИ
+   ======================================== */
+
+/* Базовые кнопки в тулбаре */
+.table-toolbar .table-button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 6px 16px;
+    min-height: 32px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: none;
+    line-height: 1;
+}
+
+.table-toolbar .table-button:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+    transform: none;
+}
+
+.table-toolbar .table-button:active {
+    background: var(--bg-active);
+    transform: scale(0.98);
+}
+
+/* ========================================
+   КНОПКА "ДОБАВИТЬ"
+   ======================================== */
+.table-toolbar .table-button-add {
+    background: var(--blue);
+    border: 1px solid var(--blue);
+    border-radius: var(--radius-sm);
+    color: var(--text-white);
+    padding: 6px 18px;
+    min-height: 32px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: none;
+    line-height: 1;
+}
+
+.table-toolbar .table-button-add:hover {
+    background: #4a9eff;
+    border-color: #4a9eff;
+    transform: none;
+    box-shadow: none;
+}
+
+.table-toolbar .table-button-add:active {
+    background: #2a7fd4;
+    border-color: #2a7fd4;
+    transform: scale(0.98);
+}
+
+/* ========================================
+   МАЛЕНЬКАЯ КНОПКА (Очистить группировку)
+   ======================================== */
+.table-small-button {
+    background: rgba(244, 71, 71, 0.15);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--red);
+    padding: 4px 12px;
+    min-height: 26px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1;
+}
+
+.table-small-button:hover {
+    background: rgba(244, 71, 71, 0.25);
+}
+
+/* ========================================
+   КНОПКИ ДЕЙСТВИЙ (в строках таблицы)
+   ======================================== */
+.table-action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.table-action-edit {
+    padding: 4px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    min-height: 28px;
+    min-width: 28px;
+}
+
+.table-action-edit:hover {
+    background: rgba(55, 148, 255, 0.15);
+    color: var(--blue);
+}
+
+.table-action-delete {
+    padding: 4px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    min-height: 28px;
+    min-width: 28px;
+}
+
+.table-action-delete:hover {
+    background: rgba(244, 71, 71, 0.15);
+    color: var(--red);
+}
+
+/* ========================================
+   КНОПКИ ПАГИНАЦИИ
+   ======================================== */
+.table-page-button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 4px 12px;
+    min-height: 28px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.table-page-button:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.table-page-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   8. ПАНЕЛЬ ВИДИМОСТИ КОЛОНОК
+   ======================================== */
+.table-column-visibility {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.table-visibility-label {
+    color: var(--text-dark);
+    font-weight: 400;
+    margin-right: 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.table-visibility-checkbox {
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    background: transparent;
+}
+
+.table-visibility-checkbox:hover {
+    background: var(--bg-hover);
+    color: var(--text-light);
+}
+
+.table-visibility-checkbox input[type="checkbox"] {
+    accent-color: var(--blue);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+/* ========================================
+   9. ПАНЕЛЬ ГРУППИРОВКИ
+   ======================================== */
+.table-grouping-panel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.table-grouping-label {
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* ========================================
+   10. ОБЕРТКА ТАБЛИЦЫ
+   ======================================== */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg);
+}
+
+/* ========================================
+   11. САМА ТАБЛИЦА
+   ======================================== */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg);
+}
+
+/* ========================================
+   12. ЗАГОЛОВКИ ТАБЛИЦЫ
+   ======================================== */
+.table-header {
+    padding: 10px 12px;
+    background: var(--bg-light);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text-dark);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    transition: var(--transition);
+    user-select: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    min-width: 80px;
+}
+
+.table-header:hover {
+    background: var(--bg-hover);
+}
+
+.table-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.table-header-sort-icon {
+    font-size: 10px;
+    color: var(--text-dark);
+    opacity: 0.6;
+}
+
+/* Индикатор активного фильтра */
+.table-header-filter-indicator {
+    color: var(--blue);
+    font-size: 10px;
+    margin-left: 4px;
+    animation: filterPulse 2s ease-in-out infinite;
+}
+
+/* Поле фильтра в заголовке */
+.table-header-filter {
+    width: 100%;
+    padding: 4px 10px;
+    margin-top: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    color: var(--text);
+    outline: none;
+    box-sizing: border-box;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 28px;
+}
+
+.table-header-filter::placeholder {
+    color: var(--text-dark);
+}
+
+.table-header-filter:focus {
+    border-color: var(--blue);
+}
+
+.table-header-filter:hover {
+    border-color: var(--border-light);
+}
+
+/* ========================================
+   13. СТРОКИ ТАБЛИЦЫ
+   ======================================== */
+.table-row {
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+    background: var(--bg);
+}
+
+.table-row:hover {
+    background: var(--bg-hover);
+}
+
+.table-row-selected {
+    background: var(--bg-selected);
+}
+
+.table-row-selected:hover {
+    background: #0a558a;
+}
+
+/* ========================================
+   14. ЯЧЕЙКИ ТАБЛИЦЫ
+   ======================================== */
+.table-cell {
+    padding: 10px 12px;
+    font-size: 13px;
+    vertical-align: middle;
+    color: var(--text-light);
+    background: transparent;
+}
+
+/* ========================================
+   15. СТАТУСЫ (БЭЙДЖИ)
+   ======================================== */
+.table-status-badge {
+    padding: 2px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.table-status-active {
+    background: rgba(78, 201, 176, 0.15);
+    color: var(--green);
+}
+
+.table-status-inactive {
+    background: rgba(244, 71, 71, 0.15);
+    color: var(--red);
+}
+
+.table-status-pending {
+    background: rgba(206, 145, 120, 0.15);
+    color: var(--orange);
+}
+
+.table-status-blocked {
+    background: rgba(133, 133, 133, 0.15);
+    color: var(--text-dark);
+}
+
+/* ========================================
+   16. КНОПКИ ДЕЙСТВИЙ
+   ======================================== */
+.table-action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.table-action-edit {
+    padding: 4px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.table-action-edit:hover {
+    background: rgba(55, 148, 255, 0.15);
+    color: var(--blue);
+}
+
+.table-action-delete {
+    padding: 4px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.table-action-delete:hover {
+    background: rgba(244, 71, 71, 0.15);
+    color: var(--red);
+}
+
+/* ========================================
+   17. ПУСТОЕ СОСТОЯНИЕ
+   ======================================== */
+.table-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-dark);
+    font-size: 14px;
+    background: var(--bg);
+}
+
+/* ========================================
+   18. ФУТЕР ТАБЛИЦЫ
+   ======================================== */
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding: 8px 0;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.table-footer-info {
+    color: var(--text-dark);
+    font-size: 13px;
+}
+
+.table-footer-info strong {
+    color: var(--text-white);
+}
+
+.table-footer-selected {
+    color: var(--blue);
+}
+
+/* ========================================
+   19. ПАГИНАЦИЯ
+   ======================================== */
+.table-pagination {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.table-page-button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 4px 12px;
+    min-height: 28px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.table-page-button:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.table-page-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.table-page-info {
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--text);
+}
+
+/* ========================================
+   20. МОДАЛЬНЫЕ ОКНА
+   ======================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 500px;
+    width: 92%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    animation: slideIn 0.2s ease;
+}
+
+.modal-small {
+    max-width: 400px;
+}
+
+.modal-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--text-white);
+    font-size: 20px;
+    font-weight: 400;
+    background: var(--text-white);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modal-text {
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.modal-text strong {
+    color: var(--text-white);
+}
+
+.modal-form-group {
+    margin-bottom: 14px;
+}
+
+.modal-form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 400;
+    color: var(--text-dark);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 8px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 38px;
+}
+
+.modal-input:focus {
+    border-color: var(--blue);
+    outline: none;
+    box-shadow: 0 0 20px rgba(55, 148, 255, 0.1);
+}
+
+.modal-input::placeholder {
+    color: var(--text-dark);
+}
+
+.modal-input option {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* Select в модалке */
+select.modal-input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23858585' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.modal-button-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.modal-button-group-center {
+    justify-content: center;
+}
+
+.modal-button-cancel {
+    padding: 8px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 13px;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 38px;
+}
+
+.modal-button-cancel:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.modal-button-save {
+    padding: 8px 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--blue);
+    color: var(--text-white);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 38px;
+}
+
+.modal-button-save:hover {
+    background: #4a9eff;
+    transform: translateY(-1px);
+}
+
+.modal-button-delete {
+    padding: 8px 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--red);
+    color: var(--text-white);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 38px;
+}
+
+.modal-button-delete:hover {
+    background: #f55a5a;
+    transform: translateY(-1px);
+}
+
+/* Скроллбар в модалке */
+.modal::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+    background: var(--border-light);
+}
+
+/* ========================================
+   21. АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 1024px) {
+    .table-container {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        padding: 12px;
+        border-radius: var(--radius-md);
+    }
+
+    .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .table-toolbar-left,
+    .table-toolbar-right {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .table-search-input {
+        width: 100%;
+    }
+
+    .table-column-visibility {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .table-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .table-pagination {
+        flex-wrap: wrap;
+    }
+
+    .modal {
+        padding: 20px;
+        margin: 12px;
+    }
+
+    .table-header {
+        font-size: 11px;
+        padding: 8px 8px;
+    }
+
+    .table-cell {
+        font-size: 12px;
+        padding: 8px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-container {
+        padding: 8px;
+        border-radius: var(--radius-sm);
+    }
+
+    .table-header {
+        font-size: 10px;
+        padding: 6px 6px;
+        min-width: 50px;
+    }
+
+    .table-cell {
+        font-size: 11px;
+        padding: 6px 6px;
+    }
+
+    .table-action-edit,
+    .table-action-delete {
+        padding: 2px 6px;
+        font-size: 12px;
+    }
+
+    .modal {
+        padding: 16px;
+        width: 96%;
+    }
+
+    .modal-title {
+        font-size: 18px;
+    }
+
+    .table-button,
+    .table-button-add {
+        padding: 4px 12px;
+        font-size: 12px;
+        min-height: 28px;
+    }
+
+    .table-search-input {
+        font-size: 12px;
+        padding: 4px 10px;
+        min-height: 28px;
+    }
+
+    .table-select {
+        font-size: 12px;
+        padding: 4px 28px 4px 10px;
+        min-height: 28px;
+    }
+}
+
+/* ========================================
+   22. СКРОЛЛБАР ВСЕЙ СТРАНИЦЫ
+   ======================================== */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-light);
+}
+
+
+/* ========================================
+   INLINE EDITABLE CELL
+   ======================================== */
+.editable-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    cursor: default;
+}
+
+.editable-cell--editable {
+    cursor: text;
+}
+
+.editable-cell--editable:hover {
+    background: var(--bg-hover);
+}
+
+.editable-cell--editing {
+    padding: 0;
+    background: var(--bg);
+}
+
+.editable-cell__value {
+    flex: 1;
+}
+
+.editable-cell__indicator {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--text-dark);
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.editable-cell--editable:hover .editable-cell__indicator {
+    opacity: 0.5;
+}
+
+.editable-cell__input {
+    width: 100%;
+    padding: 4px 8px;
+    background: var(--bg);
+    border: 1px solid var(--blue);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: var(--transition);
+    min-height: 32px;
+}
+
+.editable-cell__input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(55, 148, 255, 0.2);
+}
+
+.editable-cell__input--error {
+    border-color: var(--red);
+}
+
+.editable-cell__input--error:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 2px rgba(244, 71, 71, 0.2);
+}
+
+.editable-cell__error {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 0;
+    padding: 4px 8px;
+    background: var(--red);
+    color: var(--text-white);
+    font-size: 11px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    z-index: 10;
+    animation: fadeIn 0.2s ease;
+}
+
+.editable-cell__error::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 12px;
+    border: 4px solid transparent;
+    border-top-color: var(--red);
+}
+
+/* ========================================
+   ЭКСПОРТ DROPDOWN
+   ======================================== */
+.table-export-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.table-export-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 200px;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px 0;
+    box-shadow: var(--shadow);
+    z-index: 100;
+    animation: dropdownFadeIn 0.15s ease;
+    display: none;
+}
+
+.table-export-dropdown:hover .table-export-dropdown__menu {
+    display: block;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.table-export-dropdown__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    text-align: left;
+}
+
+.table-export-dropdown__item:hover {
+    background: var(--bg-selected);
+    color: var(--text-white);
+}

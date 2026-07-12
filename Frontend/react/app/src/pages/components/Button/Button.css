@@ -1,0 +1,124 @@
+/* ========================================
+   КНОПКИ
+   ======================================== */
+.btn {
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+}
+
+.btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.btn:active {
+    background: var(--bg-active);
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background: var(--blue);
+    color: var(--text-white);
+    border-color: var(--blue);
+}
+
+.btn-primary:hover {
+    background: #4a9eff;
+    border-color: #4a9eff;
+}
+
+.btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.btn-success {
+    background: #2d7d5a;
+    color: var(--text-white);
+    border-color: #2d7d5a;
+}
+
+.btn-success:hover {
+    background: #359a6e;
+    border-color: #359a6e;
+}
+
+.btn-danger {
+    background: #a1262b;
+    color: var(--text-white);
+    border-color: #a1262b;
+}
+
+.btn-danger:hover {
+    background: #c42d33;
+    border-color: #c42d33;
+}
+
+.btn-warning {
+    background: #b86b2b;
+    color: var(--text-white);
+    border-color: #b86b2b;
+}
+
+.btn-warning:hover {
+    background: #d47d32;
+    border-color: #d47d32;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: transparent;
+}
+
+.btn-ghost:hover {
+    background: var(--bg-hover);
+    border-color: var(--border);
+}
+
+.btn-link {
+    background: transparent;
+    color: var(--blue);
+    border: none;
+    padding: 4px 8px;
+    min-height: auto;
+}
+
+.btn-link:hover {
+    color: #4a9eff;
+    text-decoration: underline;
+    background: transparent;
+}
+
+.btn-sm {
+    padding: 4px 12px;
+    font-size: 12px;
+    min-height: 26px;
+}
+
+.btn-lg {
+    padding: 8px 24px;
+    font-size: 14px;
+    min-height: 40px;
+}
+
+.btn__icon {
+    font-size: 16px;
+}

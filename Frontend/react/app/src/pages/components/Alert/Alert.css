@@ -1,0 +1,40 @@
+/* ========================================
+   АЛЕРТЫ
+   ======================================== */
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.alert__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.alert-info {
+    border-left: 3px solid var(--blue);
+}
+
+.alert-success {
+    border-left: 3px solid var(--green);
+}
+
+.alert-warning {
+    border-left: 3px solid var(--orange);
+}
+
+.alert-error {
+    border-left: 3px solid var(--red);
+}
+
+.alert strong {
+    color: var(--text-white);
+}

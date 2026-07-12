@@ -1,0 +1,369 @@
+/* ========================================
+   LOGIN PAGE - VSCODE STYLE
+   ======================================== */
+
+/* ========================================
+   КОНТЕЙНЕР
+   ======================================== */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: var(--bg);
+    padding: 20px;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+}
+
+/* ========================================
+   КАРТОЧКА ВХОДА
+   ======================================== */
+.login-card {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 40px 36px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+.login-card:hover {
+    border-color: var(--border-light);
+}
+
+/* ========================================
+   ЗАГОЛОВОК
+   ======================================== */
+.login-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.login-logo {
+    /* font-size: 48px; */
+    margin-bottom: 12px;
+    display: inline-block;
+    animation: loginLogoFloat 3s ease-in-out infinite;
+}
+
+#btc_logo {
+    width: 50px;
+}
+
+@keyframes loginLogoFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.login-title {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0 0 8px 0;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* ========================================
+   ФОРМА
+   ======================================== */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* ========================================
+   ПОЛЯ ВВОДА
+   ======================================== */
+.login-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.login-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.login-required {
+    color: var(--red);
+    margin-left: 2px;
+}
+
+.login-input {
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 42px;
+}
+
+.login-input::placeholder {
+    color: var(--text-dark);
+}
+
+.login-input:hover {
+    border-color: var(--border-light);
+}
+
+.login-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(55, 148, 255, 0.1);
+}
+
+.login-input--error {
+    border-color: var(--red);
+}
+
+.login-input--error:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(244, 71, 71, 0.1);
+}
+
+.login-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.login-error {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 2px;
+}
+
+/* ========================================
+   ОПЦИИ
+   ======================================== */
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.login-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.login-checkbox input[type="checkbox"] {
+    accent-color: var(--blue);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.login-forgot {
+    font-size: 13px;
+    color: var(--blue);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.login-forgot:hover {
+    color: #4a9eff;
+    text-decoration: underline;
+}
+
+/* ========================================
+   КНОПКА ВХОДА
+   ======================================== */
+.login-button {
+    padding: 12px 24px;
+    background: var(--blue);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-white);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.login-button:hover:not(:disabled) {
+    background: #4a9eff;
+    transform: translateY(-1px);
+}
+
+.login-button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.login-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.login-button--loading {
+    opacity: 0.7;
+}
+
+/* Вторичная кнопка (как в VSCode) */
+.login-button--secondary {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.login-button--secondary:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+/* ========================================
+   СПИННЕР ЗАГРУЗКИ
+   ======================================== */
+.login-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--text-white);
+    border-radius: 50%;
+    animation: loginSpinnerRotate 0.8s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes loginSpinnerRotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   ФУТЕР
+   ======================================== */
+.login-footer {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.login-footer-text {
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.login-footer-link {
+    font-size: 14px;
+    color: var(--blue);
+    text-decoration: none;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.login-footer-link:hover {
+    color: #4a9eff;
+    text-decoration: underline;
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 28px 20px;
+        border-radius: var(--radius-md);
+    }
+
+    .login-title {
+        font-size: 20px;
+    }
+
+    .login-logo {
+        font-size: 36px;
+    }
+
+    .login-input {
+        font-size: 13px;
+        min-height: 38px;
+        padding: 8px 12px;
+    }
+
+    .login-button {
+        font-size: 14px;
+        min-height: 42px;
+        padding: 10px 20px;
+    }
+
+    .login-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .login-footer {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 380px) {
+    .login-card {
+        padding: 20px 16px;
+    }
+
+    .login-title {
+        font-size: 18px;
+    }
+}
+
+/* ========================================
+   АНИМАЦИЯ ПОЯВЛЕНИЯ
+   ======================================== */
+.login-card {
+    animation: loginFadeIn 0.4s ease;
+}
+
+@keyframes loginFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

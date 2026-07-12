@@ -1,0 +1,502 @@
+/* ========================================
+   USER COMPONENT - VSCODE STYLE
+   ======================================== */
+
+/* ========================================
+   СТРАНИЦА ПОЛЬЗОВАТЕЛЯ
+   ======================================== */
+.user-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--bg);
+}
+
+/* ========================================
+   КОНТЕНТ С ОГРАНИЧЕНИЕМ
+   ======================================== */
+.user-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ========================================
+   КОНТЕЙНЕР КАРТОЧКИ
+   ======================================== */
+.user-container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* ========================================
+   КАРТОЧКА ПОЛЬЗОВАТЕЛЯ
+   ======================================== */
+.user-card {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.user-card:hover {
+    border-color: var(--border-light);
+    box-shadow: var(--shadow);
+}
+
+/* ========================================
+   АВАТАР
+   ======================================== */
+.user-card__avatar {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    transition: var(--transition);
+}
+
+.user-card__avatar:hover {
+    border-color: var(--blue);
+}
+
+.user-card__avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-white);
+    background: var(--blue);
+}
+
+/* ========================================
+   ТЕЛО КАРТОЧКИ
+   ======================================== */
+.user-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ========================================
+   ЗАГОЛОВОК
+   ======================================== */
+.user-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.user-card__header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.user-card__header-right {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.user-card__name {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0;
+}
+
+/* ========================================
+   КНОПКИ ДЕЙСТВИЙ
+   ======================================== */
+.user-card__action {
+    padding: 4px 8px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-size: 16px;
+    transition: var(--transition);
+}
+
+.user-card__action:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.user-card__action--edit:hover {
+    background: rgba(55, 148, 255, 0.15);
+    color: var(--blue);
+}
+
+.user-card__action--delete:hover {
+    background: rgba(244, 71, 71, 0.15);
+    color: var(--red);
+}
+
+.user-card__action--expand:hover {
+    background: var(--bg-hover);
+    color: var(--text-white);
+}
+
+/* ========================================
+   ДЕТАЛИ
+   ======================================== */
+.user-card__details {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 6px 16px;
+}
+
+.user-card__detail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text);
+    padding: 2px 0;
+}
+
+.user-card__detail-icon {
+    font-size: 14px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.user-card__detail--highlight {
+    color: var(--green);
+    font-weight: 500;
+}
+
+/* ========================================
+   ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ
+   ======================================== */
+.user-card__extra {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-card__extra-section h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.user-card__bio {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--blue);
+}
+
+/* ========================================
+   КНОПКИ СТАТУСА
+   ======================================== */
+.user-card__status-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.user-card__status-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.user-card__status-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.user-card__status-btn--active {
+    border-color: var(--blue);
+    background: var(--bg-selected);
+    color: var(--text-white);
+}
+
+/* ========================================
+   МОДАЛЬНОЕ ОКНО
+   ======================================== */
+.user-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.user-modal {
+    max-width: 520px;
+    width: 92%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-15px) scale(0.97);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.user-modal__title {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text-white);
+}
+
+.user-modal__form-group {
+    margin-bottom: 14px;
+}
+
+.user-modal__form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.user-modal__input,
+.user-modal__textarea {
+    width: 100%;
+    padding: 8px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.user-modal__input:focus,
+.user-modal__textarea:focus {
+    border-color: var(--blue);
+    outline: none;
+    box-shadow: 0 0 20px rgba(55, 148, 255, 0.1);
+}
+
+.user-modal__textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* ========================================
+   МОДАЛЬНЫЕ КНОПКИ
+   ======================================== */
+.user-modal__buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.user-modal__btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.user-modal__btn--cancel {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.user-modal__btn--cancel:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.user-modal__btn--save {
+    background: var(--blue);
+    color: var(--text-white);
+}
+
+.user-modal__btn--save:hover {
+    background: #4a9eff;
+}
+
+/* ========================================
+   СКРОЛЛБАР МОДАЛКИ
+   ======================================== */
+.user-modal::-webkit-scrollbar {
+    width: 4px;
+}
+
+.user-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.user-modal::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.user-modal::-webkit-scrollbar-thumb:hover {
+    background: var(--border-light);
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 768px) {
+    .user-content {
+        padding: 12px;
+    }
+
+    .user-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 16px;
+    }
+
+    .user-card__avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .user-card__avatar-placeholder {
+        font-size: 20px;
+    }
+
+    .user-card__header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .user-card__header-left {
+        justify-content: center;
+    }
+
+    .user-card__details {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    .user-card__detail {
+        justify-content: center;
+    }
+
+    .user-card__status-buttons {
+        justify-content: center;
+    }
+
+    .user-modal {
+        padding: 20px;
+        margin: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-content {
+        padding: 8px;
+    }
+
+    .user-card__name {
+        font-size: 17px;
+    }
+
+    .user-card__detail {
+        font-size: 13px;
+    }
+
+    .user-modal {
+        padding: 16px;
+    }
+
+    .user-modal__title {
+        font-size: 18px;
+    }
+}

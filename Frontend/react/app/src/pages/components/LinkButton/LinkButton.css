@@ -1,0 +1,91 @@
+/* ========================================
+   LINK BUTTON - VSCODE STYLE
+   ======================================== */
+
+.link-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 20px !important;
+    border-radius: var(--radius-sm) !important;
+    text-decoration: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: var(--transition) !important;
+    font-family: inherit !important;
+    min-height: 38px !important;
+    line-height: 1 !important;
+    border: 1px solid transparent !important;
+    box-sizing: border-box !important;
+}
+
+.link-btn:hover {
+    text-decoration: none !important;
+}
+
+.link-btn-primary {
+    background: var(--blue) !important;
+    color: var(--text-white) !important;
+    border-color: var(--blue) !important;
+}
+
+.link-btn-primary:hover {
+    background: #4a9eff !important;
+    border-color: #4a9eff !important;
+}
+
+.link-btn-secondary {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+.link-btn-secondary:hover {
+    background: var(--bg-hover) !important;
+    border-color: var(--border-light) !important;
+}
+
+.link-btn-success {
+    background: var(--green) !important;
+    color: var(--text-white) !important;
+    border-color: var(--green) !important;
+}
+
+.link-btn-success:hover {
+    background: #5dd9c0 !important;
+    border-color: #5dd9c0 !important;
+}
+
+.link-btn-danger {
+    background: var(--red) !important;
+    color: var(--text-white) !important;
+    border-color: var(--red) !important;
+}
+
+.link-btn-danger:hover {
+    background: #f55a5a !important;
+    border-color: #f55a5a !important;
+}
+
+.link-btn-warning {
+    background: var(--orange) !important;
+    color: var(--text-white) !important;
+    border-color: var(--orange) !important;
+}
+
+.link-btn-warning:hover {
+    background: #dba182 !important;
+    border-color: #dba182 !important;
+}
+
+.link-btn-ghost {
+    background: transparent !important;
+    color: var(--text) !important;
+    border-color: transparent !important;
+}
+
+.link-btn-ghost:hover {
+    background: var(--bg-hover) !important;
+    border-color: var(--border) !important;
+}
