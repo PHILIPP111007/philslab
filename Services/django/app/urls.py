@@ -19,14 +19,14 @@ __all__ = ["urlpatterns"]
 
 from django.urls import include, path, re_path
 
-from app.views.token import TokenCreateView, TokenDestroyView
+from app.views import token
 
 urlpatterns = []
 
 auth_urlpatterns = [
     path("auth/", include("djoser.urls")),
-    re_path(r"^token/login/?$", TokenCreateView.as_view(), name="login"),
-    re_path(r"^token/logout/?$", TokenDestroyView.as_view(), name="logout"),
+    re_path(r"^token/login/?$", token.TokenCreateView.as_view(), name="login"),
+    re_path(r"^token/logout/?$", token.TokenDestroyView.as_view(), name="logout"),
 ]
 
 

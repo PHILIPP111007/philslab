@@ -1,110 +1,91 @@
-from fastapi import FastAPI, HTTPException
+from typing import Callable
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-import logging
-from .models import (
-    SearchRequest,
-    SearchResponse,
-    Article,
-    SummarizeRequest,
-    SummarizeResponse,
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.constants import (
+    API_PREFIX,
+    DEVELOPMENT,
 )
-from .services.pubmed_service import PubMedService
-from .services.summarizer_service import SummarizerService
-from .config import Config
+from app.database import engine
+from app.models import Token, User
+from app.views import online_status, session
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+app = FastAPI(
+    title="PhilsLab",
+    version="1.0.0",
+    description="### Laboratory journal.",
+    contact={
+        "name": "Roshchin Philipp",
+        "url": "https://github.com/PHILIPP111007",
+        "email": "r.phil@yandex.ru",
+    },
+    license_info={
+        "name": "MIT",
+        "identifier": "MIT",
+    },
+    openapi_url="/docs/openapi.json",
+)
 
-pubmed_service = None
-summarizer_service = None
+app.openapi_version = "3.0.0"
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global pubmed_service, summarizer_service
-    pubmed_service = PubMedService()
-    summarizer_service = SummarizerService()
-    logger.info("Services initialized")
-    yield
-    if pubmed_service:
-        await pubmed_service.close()
+#########################################
+# Middleware ############################
+#########################################
+
+if DEVELOPMENT == "1":
+    origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+else:
+    # TODO: add
+    origins = ["https://ваш-домен.com"]
 
 
-app = FastAPI(lifespan=lifespan)
-
-config = Config()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=origins,
+    allow_credentials=True,  # Allow cookies to be included in cross-origin requests
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers in cross-origin requests
 )
 
 
-@app.post("/api/search")
-async def search_articles(request: SearchRequest):
-    try:
-        logger.info(f"Searching for: {request.query}")
+@app.middleware("http")
+async def attach_user_to_request(request: Request, call_next: Callable):
+    """Middleware to store user in request context"""
 
-        # Поиск статей с оптимизацией запроса через LLM
-        articles = await pubmed_service.search_pubmed(request.query, max_results=10)
+    # Извлекаем учетные данные из запроса
+    token = request.headers.get("Authorization")
 
-        response_articles = []
-        for art in articles:
-            response_articles.append(
-                Article(
-                    pmid=art.get("pmid", ""),
-                    title=art.get("title", "Без названия"),
-                    url=art.get("url", ""),
-                    authors=art.get("authors", ""),
-                    journal=art.get("journal", ""),
-                    abstract=art.get("abstract", ""),
-                    pub_date=art.get("pub_date", ""),
-                )
+    # Инициализируем пользователя как None по умолчанию
+    request.state.user = None
+
+    # Базовая валидация наличия учетных данных
+    if not (token or " " not in token):
+        return await call_next(request)
+
+    # Извлекаем токен из заголовка Authorization (формат: "Bearer <token>")
+    token = token.split(" ", 1)[1]
+
+    async with AsyncSession(engine) as session:
+        token_obj = await session.exec(select(Token).where(Token.key == token))
+        token_obj = token_obj.first()
+        if not token_obj:
+            return await call_next(request)
+
+        user = await session.exec(select(User).where(User.id == token_obj.user_id))
+        user = user.one()
+        if user:
+            request.state.user = User(
+                id=user.id,
+                username=user.username,
             )
 
-        return SearchResponse(
-            summary=f"Найдено {len(articles)} статей по запросу: {request.query}",
-            articles=response_articles,
-            formatted_query=request.query.replace(" ", "+"),
-            total_results=len(articles),
-        )
-
-    except Exception as e:
-        logger.error(f"Search error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    # Продолжаем обработку запроса
+    return await call_next(request)
 
 
-@app.post("/api/summarize")
-async def summarize_articles(request: SummarizeRequest):
-    try:
-        logger.info(f"Summarizing {len(request.articles)} articles")
-
-        # Получаем полные абстракты для всех статей
-        articles_with_content = []
-        for article in request.articles:
-            logger.info(f"Fetching content for PMID: {article.pmid}")
-            content = await pubmed_service.fetch_article_content(article.pmid)
-            articles_with_content.append(
-                {"pmid": article.pmid, "title": article.title, "content": content}
-            )
-
-        # Генерируем суммаризацию через LLM
-        summary = await summarizer_service.summarize_articles(
-            articles_with_content, request.user_query
-        )
-
-        return SummarizeResponse(
-            summary=summary, summarized_articles=articles_with_content
-        )
-
-    except Exception as e:
-        logger.error(f"Summarize error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
+app.include_router(session.router, prefix=API_PREFIX)
+app.include_router(online_status.router, prefix=API_PREFIX)
