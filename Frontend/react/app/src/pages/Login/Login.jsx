@@ -1,15 +1,42 @@
 import './Login.css'
-import { useState } from 'react'
+import { useState, use, useEffect } from 'react'
+import { useNavigate } from "react-router-dom"
+import Fetch from "../../API/Fetch"
+import { AuthContext, UserContext } from "../../data/context.js"
+import { HttpMethod, CacheKeys, APIVersion } from "../../data/enums.js"
+import getToken from "../../modules/getToken.js"
+import { notify_success } from "../../modules/notify.js"
 
 export default function Login() {
+    var { setIsAuth } = use(AuthContext)
+    var { user, setUser } = use(UserContext)
     const [formData, setFormData] = useState({
-        email: '',
+        username: '',
         password: '',
-        remember: false,
     })
 
     const [errors, setErrors] = useState({})
     const [isLoading, setIsLoading] = useState(false)
+    var navigate = useNavigate()
+
+    async function auth() {
+        var token = getToken()
+        var data = await Fetch({ api_version: APIVersion.V1, action: "auth/users/me/", method: HttpMethod.GET })
+
+        if (data && !data.detail && data.username && token) {
+            setUser({ ...user, ...data })
+            setIsAuth(true)
+
+            var path = localStorage.getItem(CacheKeys.REMEMBER_PAGE)
+            if (path !== null) {
+                path = `/${path}/`
+            } else {
+                path = `/users/${data.username}/`
+            }
+            setIsLoading(false)
+            navigate(path)
+        }
+    }
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
@@ -23,19 +50,15 @@ export default function Login() {
         }
     }
 
-    const handleSubmit = (e) => {
+    async function handleSubmit(e) {
         e.preventDefault()
         // Валидация
         const newErrors = {}
-        if (!formData.email) {
-            newErrors.email = 'Email обязателен'
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Введите корректный email'
+        if (!formData.username) {
+            newErrors.username = 'Юзернейм обязателен'
         }
         if (!formData.password) {
             newErrors.password = 'Пароль обязателен'
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Пароль должен быть не менее 6 символов'
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -43,16 +66,23 @@ export default function Login() {
             return
         }
 
-        // Здесь будет логика входа
         setIsLoading(true)
-        console.log('📝 Данные формы:', formData)
+        var data = await Fetch({ api_version: APIVersion.V1, action: "token/login/", method: HttpMethod.POST, body: formData, token: "" })
 
-        // Имитация загрузки
-        setTimeout(() => {
-            setIsLoading(false)
-            // alert('Форма отправлена!')
-        }, 1500)
+        if (data && !data.detail && data.auth_token) {
+            localStorage.setItem(CacheKeys.TOKEN, data.auth_token)
+            setIsAuth(true)
+
+            setUser({ ...user, password: formData.password })
+            notify_success('Вы успешно вошли!')
+
+            auth()
+        }
     }
+
+    useEffect(() => {
+        auth()
+    }, [])
 
     return (
         <div className="login-page">
@@ -68,25 +98,25 @@ export default function Login() {
 
                     {/* Форма */}
                     <form className="login-form" onSubmit={handleSubmit}>
-                        {/* Email */}
+                        {/* username */}
                         <div className="login-form-group">
                             <label className="login-label">
-                                Email
+                                Username
                                 <span className="login-required">*</span>
                             </label>
                             <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
+                                type="text"
+                                name="username"
+                                value={formData.username}
                                 onChange={handleChange}
-                                className={`login-input ${errors.email ? 'login-input--error' : ''
+                                className={`login-input ${errors.username ? 'login-input--error' : ''
                                     }`}
-                                placeholder="Введите ваш email"
+                                placeholder="Введите ваш username"
                                 disabled={isLoading}
                             />
-                            {errors.email && (
+                            {errors.username && (
                                 <span className="login-error">
-                                    {errors.email}
+                                    {errors.username}
                                 </span>
                             )}
                         </div>

@@ -24,11 +24,6 @@ export default async function Fetch({ api_version, action, method, body, token, 
         url = `${PROD_FETCH_URL}api/v${api_version}/${action}`
     )
 
-    var global_user_username = localStorage.getItem(CacheKeys.GLOBAL_USER_USERNAME)
-    const urlObj = new URL(url)
-    urlObj.searchParams.append("global_user_username", global_user_username)
-    url = urlObj.toString()
-
     var credentials = api_version === APIVersion.V2 ? "include" : "same-origin"
 
     if (method === HttpMethod.GET) {

@@ -12,7 +12,6 @@ export var Theme = {
 
 export var CacheKeys = {
     TOKEN: "token",
-    THEME: "system_theme",
     REMEMBER_PAGE: "rememberPage",
 }
 

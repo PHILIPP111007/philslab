@@ -44,6 +44,8 @@ fastapi:
 	@echo "Starting fastapi..."
 	cd $(FASTAPI_DIR) && \
 	source ./.venv/bin/activate && \
+	export DEVELOPMENT=1 && \
+	export TESTING=0 && \
 	python run.py
 
 react:
