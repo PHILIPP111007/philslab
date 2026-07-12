@@ -6,6 +6,7 @@ import Fetch from '../../API/Fetch'
 import { HttpMethod, APIVersion } from '../../data/enums'
 import { UserContext } from "../../data/context.js"
 import { useSetUser } from "../../hooks/useAuth.js"
+import Button from "../components/Button/Button"
 
 export default function User() {
     var params = useParams()
@@ -83,13 +84,13 @@ export default function User() {
                                 <span className="user-card-main-page__username">@{user.username}</span>
                             </div>
                             <div className="user-card-main-page__header-right">
-                                <button
-                                    className="user-card-main-page__action user-card-main-page__action--edit"
+                                <Button
+                                    className="btn btn-secondary"
                                     onClick={handleEdit}
                                     title="Редактировать"
                                 >
-                                    ✏️
-                                </button>
+                                    Редактировать
+                                </Button>
                             </div>
                         </div>
 

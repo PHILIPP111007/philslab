@@ -145,21 +145,6 @@
     color: var(--text);
 }
 
-.user-card-main-page__action--edit:hover {
-    background: rgba(55, 148, 255, 0.15);
-    color: var(--blue);
-}
-
-.user-card-main-page__action--delete:hover {
-    background: rgba(244, 71, 71, 0.15);
-    color: var(--red);
-}
-
-.user-card-main-page__action--expand:hover {
-    background: var(--bg-hover);
-    color: var(--text-white);
-}
-
 /* ========================================
    ДЕТАЛИ
    ======================================== */
