@@ -3,14 +3,15 @@ import { useState, useContext, useEffect } from 'react'
 import Header from '../components/Header/Header'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
+import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
 import { UserContext } from "../../data/context.js"
 import { useSetUser } from "../../hooks/useAuth.js"
 import Button from "../components/Button/Button"
 
 export default function User() {
-    var params = useParams()
     const { user, setUser } = useContext(UserContext)
+    var params = useParams()
     var [userLocal, setUserLocal] = useState(user)
     const [isEditing, setIsEditing] = useState(false)
     const [editData, setEditData] = useState({})
@@ -53,6 +54,11 @@ export default function User() {
         const { name, value } = e.target
         setEditData(prev => ({ ...prev, [name]: value }))
     }
+
+
+    useEffect(() => {
+        rememberPage(`users/${params.username}`)
+    }, [params.username])
 
     return (
         <>

@@ -3,7 +3,7 @@ import './Spinner.css'
 export default function Spinner({
     size = 'md',
     variant = 'primary',
-    type = 'circle', // circle, gradient, double, pulse, dots, bars
+    type = 'dots', // circle, gradient, double, pulse, dots, bars
     label,
     className = '',
     ...props

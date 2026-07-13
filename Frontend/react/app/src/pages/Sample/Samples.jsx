@@ -1,13 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
+import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
+import { UserContext } from "../../data/context"
+import { notify_error } from '../../modules/notify'
+import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
+import Spinner from "../components/Spinner/Spinner"
 import Table from "../components/Table/Table"
 import Header from '../components/Header/Header'
 import StatCard from '../components/StatCard/StatCard'
 
 export default function Samples() {
+    var { user, setUser } = use(UserContext)
+    var params = useParams()
     const [samples, setSamples] = useState([])
     const [loading, setLoading] = useState(true)
+
+
+    useEffect(() => {
+        rememberPage(`samples/${params.username}`)
+    }, [params.username])
 
     // ---------- КОЛОНКИ ТАБЛИЦЫ (обновлены с учётом zlims_id) ----------
     const columns = [
@@ -88,7 +100,7 @@ export default function Samples() {
         if (data?.ok) {
             await loadSamples()
         } else {
-            alert(data?.error || 'Ошибка добавления')
+            notify_error(data?.error || "Ошибка добавления")
         }
     }
 
@@ -176,7 +188,7 @@ export default function Samples() {
                 <section className="section">
                     <h2 className="section__title">Список образцов</h2>
                     {loading ? (
-                        <div style={{ textAlign: 'center', padding: '20px' }}>Загрузка...</div>
+                        <Spinner />
                     ) : (
                         <Table
                             data={samples}
