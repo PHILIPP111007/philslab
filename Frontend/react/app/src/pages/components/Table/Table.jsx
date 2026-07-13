@@ -478,6 +478,38 @@ export default function Table({
     const [selectedItem, setSelectedItem] = useState(null)
     const [editingCellId, setEditingCellId] = useState(null)
 
+    // Состояние контекстного меню
+    const [contextMenu, setContextMenu] = useState({
+        visible: false,
+        x: 0,
+        y: 0,
+        row: null,
+    })
+    const contextMenuRef = useRef(null)
+
+    // Закрытие меню при клике вне или по Escape
+    useEffect(() => {
+        if (!contextMenu.visible) return
+
+        const handleClickOutside = (e) => {
+            if (contextMenuRef.current && !contextMenuRef.current.contains(e.target)) {
+                setContextMenu(prev => ({ ...prev, visible: false }))
+            }
+        }
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                setContextMenu(prev => ({ ...prev, visible: false }))
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        document.addEventListener('keydown', handleEscape)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            document.removeEventListener('keydown', handleEscape)
+        }
+    }, [contextMenu.visible])
+
     // ---------- обработчики данных (без изменений) ----------
     const updateData = useCallback((rowIndex, columnId, value) => {
         setData((old) => old.map((row, index) => index === rowIndex ? { ...row, [columnId]: value } : row))
@@ -546,6 +578,52 @@ export default function Table({
             }
         }
     }, [data, enableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange])
+
+    // --- Контекстное меню ---
+    const handleRowContextMenu = useCallback((e, rowData) => {
+        e.preventDefault()
+        // Для пустой строки не показываем меню
+        if (rowData.id < 0) return
+
+        setContextMenu({
+            visible: true,
+            x: e.clientX,
+            y: e.clientY,
+            row: rowData,
+        })
+    }, [])
+
+    const handleContextEdit = useCallback(() => {
+        setSelectedItem(contextMenu.row)
+        setEditModalOpen(true)
+        setContextMenu(prev => ({ ...prev, visible: false }))
+    }, [contextMenu.row])
+
+    const handleContextDelete = useCallback(() => {
+        setSelectedItem(contextMenu.row)
+        setDeleteModalOpen(true)
+        setContextMenu(prev => ({ ...prev, visible: false }))
+    }, [contextMenu.row])
+
+    const handleContextCopy = useCallback(() => {
+        const row = contextMenu.row
+        // Собираем текст из всех полей строки, кроме id (если нужно)
+        const text = Object.entries(row)
+            .filter(([key]) => key !== 'id')
+            .map(([key, val]) => `${key}: ${val}`)
+            .join('\n')
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Данные строки скопированы в буфер обмена')
+        })
+        setContextMenu(prev => ({ ...prev, visible: false }))
+    }, [contextMenu.row])
+
+    const handleContextDuplicate = useCallback(() => {
+        const row = { ...contextMenu.row }
+        delete row.id // будет присвоен новый ID в handleAdd
+        handleAdd(row) // используем существующую функцию добавления
+        setContextMenu(prev => ({ ...prev, visible: false }))
+    }, [contextMenu.row, handleAdd])
 
     // ---------- колонки ----------
     const selectionColumn = useMemo(() => enableSelection ? [{
@@ -820,7 +898,7 @@ export default function Table({
                             <tr><td colSpan={columns.length} className="table-empty">😕 Нет данных</td></tr>
                         ) : (
                             table.getRowModel().rows.map(row => (
-                                <tr key={row.id} className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${row.original.id < 0 ? 'table-row--empty' : ''}`}>
+                                <tr key={row.id} className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${row.original.id < 0 ? 'table-row--empty' : ''}`} onContextMenu={(e) => handleRowContextMenu(e, row.original)}>
                                     {row.getVisibleCells().map(cell => {
                                         const sticky = cell.column.columnDef.sticky
                                         const stickyStyle = sticky === 'left' ? { position: 'sticky', left: 0, zIndex: 1, background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)' } : {}
@@ -857,6 +935,33 @@ export default function Table({
                         ))}
                     </tfoot>
                 </table>
+                {/* Контекстное меню */}
+                {contextMenu.visible && (
+                    <div
+                        ref={contextMenuRef}
+                        className="context-menu"
+                        style={{
+                            position: 'fixed',
+                            left: contextMenu.x,
+                            top: contextMenu.y,
+                            zIndex: 1000,
+                        }}
+                    >
+                        <button onClick={handleContextEdit} className="context-menu__item">
+                            ✏️ Редактировать
+                        </button>
+                        <button onClick={handleContextDuplicate} className="context-menu__item">
+                            📄 Дублировать (уйдет в конец таблицы)
+                        </button>
+                        <button onClick={handleContextCopy} className="context-menu__item">
+                            📋 Копировать
+                        </button>
+                        <div className="context-menu__divider" />
+                        <button onClick={handleContextDelete} className="context-menu__item context-menu__item--danger">
+                            🗑️ Удалить
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="table-footer">

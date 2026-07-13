@@ -1211,3 +1211,64 @@ select.modal-input {
     font-weight: 500;
     color: var(--text-white);
 }
+
+/* ========================================
+   КОНТЕКСТНОЕ МЕНЮ
+   ======================================== */
+.context-menu {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    padding: 4px 0;
+    min-width: 200px;
+    animation: contextMenuFadeIn 0.15s ease;
+}
+
+@keyframes contextMenuFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.context-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    text-align: left;
+}
+
+.context-menu__item:hover {
+    background: var(--bg-selected);
+    color: var(--text-white);
+}
+
+.context-menu__item--danger {
+    color: var(--red);
+}
+
+.context-menu__item--danger:hover {
+    background: rgba(244, 71, 71, 0.15);
+    color: var(--red);
+}
+
+.context-menu__divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+}
