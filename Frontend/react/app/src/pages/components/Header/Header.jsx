@@ -1,13 +1,33 @@
 import './Header.css'
-import { useState, useRef, useEffect, useContext } from 'react'
-import { UserContext } from "../../../data/context.js"
+import { useState, useRef, useEffect, use } from 'react'
+import { useNavigate } from "react-router-dom"
+import Fetch from "../../../API/Fetch.js"
+import { UserContext, AuthContext } from "../../../data/context.js"
+import { HttpMethod, CacheKeys, APIVersion } from "../../../data/enums.js"
 import { ThemeToggle } from '../Theme/ThemeToggle'
 import LinkButton from '../LinkButton/LinkButton'
 
-export default function Header({ onLogout, className = '' }) {
-    const { user, setUser } = useContext(UserContext)
+export default function Header() {
+    var { setIsAuth } = use(AuthContext)
+    const { user, setUser } = use(UserContext)
     const [isSettingsOpen, setIsSettingsOpen] = useState(false)
     const settingsRef = useRef(null)
+    var navigate = useNavigate()
+
+    async function logout() {
+        await Fetch({ api_version: APIVersion.V1, action: "token/logout/", method: HttpMethod.POST })
+        setIsAuth(false)
+        localStorage.removeItem(CacheKeys.TOKEN)
+        setUser({
+            id: 0,
+            username: "",
+            email: "",
+            first_name: "",
+            last_name: "",
+            descr: "",
+        })
+        navigate(`/login/`)
+    }
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -20,7 +40,7 @@ export default function Header({ onLogout, className = '' }) {
     }, [])
 
     return (
-        <div className={`sticky-header ${className}`}>
+        <div className="sticky-header">
             <div className="sticky-header__content">
                 <div className="sticky-header__left"></div>
 
@@ -63,9 +83,7 @@ export default function Header({ onLogout, className = '' }) {
                                 </div>
 
                                 <div className="sticky-header__settings-footer">
-                                    {onLogout && (
-                                        <button className="sticky-header__logout-btn" onClick={onLogout}>🚪 Выйти</button>
-                                    )}
+                                    <button className="sticky-header__logout-btn" onClick={logout}>Выйти</button>
                                     <button className="sticky-header__close-btn" onClick={() => setIsSettingsOpen(false)}>Закрыть</button>
                                 </div>
                             </div>
