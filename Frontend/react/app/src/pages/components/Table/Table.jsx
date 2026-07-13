@@ -101,20 +101,40 @@ function EditableCell({ getValue, row, column, table, onCellEdit, validate, onSt
         setTimeout(() => { isSavingRef.current = false }, 100)
     }, [value, initialValue, validate, row, column, onCellEdit, onEndEdit])
 
+    const { updateData, requestCellFocusAfterPageChange } = table.options.meta
+
     const moveToCellBelow = useCallback(() => {
-        const currentTd = cellRef.current?.closest('td'); if (!currentTd) return
-        const tbody = currentTd.closest('tbody'); if (!tbody) return
+        const currentTd = cellRef.current?.closest('td')
+        const currentTr = currentTd?.closest('tr')
+        const tbody = currentTr?.closest('tbody')
+        if (!tbody) return
+
         setTimeout(() => {
             const rows = Array.from(tbody.querySelectorAll('tr'))
-            const currentRowIdx = rows.indexOf(currentTd.parentElement)
-            const nextRow = rows[currentRowIdx + 1]; if (!nextRow) return
+            const currentRowIdx = rows.indexOf(currentTr)
+            let nextRow = rows[currentRowIdx + 1]
+
+            if (!nextRow) {
+                // Если следующей строки нет, пытаемся перейти на следующую страницу
+                if (table.getCanNextPage?.()) {
+                    const currentCellIdx = Array.from(currentTr.querySelectorAll('td')).indexOf(currentTd)
+                    requestCellFocusAfterPageChange?.(currentCellIdx)
+                    table.nextPage()
+                }
+                return
+            }
+
             const cells = Array.from(nextRow.querySelectorAll('td'))
-            const currentCellIdx = Array.from(currentTd.parentElement.querySelectorAll('td')).indexOf(currentTd)
-            const nextCell = cells[currentCellIdx]; if (!nextCell) return
+            const currentCellIdx = Array.from(currentTr.querySelectorAll('td')).indexOf(currentTd)
+            const nextCell = cells[currentCellIdx]
+            if (!nextCell) return
+
             const editableDiv = nextCell.querySelector('.editable-cell--editable')
-            if (editableDiv) editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+            if (editableDiv) {
+                editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+            }
         }, 150)
-    }, [])
+    }, [table, requestCellFocusAfterPageChange])
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); moveToCellBelow(); return }
@@ -477,6 +497,13 @@ export default function Table({
     const [addModalOpen, setAddModalOpen] = useState(false)
     const [selectedItem, setSelectedItem] = useState(null)
     const [editingCellId, setEditingCellId] = useState(null)
+    const [focusRequest, setFocusRequest] = useState(null)
+
+    const requestCellFocusAfterPageChange = useCallback((columnIndex) => {
+        setFocusRequest({ columnIndex })
+    }, [])
+
+
 
     // Состояние контекстного меню
     const [contextMenu, setContextMenu] = useState({
@@ -486,6 +513,30 @@ export default function Table({
         row: null,
     })
     const contextMenuRef = useRef(null)
+
+    // Эффект, который срабатывает при изменении pageIndex и пытается сфокусировать нужную ячейку
+    useEffect(() => {
+        if (!focusRequest) return
+        const timer = setTimeout(() => {
+            const tbody = document.querySelector('.table-wrapper tbody')
+            if (!tbody) return
+            const rows = Array.from(tbody.querySelectorAll('tr'))
+            // Берём первую строку (можно уточнить: не пустую)
+            const firstRow = rows[0]
+            if (!firstRow) return
+            const cells = Array.from(firstRow.querySelectorAll('td'))
+            const targetCell = cells[focusRequest.columnIndex]
+            if (targetCell) {
+                const editableDiv = targetCell.querySelector('.editable-cell--editable')
+                if (editableDiv) {
+                    editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+                }
+            }
+            setFocusRequest(null)
+        }, 100) // задержка для завершения перерисовки
+        return () => clearTimeout(timer)
+    }, [focusRequest, pageIndex])
+
 
     // Закрытие меню при клике вне или по Escape
     useEffect(() => {
@@ -711,7 +762,7 @@ export default function Table({
         getGroupedRowModel: getGroupedRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
         filterFns: { text: textFilter, numberContains: numberContainsFilter },
-        meta: { updateData },
+        meta: { updateData, requestCellFocusAfterPageChange },
         enableSorting,
         enableColumnFilters: enableFiltering,
         enableGrouping,

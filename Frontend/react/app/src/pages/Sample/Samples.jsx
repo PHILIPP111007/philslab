@@ -31,6 +31,12 @@ export default function Samples() {
             enableSorting: true,
         },
         {
+            accessorKey: 'name',
+            header: 'имя',
+            size: 80,
+            editType: 'text',
+        },
+        {
             accessorKey: 'zlims_id',
             header: 'ZLIMS ID',
             size: 120,
