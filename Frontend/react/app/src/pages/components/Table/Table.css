@@ -1164,3 +1164,50 @@ select.modal-input {
     background: var(--bg-selected);
     color: var(--text-white);
 }
+
+
+
+/* Resizer */
+.resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+    cursor: col-resize;
+    user-select: none;
+    touch-action: none;
+    background: transparent;
+}
+
+.resizer:hover {
+    background: var(--blue);
+    opacity: 0.5;
+}
+
+.resizer.isResizing {
+    background: var(--blue);
+    opacity: 1;
+}
+
+/* Sticky левая колонка */
+.sticky-left {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.table-cell.sticky-left {
+    z-index: 1;
+    /* чтобы не перекрывать соседние ячейки, но оставаться над другими */
+}
+
+/* Футер таблицы */
+.table-footer-cell {
+    padding: 8px 12px;
+    font-size: 13px;
+    background: var(--bg-light);
+    border-top: 2px solid var(--border);
+    font-weight: 500;
+    color: var(--text-white);
+}

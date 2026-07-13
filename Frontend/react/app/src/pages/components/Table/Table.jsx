@@ -1,3 +1,4 @@
+import './Table.css'
 import {
     useReactTable,
     getCoreRowModel,
@@ -10,10 +11,33 @@ import {
 } from '@tanstack/react-table'
 import ExcelJS from 'exceljs'
 import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
-import './Table.css'
+
+
+// Вспомогательная функция для отображения агрегаций в футере
+function renderAggregation(column, table) {
+    const aggFn = column.columnDef.aggregation
+    if (!aggFn) return null
+    const rows = table.getFilteredRowModel().rows.map(r => r.original)
+    if (aggFn === 'sum') {
+        const sum = rows.reduce((acc, row) => acc + (Number(row[column.id]) || 0), 0)
+        return <span>{sum}</span>
+    }
+    if (aggFn === 'average') {
+        const sum = rows.reduce((acc, row) => acc + (Number(row[column.id]) || 0), 0)
+        const avg = rows.length ? sum / rows.length : 0
+        return <span>{avg.toFixed(2)}</span>
+    }
+    if (aggFn === 'count') {
+        return <span>{rows.length}</span>
+    }
+    if (typeof aggFn === 'function') {
+        return <span>{aggFn(rows)}</span>
+    }
+    return null
+}
 
 // ============================================
-// ФИЛЬТРЫ
+// ФИЛЬТРЫ (без изменений)
 // ============================================
 const textFilter = (row, columnId, filterValue) => {
     if (!filterValue) return true
@@ -28,19 +52,9 @@ const numberContainsFilter = (row, columnId, filterValue) => {
 }
 
 // ============================================
-// INLINE EDITABLE CELL
+// INLINE EDITABLE CELL (без изменений)
 // ============================================
-// EditableCell с навигацией Enter вниз (как в Excel)
-function EditableCell({
-    getValue,
-    row,
-    column,
-    table,
-    onCellEdit,
-    validate,
-    onStartEdit,
-    onEndEdit,
-}) {
+function EditableCell({ getValue, row, column, table, onCellEdit, validate, onStartEdit, onEndEdit }) {
     const initialValue = getValue()
     const [value, setValue] = useState(initialValue)
     const [isEditing, setIsEditing] = useState(false)
@@ -52,171 +66,95 @@ function EditableCell({
     const columnDef = column.columnDef
     const isEditable = columnDef.editable !== false
 
-    // Условное форматирование (если задано)
     const conditionalStyle = useMemo(() => {
         if (typeof columnDef.conditionalFormatting === 'function') {
-            const result = columnDef.conditionalFormatting(
-                initialValue,
-                row.original,
-                column
-            )
+            const result = columnDef.conditionalFormatting(initialValue, row.original, column)
             if (result && typeof result === 'object') return result
         }
         return {}
     }, [columnDef, initialValue, row.original, column])
 
-    useEffect(() => {
-        if (!isEditing) setValue(initialValue)
-    }, [initialValue, isEditing])
+    useEffect(() => { if (!isEditing) setValue(initialValue) }, [initialValue, isEditing])
 
     useLayoutEffect(() => {
         if (isEditing && inputRef.current) {
-            const timer = setTimeout(() => {
-                inputRef.current?.focus()
-                inputRef.current?.select()
-            }, 0)
+            const timer = setTimeout(() => { inputRef.current?.focus(); inputRef.current?.select() }, 0)
             return () => clearTimeout(timer)
         }
     }, [isEditing])
 
     const handleDoubleClick = (e) => {
         if (isEditable && !isEditing) {
-            e.preventDefault()
-            e.stopPropagation()
-            onStartEdit?.(row.id, column.id)
-            setIsEditing(true)
+            e.preventDefault(); e.stopPropagation()
+            onStartEdit?.(row.id, column.id); setIsEditing(true)
         }
     }
 
     const handleSave = useCallback(() => {
-        if (isSavingRef.current) return
-        isSavingRef.current = true
-
-        setError(null)
-
+        if (isSavingRef.current) return; isSavingRef.current = true; setError(null)
         if (validate && value !== initialValue) {
             const result = validate(value, row.original)
-            if (typeof result === 'string') {
-                setError(result)
-                inputRef.current?.focus()
-                isSavingRef.current = false
-                return
-            }
+            if (typeof result === 'string') { setError(result); inputRef.current?.focus(); isSavingRef.current = false; return }
         }
-
-        if (value !== initialValue) {
-            onCellEdit?.(row.original, column.id, value)
-        }
-
-        setIsEditing(false)
-        onEndEdit?.()
-
+        if (value !== initialValue) onCellEdit?.(row.original, column.id, value)
+        setIsEditing(false); onEndEdit?.()
         setTimeout(() => { isSavingRef.current = false }, 100)
     }, [value, initialValue, validate, row, column, onCellEdit, onEndEdit])
 
-    // Переход к ячейке ниже в том же столбце
     const moveToCellBelow = useCallback(() => {
-        const currentTd = cellRef.current?.closest('td')
-        const currentTr = currentTd?.closest('tr')
-        const tbody = currentTr?.closest('tbody')
-        if (!tbody) return
-
-        // Даём время на обновление DOM после изменения данных
+        const currentTd = cellRef.current?.closest('td'); if (!currentTd) return
+        const tbody = currentTd.closest('tbody'); if (!tbody) return
         setTimeout(() => {
             const rows = Array.from(tbody.querySelectorAll('tr'))
-            const currentRowIdx = rows.indexOf(currentTr)
-            const nextRow = rows[currentRowIdx + 1]
-            if (!nextRow) return
-
+            const currentRowIdx = rows.indexOf(currentTd.parentElement)
+            const nextRow = rows[currentRowIdx + 1]; if (!nextRow) return
             const cells = Array.from(nextRow.querySelectorAll('td'))
-            const currentCellIdx = Array.from(currentTr.querySelectorAll('td')).indexOf(currentTd)
-            const nextCell = cells[currentCellIdx]
-            if (!nextCell) return
-
+            const currentCellIdx = Array.from(currentTd.parentElement.querySelectorAll('td')).indexOf(currentTd)
+            const nextCell = cells[currentCellIdx]; if (!nextCell) return
             const editableDiv = nextCell.querySelector('.editable-cell--editable')
-            if (editableDiv) {
-                editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
-            }
-        }, 150) // задержка, чтобы React перерисовал таблицу
+            if (editableDiv) editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+        }, 150)
     }, [])
 
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            handleSave()
-            moveToCellBelow()   // ← навигация вниз после сохранения
-            return
-        }
-        if (e.key === 'Escape') {
-            e.preventDefault()
-            setValue(initialValue)
-            setIsEditing(false)
-            setError(null)
-            onEndEdit?.()
-            return
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); moveToCellBelow(); return }
+        if (e.key === 'Escape') { e.preventDefault(); setValue(initialValue); setIsEditing(false); setError(null); onEndEdit?.(); return }
         if (e.key === 'Tab') {
-            e.preventDefault()
-            handleSave()
-
-            const currentCell = cellRef.current?.closest('td')
-            const currentRow = currentCell?.closest('tr')
-            const allCells = Array.from(currentRow?.querySelectorAll('td') || [])
-            const currentIndex = allCells.indexOf(currentCell)
-            const nextCell = allCells[currentIndex + (e.shiftKey ? -1 : 1)]
-
+            e.preventDefault(); handleSave()
+            const currentCell = cellRef.current?.closest('td'); if (!currentCell) return
+            const currentRow = currentCell.closest('tr'); const allCells = Array.from(currentRow.querySelectorAll('td') || [])
+            const currentIndex = allCells.indexOf(currentCell); const nextCell = allCells[currentIndex + (e.shiftKey ? -1 : 1)]
             if (nextCell) {
                 const editableDiv = nextCell.querySelector('.editable-cell--editable')
-                if (editableDiv) {
-                    setTimeout(() => {
-                        editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
-                    }, 50)
-                }
+                if (editableDiv) setTimeout(() => editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true })), 50)
             }
         }
     }
 
-    const handleBlur = () => {
-        setTimeout(() => {
-            if (isEditing && !isSavingRef.current) handleSave()
-        }, 100)
-    }
+    const handleBlur = () => { setTimeout(() => { if (isEditing && !isSavingRef.current) handleSave() }, 100) }
 
     if (isEditing) {
         return (
             <div ref={cellRef} className="editable-cell editable-cell--editing">
-                <input
-                    ref={inputRef}
-                    type={columnDef.editType || 'text'}
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    onBlur={handleBlur}
-                    onKeyDown={handleKeyDown}
+                <input ref={inputRef} type={columnDef.editType || 'text'} value={value}
+                    onChange={(e) => setValue(e.target.value)} onBlur={handleBlur} onKeyDown={handleKeyDown}
                     className={`editable-cell__input ${error ? 'editable-cell__input--error' : ''}`}
-                    placeholder={columnDef.placeholder || ''}
-                    step={columnDef.editType === 'number' ? 'any' : undefined}
-                />
+                    placeholder={columnDef.placeholder || ''} step={columnDef.editType === 'number' ? 'any' : undefined} />
                 {error && <span className="editable-cell__error">{error}</span>}
             </div>
         )
     }
 
     return (
-        <div
-            ref={cellRef}
-            className={`editable-cell ${isEditable ? 'editable-cell--editable' : ''}`}
-            onDoubleClick={handleDoubleClick}
-            title={isEditable ? 'Двойной клик для редактирования' : ''}
-            style={conditionalStyle}
-        >
+        <div ref={cellRef} className={`editable-cell ${isEditable ? 'editable-cell--editable' : ''}`}
+            onDoubleClick={handleDoubleClick} title={isEditable ? 'Двойной клик для редактирования' : ''} style={conditionalStyle}>
             <span className="editable-cell__value">{value ?? ''}</span>
             {isEditable && <span className="editable-cell__indicator">✎</span>}
         </div>
     )
 }
-
 // ============================================
-// МОДАЛЬНЫЕ ОКНА (без изменений)
+// МОДАЛЬНЫЕ ОКНА
 // ============================================
 function EditModal({ user, isOpen, onClose, onSave, columns }) {
     const [formData, setFormData] = useState({})
@@ -486,9 +424,7 @@ export default function Table({
     onCellEdit,
     validateCell,
 }) {
-    // ============================================
-    // УТИЛИТЫ ДЛЯ ПУСТОЙ СТРОКИ
-    // ============================================
+    // ---------- утилиты для пустой строки ----------
     const createEmptyRowData = useCallback((id) => {
         const emptyRow = { id }
         userColumns.forEach((col) => {
@@ -514,14 +450,10 @@ export default function Table({
         return dataArray
     }, [enableEmptyRow, createEmptyRowData, getNextEmptyRowId])
 
-    // ============================================
-    // СОСТОЯНИЕ (с гарантией пустой строки)
-    // ============================================
+    // ---------- состояние ----------
     const [data, setData] = useState(() => {
         if (enableEmptyRow) {
-            if (initialData.length === 0) {
-                return [createEmptyRowData(-1)]
-            }
+            if (initialData.length === 0) return [createEmptyRowData(-1)]
             return ensureEmptyRow(initialData)
         }
         return initialData
@@ -535,162 +467,91 @@ export default function Table({
     const [columnVisibility, setColumnVisibility] = useState({})
     const [columnOrder, setColumnOrder] = useState([])
     const [pageIndex, setPageIndex] = useState(0)
+    const [pageSize, setPageSize] = useState(initialPageSize)
+
+    // Добавлено: состояние для изменения ширины колонок
+    const [columnSizing, setColumnSizing] = useState({})
 
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [addModalOpen, setAddModalOpen] = useState(false)
     const [selectedItem, setSelectedItem] = useState(null)
     const [editingCellId, setEditingCellId] = useState(null)
-    const [pageSize, setPageSize] = useState(initialPageSize);
 
-    // ============================================
-    // ОБРАБОТЧИКИ ДАННЫХ
-    // ============================================
-
-    // Простое обновление существующей строки (без колбэков)
+    // ---------- обработчики данных (без изменений) ----------
     const updateData = useCallback((rowIndex, columnId, value) => {
-        setData((old) =>
-            old.map((row, index) => {
-                if (index === rowIndex) {
-                    return { ...row, [columnId]: value }
-                }
-                return row
-            })
-        )
+        setData((old) => old.map((row, index) => index === rowIndex ? { ...row, [columnId]: value } : row))
     }, [])
 
     const handleEdit = useCallback((updatedItem) => {
         setData((old) => {
-            const newData = old.map((item) =>
-                item.id === updatedItem.id ? updatedItem : item
-            );
-            const realData = newData.filter(item => item.id > 0);
-            // Вызов onDataChange с мета-информацией
-            onDataChange?.(realData, {
-                id: updatedItem.id,
-                operation: 'edit',
-                data: updatedItem,
-            });
-            onEditSuccess?.(updatedItem);
-            return newData;
-        });
-    }, [onDataChange, onEditSuccess]);
-
+            const newData = old.map((item) => item.id === updatedItem.id ? updatedItem : item)
+            onDataChange?.(newData.filter(i => i.id > 0), { id: updatedItem.id, operation: 'edit', data: updatedItem })
+            onEditSuccess?.(updatedItem)
+            return newData
+        })
+    }, [onDataChange, onEditSuccess])
 
     const handleDelete = useCallback((item) => {
-        if (item.id < 0) return; // пустую строку не удаляем
+        if (item.id < 0) return
         setData((old) => {
-            const newData = old.filter((i) => i.id !== item.id);
-            const totalItems = newData.filter(i => i.id > 0).length;
-            const maxPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1);
-            if (pageIndex > maxPage) setPageIndex(maxPage);
-            const finalData = ensureEmptyRow(newData);
-            const realData = finalData.filter(i => i.id > 0);
-            onDataChange?.(realData, {
-                id: item.id,
-                operation: 'delete',
-                data: item,
-            });
-            onDeleteSuccess?.(item);
-            return finalData;
-        });
-    }, [pageSize, pageIndex, ensureEmptyRow, onDataChange, onDeleteSuccess]);
-
+            const newData = old.filter((i) => i.id !== item.id)
+            const totalItems = newData.filter(i => i.id > 0).length
+            const maxPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
+            if (pageIndex > maxPage) setPageIndex(maxPage)
+            const finalData = ensureEmptyRow(newData)
+            onDataChange?.(finalData.filter(i => i.id > 0), { id: item.id, operation: 'delete', data: item })
+            onDeleteSuccess?.(item)
+            return finalData
+        })
+    }, [pageSize, pageIndex, ensureEmptyRow, onDataChange, onDeleteSuccess])
 
     const handleAdd = useCallback((newItem) => {
         setData((old) => {
-            const dataWithoutEmpty = old.filter(item => item.id > 0);
-            const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0);
-            const itemWithId = { ...newItem, id: maxId + 1 };
-            const newData = [...dataWithoutEmpty, itemWithId];
-            const finalData = ensureEmptyRow(newData);
-            const realData = finalData.filter(item => item.id > 0);
-            const totalItems = realData.length;
-            const lastPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1);
-            setPageIndex(lastPage);
-            onDataChange?.(realData, {
-                id: itemWithId.id,
-                operation: 'add',
-                data: itemWithId,
-            });
-            onAddSuccess?.(itemWithId);
-            return finalData;
-        });
-    }, [pageSize, ensureEmptyRow, onDataChange, onAddSuccess]);
+            const dataWithoutEmpty = old.filter(item => item.id > 0)
+            const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
+            const itemWithId = { ...newItem, id: maxId + 1 }
+            const finalData = ensureEmptyRow([...dataWithoutEmpty, itemWithId])
+            onDataChange?.(finalData.filter(i => i.id > 0), { id: itemWithId.id, operation: 'add', data: itemWithId })
+            onAddSuccess?.(itemWithId)
+            const totalItems = finalData.filter(i => i.id > 0).length
+            const lastPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
+            setPageIndex(lastPage)
+            return finalData
+        })
+    }, [pageSize, ensureEmptyRow, onDataChange, onAddSuccess])
 
-
-    // Главный обработчик клика/Enter в ячейке
     const handleCellEdit = useCallback((row, columnId, value) => {
         if (row.id < 0) {
-            // создание новой записи из пустой строки
             setData((old) => {
-                const dataWithoutEmpty = old.filter(item => item.id > 0);
-                const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0);
-                const newId = maxId + 1;
-                const newRow = { ...row, [columnId]: value, id: newId };
-
-                const filtered = old.filter((item) => item.id !== row.id);
-                const updated = [...filtered, newRow];
-                const finalData = enableEmptyRow ? ensureEmptyRow(updated) : updated;
-                const realData = finalData.filter(item => item.id > 0);
-
-                onCellEdit?.(newRow, columnId, value);
-                onAddSuccess?.(newRow);
-                onDataChange?.(realData, {
-                    id: newId,
-                    operation: 'add',
-                    data: newRow,
-                });
-
-                return finalData;
-            });
+                const dataWithoutEmpty = old.filter(item => item.id > 0)
+                const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
+                const newRow = { ...row, [columnId]: value, id: maxId + 1 }
+                const filtered = old.filter(item => item.id !== row.id)
+                const finalData = enableEmptyRow ? ensureEmptyRow([...filtered, newRow]) : [...filtered, newRow]
+                onCellEdit?.(newRow, columnId, value)
+                onAddSuccess?.(newRow)
+                onDataChange?.(finalData.filter(i => i.id > 0), { id: newRow.id, operation: 'add', data: newRow })
+                return finalData
+            })
         } else {
-            // обновление существующей записи
-            const rowIndex = data.findIndex((item) => item.id === row.id);
+            const rowIndex = data.findIndex(item => item.id === row.id)
             if (rowIndex !== -1) {
-                // Обновляем состояние и передаём мета-данные
                 setData((old) => {
-                    const newData = old.map((item, index) =>
-                        index === rowIndex ? { ...item, [columnId]: value } : item
-                    );
-                    const realData = newData.filter(item => item.id > 0);
-                    onCellEdit?.(row, columnId, value);
-                    onDataChange?.(realData, {
-                        id: row.id,
-                        operation: 'edit',
-                        data: { ...row, [columnId]: value },
-                        column: columnId,
-                        value: value,
-                    });
-                    return newData;
-                });
+                    const newData = old.map((item, index) => index === rowIndex ? { ...item, [columnId]: value } : item)
+                    onCellEdit?.(row, columnId, value)
+                    onDataChange?.(newData.filter(i => i.id > 0), { id: row.id, operation: 'edit', data: { ...row, [columnId]: value }, column: columnId, value })
+                    return newData
+                })
             }
         }
-    }, [data, enableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange]);
+    }, [data, enableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange])
 
-
-    // ============================================
-    // КОЛОНКИ
-    // ============================================
+    // ---------- колонки ----------
     const selectionColumn = useMemo(() => enableSelection ? [{
         id: 'select',
-        header: ({ table }) => (
-            <input
-                type="checkbox"
-                checked={table.getIsAllRowsSelected()}
-                onChange={table.getToggleAllRowsSelectedHandler()}
-            />
-        ),
-        cell: ({ row }) => {
-            if (row.original.id < 0) return null // скрываем чекбокс у пустой строки
-            return (
-                <input
-                    type="checkbox"
-                    checked={row.getIsSelected()}
-                    onChange={row.getToggleSelectedHandler()}
-                />
-            )
-        },
+        header: ({ table }) => <input type="checkbox" checked={table.getIsAllRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} />,
+        cell: ({ row }) => row.original.id < 0 ? null : <input type="checkbox" checked={row.getIsSelected()} onChange={row.getToggleSelectedHandler()} />,
         size: 40,
         enableSorting: false,
         enableColumnFilter: false,
@@ -700,36 +561,11 @@ export default function Table({
         id: 'actions',
         header: 'Действия',
         cell: ({ row }) => {
-            const isTempRow = row.original.id < 0
-            if (isTempRow) {
-                return (
-                    <span style={{ fontSize: '11px', color: 'var(--text-dark)', opacity: 0.6 }}>
-                        Новая запись
-                    </span>
-                )
-            }
+            if (row.original.id < 0) return <span style={{ fontSize: '11px', color: 'var(--text-dark)', opacity: 0.6 }}>Новая запись</span>
             return (
                 <div className="table-action-buttons">
-                    <button
-                        onClick={() => {
-                            setSelectedItem(row.original)
-                            setEditModalOpen(true)
-                        }}
-                        className="table-action-edit"
-                        title="Редактировать"
-                    >
-                        ✏️
-                    </button>
-                    <button
-                        onClick={() => {
-                            setSelectedItem(row.original)
-                            setDeleteModalOpen(true)
-                        }}
-                        className="table-action-delete"
-                        title="Удалить"
-                    >
-                        🗑️
-                    </button>
+                    <button onClick={() => { setSelectedItem(row.original); setEditModalOpen(true) }} className="table-action-edit" title="Редактировать">✏️</button>
+                    <button onClick={() => { setSelectedItem(row.original); setDeleteModalOpen(true) }} className="table-action-delete" title="Удалить">🗑️</button>
                 </div>
             )
         },
@@ -744,13 +580,9 @@ export default function Table({
 
             if (enableInlineEdit && col.editable !== false) {
                 processedCol.cell = (props) => (
-                    <EditableCell
-                        {...props}
-                        onCellEdit={handleCellEdit}
-                        validate={validateCell}
+                    <EditableCell {...props} onCellEdit={handleCellEdit} validate={validateCell}
                         onStartEdit={(rowId, colId) => setEditingCellId(`${rowId}-${colId}`)}
-                        onEndEdit={() => setEditingCellId(null)}
-                    />
+                        onEndEdit={() => setEditingCellId(null)} />
                 )
             }
 
@@ -765,9 +597,7 @@ export default function Table({
         return [...selectionColumn, ...processedColumns, ...actionsColumn]
     }, [userColumns, data, enableInlineEdit, selectionColumn, actionsColumn, handleCellEdit, validateCell])
 
-    // ============================================
-    // TANSTACK TABLE
-    // ============================================
+    // ---------- таблица ----------
     const table = useReactTable({
         data,
         columns,
@@ -780,6 +610,7 @@ export default function Table({
             columnVisibility,
             columnOrder,
             pagination: { pageIndex, pageSize },
+            columnSizing,   // <-- для resize
         },
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
@@ -789,11 +620,12 @@ export default function Table({
         onColumnVisibilityChange: setColumnVisibility,
         onColumnOrderChange: setColumnOrder,
         onPaginationChange: (updater) => {
-            const newState = typeof updater === 'function'
-                ? updater({ pageIndex, pageSize })
-                : updater;
-            setPageIndex(newState.pageIndex);
+            const newState = typeof updater === 'function' ? updater({ pageIndex, pageSize }) : updater
+            setPageIndex(newState.pageIndex)
         },
+        onColumnSizingChange: setColumnSizing,   // <-- для resize
+        enableColumnResizing: true,
+        columnResizeMode: 'onChange',
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -809,13 +641,9 @@ export default function Table({
         autoResetPageIndex: false,
     })
 
-    // ============================================
-    // ЭКСПОРТ ДАННЫХ (игнорируем пустые строки)
-    // ============================================
+    // ---------- экспорт ----------
     const getExportData = useCallback((selectedOnly = false) => {
-        const sourceData = selectedOnly
-            ? table.getSelectedRowModel().rows.map(r => r.original)
-            : data
+        const sourceData = selectedOnly ? table.getSelectedRowModel().rows.map(r => r.original) : data
         return sourceData.filter(item => item.id > 0)
     }, [data, table])
 
@@ -825,7 +653,6 @@ export default function Table({
             alert(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
             return
         }
-        // ... (без изменений) ...
         try {
             const workbook = new ExcelJS.Workbook()
             const worksheet = workbook.addWorksheet('Данные', {
@@ -900,9 +727,8 @@ export default function Table({
         URL.revokeObjectURL(link.href)
     }, [getExportData, userColumns])
 
-    // ============================================
-    // РЕНДЕР
-    // ============================================
+
+    // ---------- рендер ----------
     return (
         <div className="table-container">
             <EditModal user={selectedItem} isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} onSave={handleEdit} columns={userColumns} />
@@ -911,39 +737,16 @@ export default function Table({
 
             <div className="table-toolbar">
                 <div className="table-toolbar-left">
-                    {enableFiltering && (
-                        <input
-                            type="text"
-                            value={globalFilter}
-                            onChange={e => setGlobalFilter(e.target.value)}
-                            placeholder="🔍 Поиск..."
-                            className="table-search-input"
-                        />
-                    )}
+                    {enableFiltering && <input type="text" value={globalFilter} onChange={e => setGlobalFilter(e.target.value)} placeholder="🔍 Поиск..." className="table-search-input" />}
                     {enablePagination && (
-                        <select
-                            value={pageSize}
-                            onChange={e => setPageSize(Number(e.target.value))}
-                            className="table-select"
-                        >
-                            {[5, 10, 20, 50, 100].map(size => (
-                                <option key={size} value={size}>{size} записей</option>
-                            ))}
+                        <select value={pageSize} onChange={e => setPageSize(Number(e.target.value))} className="table-select">
+                            {[5, 10, 20, 50, 100].map(size => <option key={size} value={size}>{size} записей</option>)}
                         </select>
                     )}
-                    {enableFiltering && (
-                        <span className="table-filter-info">
-                            Показано: <strong>{table.getRowModel().rows.length}</strong> из {data.filter(item => item.id > 0).length}
-                        </span>
-                    )}
+                    {enableFiltering && <span className="table-filter-info">Показано: <strong>{table.getRowModel().rows.length}</strong> из {data.filter(item => item.id > 0).length}</span>}
                 </div>
-
                 <div className="table-toolbar-right">
-                    {enableAddButton && (
-                        <button onClick={() => setAddModalOpen(true)} className="table-button-add">
-                            ➕ Добавить
-                        </button>
-                    )}
+                    {enableAddButton && <button onClick={() => setAddModalOpen(true)} className="table-button-add">➕ Добавить</button>}
                     {enableExport && (
                         <div className="table-export-dropdown">
                             <button className="table-button">📊 Экспорт ▼</button>
@@ -956,11 +759,7 @@ export default function Table({
                             </div>
                         </div>
                     )}
-                    {enableFiltering && (
-                        <button onClick={() => { setColumnFilters([]); setGlobalFilter(''); }} className="table-button">
-                            ✕ Сбросить
-                        </button>
-                    )}
+                    {enableFiltering && <button onClick={() => { setColumnFilters([]); setGlobalFilter('') }} className="table-button">✕ Сбросить</button>}
                 </div>
             </div>
 
@@ -969,11 +768,7 @@ export default function Table({
                     <span className="table-visibility-label">Колонки:</span>
                     {table.getAllLeafColumns().map(column => (
                         <label key={column.id} className="table-visibility-checkbox">
-                            <input
-                                type="checkbox"
-                                checked={column.getIsVisible()}
-                                onChange={column.getToggleVisibilityHandler()}
-                            />
+                            <input type="checkbox" checked={column.getIsVisible()} onChange={column.getToggleVisibilityHandler()} />
                             {column.columnDef.header || column.id}
                         </label>
                     ))}
@@ -985,56 +780,82 @@ export default function Table({
                     <thead>
                         {table.getHeaderGroups().map(headerGroup => (
                             <tr key={headerGroup.id}>
-                                {headerGroup.headers.map(header => (
-                                    <th key={header.id} className="table-header" style={{ width: header.getSize() }}>
-                                        <div
-                                            className="table-header-content"
-                                            onClick={header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
-                                        >
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                            {header.column.getCanSort() && (
-                                                <span className="table-header-sort-icon">
-                                                    {{ asc: ' ↑', desc: ' ↓' }[header.column.getIsSorted()] ?? ' ↕'}
-                                                </span>
+                                {headerGroup.headers.map(header => {
+                                    const sticky = header.column.columnDef.sticky
+                                    const stickyStyle = sticky === 'left' ? { position: 'sticky', left: 0, zIndex: 2, background: 'var(--bg-light)' } : {}
+                                    return (
+                                        <th key={header.id}
+                                            className={`table-header ${sticky === 'left' ? 'sticky-left' : ''}`}
+                                            style={{ width: header.getSize(), ...stickyStyle }}>
+                                            <div className="table-header-content"
+                                                onClick={header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}>
+                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                                {header.column.getCanSort() && (
+                                                    <span className="table-header-sort-icon">
+                                                        {{ asc: ' ↑', desc: ' ↓' }[header.column.getIsSorted()] ?? ' ↕'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {enableFiltering && header.column.getCanFilter() && (
+                                                <input type="text" value={header.column.getFilterValue() ?? ''}
+                                                    onChange={e => header.column.setFilterValue(e.target.value)}
+                                                    placeholder="Фильтр..." className="table-header-filter"
+                                                    onClick={e => e.stopPropagation()} />
                                             )}
-                                        </div>
-                                        {enableFiltering && header.column.getCanFilter() && (
-                                            <input
-                                                type="text"
-                                                value={header.column.getFilterValue() ?? ''}
-                                                onChange={e => header.column.setFilterValue(e.target.value)}
-                                                placeholder="Фильтр..."
-                                                className="table-header-filter"
-                                                onClick={e => e.stopPropagation()}
-                                            />
-                                        )}
-                                    </th>
-                                ))}
+                                            {header.column.getCanResize() && (
+                                                <div
+                                                    onMouseDown={header.getResizeHandler()}
+                                                    onTouchStart={header.getResizeHandler()}
+                                                    className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
+                                                />
+                                            )}
+                                        </th>
+                                    )
+                                })}
                             </tr>
                         ))}
                     </thead>
                     <tbody>
                         {table.getRowModel().rows.length === 0 ? (
-                            <tr>
-                                <td colSpan={columns.length} className="table-empty">
-                                    😕 Нет данных
-                                </td>
-                            </tr>
+                            <tr><td colSpan={columns.length} className="table-empty">😕 Нет данных</td></tr>
                         ) : (
                             table.getRowModel().rows.map(row => (
-                                <tr
-                                    key={row.id}
-                                    className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${row.original.id < 0 ? 'table-row--empty' : ''}`}
-                                >
-                                    {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id} className="table-cell" style={{ width: cell.column.getSize() }}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>
-                                    ))}
+                                <tr key={row.id} className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${row.original.id < 0 ? 'table-row--empty' : ''}`}>
+                                    {row.getVisibleCells().map(cell => {
+                                        const sticky = cell.column.columnDef.sticky
+                                        const stickyStyle = sticky === 'left' ? { position: 'sticky', left: 0, zIndex: 1, background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)' } : {}
+                                        return (
+                                            <td key={cell.id} className={`table-cell ${sticky === 'left' ? 'sticky-left' : ''}`}
+                                                style={{ width: cell.column.getSize(), ...stickyStyle }}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </td>
+                                        )
+                                    })}
                                 </tr>
                             ))
                         )}
                     </tbody>
+                    {/* Футер с агрегациями */}
+                    <tfoot>
+                        {table.getFooterGroups().map(footerGroup => (
+                            <tr key={footerGroup.id}>
+                                {footerGroup.headers.map(header => {
+                                    const sticky = header.column.columnDef.sticky
+                                    const stickyStyle = sticky === 'left' ? { position: 'sticky', left: 0, zIndex: 2, background: 'var(--bg-light)' } : {}
+                                    return (
+                                        <th key={header.id} className="table-footer-cell"
+                                            style={{ width: header.getSize(), ...stickyStyle }}>
+                                            {header.column.columnDef.footer
+                                                ? flexRender(header.column.columnDef.footer, header.getContext())
+                                                : header.column.columnDef.aggregation
+                                                    ? renderAggregation(header.column, table)
+                                                    : null}
+                                        </th>
+                                    )
+                                })}
+                            </tr>
+                        ))}
+                    </tfoot>
                 </table>
             </div>
 
@@ -1042,18 +863,14 @@ export default function Table({
                 <div className="table-footer-info">
                     Всего: <strong>{data.filter(item => item.id > 0).length}</strong> записей
                     {enableSelection && table.getSelectedRowModel().rows.length > 0 && (
-                        <span className="table-footer-selected">
-                            , выбрано: <strong>{table.getSelectedRowModel().rows.length}</strong>
-                        </span>
+                        <span className="table-footer-selected">, выбрано: <strong>{table.getSelectedRowModel().rows.length}</strong></span>
                     )}
                 </div>
                 {enablePagination && (
                     <div className="table-pagination">
                         <button onClick={() => setPageIndex(0)} disabled={pageIndex === 0} className="table-page-button">⟪</button>
                         <button onClick={() => setPageIndex(p => Math.max(0, p - 1))} disabled={pageIndex === 0} className="table-page-button">⟨</button>
-                        <span className="table-page-info">
-                            Страница {pageIndex + 1} из {table.getPageCount()}
-                        </span>
+                        <span className="table-page-info">Страница {pageIndex + 1} из {table.getPageCount()}</span>
                         <button onClick={() => setPageIndex(p => Math.min(table.getPageCount() - 1, p + 1))} disabled={pageIndex >= table.getPageCount() - 1} className="table-page-button">⟩</button>
                         <button onClick={() => setPageIndex(table.getPageCount() - 1)} disabled={pageIndex >= table.getPageCount() - 1} className="table-page-button">⟫</button>
                     </div>

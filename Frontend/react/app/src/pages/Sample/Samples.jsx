@@ -46,7 +46,8 @@ export default function Samples() {
                     return { backgroundColor: '#ffcccc', color: '#900' }
                 }
                 return {}
-            }
+            },
+            aggregation: 'sum',
         },
         {
             accessorKey: 'descr',
@@ -65,6 +66,33 @@ export default function Samples() {
                 return new Date(val).toLocaleString('ru-RU')
             },
         },
+        {
+            id: 'days_ago',
+            header: 'Дней назад',
+            size: 100,
+            enableEditing: false,
+            accessorFn: (row) => {
+                if (!row.timestamp) return '—'
+                const created = new Date(row.timestamp)
+                const now = new Date()
+                const diff = Math.floor((now - created) / (1000 * 60 * 60 * 24))
+                return diff
+            },
+            cell: ({ getValue }) => {
+                const days = getValue()
+                if (days === '—') return '—'
+                return `${days} дн.`
+            },
+        },
+        {
+            id: 'full_info',
+            header: 'zlims_id + some_number',
+            size: 250,
+            enableEditing: false,
+            accessorFn: (row) => {
+                return `${row.zlims_id || ''}_${row.some_number || 0}`
+            },
+        }
     ]
 
     // ---------- ЗАГРУЗКА ДАННЫХ ----------
