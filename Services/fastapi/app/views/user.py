@@ -24,6 +24,7 @@ async def get_user(session: SessionDep, request: Request, username: str):
         "email": query.email,
         "first_name": query.first_name,
         "last_name": query.last_name,
+        "descr": query.descr,
     }
 
     result = {"ok": True, "global_user": user}
@@ -39,6 +40,7 @@ async def get_user(session: SessionDep, request: Request, username: str):
         "email": query.email,
         "first_name": query.first_name,
         "last_name": query.last_name,
+        "descr": query.descr,
     }
 
     result["local_user"] = user

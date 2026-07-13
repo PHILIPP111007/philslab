@@ -46,7 +46,11 @@ export default function Header({ onLogout, className = '' }) {
                                 <div className="sticky-header__settings-body">
                                     <div className="sticky-header__setting-group">
                                         <LinkButton to={`/users/${user.username}/`} variant="secondary">Личный кабинет</LinkButton>
-                                        <br /><br />
+                                        <br />
+                                        <br />
+                                        <LinkButton to={`/samples/${user.username}/`} variant="secondary">Образцы</LinkButton>
+                                        <br />
+                                        <br />
                                         <LinkButton to="/hello/" variant="secondary">Страница со стилями</LinkButton>
                                     </div>
 

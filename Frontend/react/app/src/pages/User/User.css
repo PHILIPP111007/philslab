@@ -122,7 +122,7 @@
 .user-card-main-page__name {
     font-size: 20px;
     font-weight: 500;
-    color: var(--text-white);
+    color: var(--gray);
     margin: 0;
 }
 
@@ -484,4 +484,47 @@
     .user-modal__title {
         font-size: 18px;
     }
+}
+
+/* ========================================
+   ДЕТАЛИ - ОБНОВЛЕНИЕ
+   ======================================== */
+.user-card-main-page__details {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 6px 16px;
+}
+
+/* Добавь это правило для описания */
+.user-card-main-page__detail {
+    display: flex;
+    align-items: flex-start;
+    /* ← изменено с center на flex-start */
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text);
+    padding: 2px 0;
+    word-wrap: break-word;
+    /* ← перенос слов */
+    overflow-wrap: break-word;
+    /* ← перенос слов (современный) */
+    word-break: break-word;
+    /* ← разрыв длинных слов */
+    hyphens: auto;
+    /* ← перенос с дефисом */
+}
+
+/* Для описания сделай исключение, чтобы оно занимало всю ширину */
+.user-card-main-page__detail--full {
+    grid-column: 1 / -1;
+    /* ← занимает всю строку в grid */
+}
+
+.user-card-main-page__detail-text {
+    flex: 1;
+    min-width: 0;
+    /* ← позволяет тексту сжиматься */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }

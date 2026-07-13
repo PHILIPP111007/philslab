@@ -19,7 +19,7 @@ export default function App() {
         email: "",
         first_name: "",
         last_name: "",
-        password: "",
+        descr: "",
     })
 
     useAuth({ username: user.username, setIsAuth: setIsAuth })

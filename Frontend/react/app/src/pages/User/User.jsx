@@ -1,5 +1,5 @@
 import './User.css'
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import Header from '../components/Header/Header'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
@@ -54,15 +54,6 @@ export default function User() {
         setEditData(prev => ({ ...prev, [name]: value }))
     }
 
-    if (!user) {
-        return (
-            <>
-                <Header />
-                <div className="user-container">Загрузка...</div>
-            </>
-        )
-    }
-
     return (
         <>
             <Header />
@@ -97,7 +88,7 @@ export default function User() {
                         <div className="user-card-main-page__details">
                             <div className="user-card-main-page__detail">
                                 <span className="user-card-main-page__detail-icon">📧</span>
-                                <span>{user.email}</span>
+                                <span>{user.email || '—'}</span>
                             </div>
                             <div className="user-card-main-page__detail">
                                 <span className="user-card-main-page__detail-icon">📝</span>
@@ -153,12 +144,12 @@ export default function User() {
                                     />
                                 </div>
                                 <div className="user-modal__buttons">
-                                    <button type="button" onClick={handleCancel} className="user-modal__btn user-modal__btn--cancel">
+                                    <Button className="btn btn-secondary" onClick={handleCancel}>
                                         Отмена
-                                    </button>
-                                    <button type="button" onClick={handleSave} className="user-modal__btn user-modal__btn--save">
-                                        💾 Сохранить
-                                    </button>
+                                    </Button>
+                                    <Button className="btn btn-primary" onClick={handleSave}>
+                                        Сохранить
+                                    </Button>
                                 </div>
                             </form>
                         </div>

@@ -121,6 +121,7 @@
     font-weight: 500;
     color: var(--text-white);
     margin: 0;
+    color: var(--gray);
 }
 
 .sticky-header__settings-close {
