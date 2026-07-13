@@ -150,7 +150,7 @@ export default function Samples() {
                 prev.map(s => (s.id === updatedItem.id ? { ...s, ...updatedItem } : s))
             )
         } else {
-            alert(data?.error || 'Ошибка сохранения')
+            notify_error(data?.error || 'Ошибка сохранения')
         }
     }
 
@@ -164,7 +164,7 @@ export default function Samples() {
         if (data?.ok) {
             setSamples(prev => prev.filter(s => s.id !== item.id))
         } else {
-            alert(data?.error || 'Ошибка удаления')
+            notify_error(data?.error || 'Ошибка удаления')
         }
     }
 
@@ -187,7 +187,7 @@ export default function Samples() {
                 },
             })
             if (!data?.ok) {
-                alert(data?.error || 'Ошибка сохранения')
+                notify_error(data?.error || 'Ошибка сохранения')
                 // откатываем изменения? можно перезагрузить
                 await loadSamples()
             }
