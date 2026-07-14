@@ -101,7 +101,7 @@ export default function Login() {
                         {/* username */}
                         <div className="login-form-group">
                             <label className="login-label">
-                                Username
+                                Логин
                                 <span className="login-required">*</span>
                             </label>
                             <input
@@ -111,7 +111,7 @@ export default function Login() {
                                 onChange={handleChange}
                                 className={`login-input ${errors.username ? 'login-input--error' : ''
                                     }`}
-                                placeholder="Введите ваш username"
+                                placeholder="Введите ваш логин"
                                 disabled={isLoading}
                             />
                             {errors.username && (
