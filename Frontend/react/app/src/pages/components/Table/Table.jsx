@@ -838,9 +838,6 @@ export default function Table({
                 getPaginationRowModel: getPaginationRowModel(),
             }
         ),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         getGroupedRowModel: getGroupedRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
         filterFns: { text: textFilter, numberContains: numberContainsFilter },
