@@ -60,18 +60,15 @@ async def put_sample(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    query = await session.exec(select(Sample).where(Sample.id == sample_id))
-    sample = query.first()
+    # Мгновенный поиск по первичному ключу
+    sample = await session.get(Sample, sample_id)
     if not sample:
         return {"ok": False, "error": "Not found sample."}
 
-    # Обновляем только переданные поля
-    if sample_data.zlims_id is not None:
-        sample.zlims_id = sample_data.zlims_id
-    if sample_data.some_number is not None:
-        sample.some_number = sample_data.some_number
-    if sample_data.descr is not None:
-        sample.descr = sample_data.descr
+    # Применяем только переданные поля
+    update_data = sample_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(sample, field, value)
 
     session.add(sample)
     await session.commit()
