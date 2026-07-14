@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-table'
 import ExcelJS from 'exceljs'
 import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback, memo } from 'react'
+import { notify_error } from '../../../modules/notify'
 
 
 // Вспомогательная функция для отображения агрегаций в футере
@@ -843,14 +844,24 @@ export default function Table({
 
     // ---------- экспорт ----------
     const getExportData = useCallback((selectedOnly = false) => {
-        const sourceData = selectedOnly ? table.getSelectedRowModel().rows.map(r => r.original) : data
-        return sourceData.filter(item => item.id > 0)
-    }, [data, table])
+        // Для выбранных строк – всегда берём из выделения
+        if (selectedOnly) {
+            return table.getSelectedRowModel().rows
+                .map(r => r.original)
+                .filter(item => item.id > 0)
+        }
+        // Для всех строк – берём все отфильтрованные данные до пагинации
+        // В lazy-режиме getPrePaginationRowModel вернёт только текущую страницу,
+        // т.к. фильтрация ручная, но это лучше, чем data с пустыми строками.
+        return table.getPrePaginationRowModel().rows
+            .map(r => r.original)
+            .filter(item => item.id > 0)
+    }, [table])
 
     const exportToExcel = useCallback(async (selectedOnly = false) => {
         const exportData = getExportData(selectedOnly)
         if (exportData.length === 0) {
-            alert(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
+            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
             return
         }
         try {
@@ -897,14 +908,14 @@ export default function Table({
             URL.revokeObjectURL(link.href)
         } catch (error) {
             console.error('Export error:', error)
-            alert('Ошибка экспорта в Excel')
+            notify_error('Ошибка экспорта в Excel')
         }
     }, [getExportData, userColumns])
 
     const exportToCSV = useCallback((selectedOnly = false) => {
         const exportData = getExportData(selectedOnly)
         if (exportData.length === 0) {
-            alert(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
+            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
             return
         }
         const exportColumns = userColumns.filter(col => col.accessorKey)
