@@ -10,7 +10,7 @@ import {
     flexRender,
 } from '@tanstack/react-table'
 import ExcelJS from 'exceljs'
-import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback, memo } from 'react'
 
 
 // Вспомогательная функция для отображения агрегаций в футере
@@ -418,6 +418,39 @@ function AddModal({ isOpen, onClose, onSave, columns }) {
         </div>
     )
 }
+
+
+const TableRow = memo(function TableRow({ row, handleRowContextMenu }) {
+    const isTempRow = row.original.id < 0
+    return (
+        <tr
+            className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${isTempRow ? 'table-row--empty' : ''}`}
+            onContextMenu={(e) => handleRowContextMenu(e, row.original)}
+        >
+            {row.getVisibleCells().map(cell => {
+                const sticky = cell.column.columnDef.sticky
+                const stickyStyle = sticky === 'left'
+                    ? { position: 'sticky', left: 0, zIndex: 1, background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)' }
+                    : {}
+                return (
+                    <td key={cell.id} className={`table-cell ${sticky === 'left' ? 'sticky-left' : ''}`}
+                        style={{ width: cell.column.getSize(), ...stickyStyle }}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                )
+            })}
+        </tr>
+    )
+}, (prev, next) => {
+    return (
+        prev.row.id === next.row.id &&
+        prev.row.original === next.row.original &&
+        prev.row.getIsSelected() === next.row.getIsSelected() &&
+        prev.handleRowContextMenu === next.handleRowContextMenu
+    )
+})
+
+
 
 // ============================================
 // ОСНОВНОЙ КОМПОНЕНТ ТАБЛИЦЫ
@@ -949,18 +982,7 @@ export default function Table({
                             <tr><td colSpan={columns.length} className="table-empty">😕 Нет данных</td></tr>
                         ) : (
                             table.getRowModel().rows.map(row => (
-                                <tr key={row.id} className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${row.original.id < 0 ? 'table-row--empty' : ''}`} onContextMenu={(e) => handleRowContextMenu(e, row.original)}>
-                                    {row.getVisibleCells().map(cell => {
-                                        const sticky = cell.column.columnDef.sticky
-                                        const stickyStyle = sticky === 'left' ? { position: 'sticky', left: 0, zIndex: 1, background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)' } : {}
-                                        return (
-                                            <td key={cell.id} className={`table-cell ${sticky === 'left' ? 'sticky-left' : ''}`}
-                                                style={{ width: cell.column.getSize(), ...stickyStyle }}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </td>
-                                        )
-                                    })}
-                                </tr>
+                                <TableRow key={row.id} row={row} handleRowContextMenu={handleRowContextMenu} />
                             ))
                         )}
                     </tbody>
