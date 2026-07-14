@@ -537,6 +537,23 @@ export default function Table({
     const [selectedItem, setSelectedItem] = useState(null)
     const [editingCellId, setEditingCellId] = useState(null)
     const [focusRequest, setFocusRequest] = useState(null)
+    // Внутри компонента Table, после всех useState
+    const [tableKey, setTableKey] = useState(0);
+    const isInitialMount = useRef(true);
+
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        setColumnSizing({});
+        setTableKey(prev => prev + 1);
+    }, [columnVisibility]);
+    // При изменении columnVisibility сбрасываем sizing и увеличиваем ключ
+    useEffect(() => {
+        setColumnSizing({});
+        setTableKey(prev => prev + 1);
+    }, [columnVisibility]);
 
     const requestCellFocusAfterPageChange = useCallback((columnIndex) => {
         setFocusRequest({ columnIndex })
@@ -987,7 +1004,7 @@ export default function Table({
             )}
 
             <div className="table-wrapper">
-                <table className="table">
+                <table className="table" key={tableKey}>
                     <thead>
                         {table.getHeaderGroups().map(headerGroup => (
                             <tr key={headerGroup.id}>
