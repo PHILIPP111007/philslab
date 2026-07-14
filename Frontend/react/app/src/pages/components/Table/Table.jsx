@@ -54,7 +54,8 @@ const numberContainsFilter = (row, columnId, filterValue) => {
 // ============================================
 // INLINE EDITABLE CELL (без изменений)
 // ============================================
-function EditableCell({ getValue, row, column, table, onCellEdit, validate, onStartEdit, onEndEdit }) {
+
+const EditableCell = memo(function EditableCell({ getValue, row, column, table, onCellEdit, validate, onStartEdit, onEndEdit }) {
     const initialValue = getValue()
     const [value, setValue] = useState(initialValue)
     const [isEditing, setIsEditing] = useState(false)
@@ -172,7 +173,15 @@ function EditableCell({ getValue, row, column, table, onCellEdit, validate, onSt
             {isEditable && <span className="editable-cell__indicator">✎</span>}
         </div>
     )
-}
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.row.original === nextProps.row.original &&
+        prevProps.column.id === nextProps.column.id &&
+        prevProps.getValue() === nextProps.getValue()
+    )
+})
+
+
 // ============================================
 // МОДАЛЬНЫЕ ОКНА
 // ============================================
@@ -737,7 +746,7 @@ export default function Table({
     }], [])
 
     const columns = useMemo(() => {
-        const processedColumns = userColumns.map((col) => {
+        const processedColumns = userColumns.map(col => {
             const processedCol = { ...col }
 
             if (enableInlineEdit && col.editable !== false) {
@@ -748,16 +757,19 @@ export default function Table({
                 )
             }
 
-            if (!col.filterFn) {
-                const sampleValue = data.find(item => item.id > 0)?.[col.accessorKey]
-                processedCol.filterFn = typeof sampleValue === 'number' ? numberContainsFilter : textFilter
+            // Фильтр по умолчанию textFilter, если не указан другой
+            if (!processedCol.filterFn) {
+                // Можно оставить определение числового фильтра через мета-информацию колонки,
+                // но без привязки к данным. Например:
+                processedCol.filterFn = processedCol.editType === 'number' ? numberContainsFilter : textFilter
             }
 
             return processedCol
         })
 
         return [...selectionColumn, ...processedColumns, ...actionsColumn]
-    }, [userColumns, data, enableInlineEdit, selectionColumn, actionsColumn, handleCellEdit, validateCell])
+    }, [userColumns, enableInlineEdit, selectionColumn, actionsColumn, handleCellEdit, validateCell]) // data удалена
+
 
     // ---------- таблица ----------
     const table = useReactTable({

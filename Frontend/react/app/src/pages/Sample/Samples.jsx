@@ -183,9 +183,6 @@ export default function Samples() {
 
     // ---------- ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАННЫХ (инлайн-редактирование) ----------
     const handleDataChange = async (newData, meta) => {
-        // обновляем локальный стейт сразу для отзывчивости UI
-        setSamples(newData)
-
         // синхронизация с сервером при инлайн-редактировании
         if (meta?.operation === 'edit' && meta.data) {
             const updatedItem = meta.data
@@ -199,6 +196,7 @@ export default function Samples() {
                     descr: updatedItem.descr,
                 },
             })
+            setSamples(newData)
             if (!data?.ok) {
                 notify_error(data?.error || 'Ошибка сохранения')
                 // откатываем изменения? можно перезагрузить
