@@ -485,6 +485,9 @@ export default function Table({
     onAddSuccess,
     onCellEdit,
     validateCell,
+    lazy = false,
+    onLazyLoad,
+    totalRows = 0,
 }) {
     // ---------- утилиты для пустой строки ----------
     const createEmptyRowData = useCallback((id) => {
@@ -545,6 +548,12 @@ export default function Table({
         setFocusRequest({ columnIndex })
     }, [])
 
+    useEffect(() => {
+        if (lazy) {
+            setData(enableEmptyRow ? ensureEmptyRow(initialData) : initialData);
+        }
+    }, [initialData, lazy, enableEmptyRow, ensureEmptyRow]);
+
 
 
     // Состояние контекстного меню
@@ -602,6 +611,18 @@ export default function Table({
             document.removeEventListener('keydown', handleEscape)
         }
     }, [contextMenu.visible])
+
+    // Эффект для уведомления родителя в lazy-режиме
+    useEffect(() => {
+        if (!lazy) return;
+        onLazyLoad?.({
+            pageIndex,
+            pageSize,
+            sorting,
+            globalFilter,
+            columnFilters,
+        });
+    }, [lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad])
 
     // ---------- обработчики данных (без изменений) ----------
     const updateData = useCallback((rowIndex, columnId, value) => {
@@ -794,13 +815,29 @@ export default function Table({
         onColumnVisibilityChange: setColumnVisibility,
         onColumnOrderChange: setColumnOrder,
         onPaginationChange: (updater) => {
-            const newState = typeof updater === 'function' ? updater({ pageIndex, pageSize }) : updater
-            setPageIndex(newState.pageIndex)
+            const newState = typeof updater === 'function'
+                ? updater({ pageIndex, pageSize })
+                : updater;
+            setPageIndex(newState.pageIndex);
+            if (newState.pageSize !== pageSize) setPageSize(newState.pageSize);
         },
         onColumnSizingChange: setColumnSizing,   // <-- для resize
+        manualPagination: lazy,
+        manualSorting: lazy,
+        manualFiltering: lazy,
+        pageCount: lazy ? Math.ceil(totalRows / pageSize) : undefined,
         enableColumnResizing: true,
         columnResizeMode: 'onChange',
         getCoreRowModel: getCoreRowModel(),
+        // Клиентские модели только когда не lazy
+        ...(lazy
+            ? {}
+            : {
+                getSortedRowModel: getSortedRowModel(),
+                getFilteredRowModel: getFilteredRowModel(),
+                getPaginationRowModel: getPaginationRowModel(),
+            }
+        ),
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -1051,7 +1088,7 @@ export default function Table({
 
             <div className="table-footer">
                 <div className="table-footer-info">
-                    Всего: <strong>{data.filter(item => item.id > 0).length}</strong> записей
+                    Всего: <strong>{totalRows}</strong> записей
                     {enableSelection && table.getSelectedRowModel().rows.length > 0 && (
                         <span className="table-footer-selected">, выбрано: <strong>{table.getSelectedRowModel().rows.length}</strong></span>
                     )}

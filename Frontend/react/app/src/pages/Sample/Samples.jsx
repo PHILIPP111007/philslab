@@ -14,6 +14,8 @@ export default function Samples() {
     var { user, setUser } = use(UserContext)
     var params = useParams()
     const [samples, setSamples] = useState([])
+    const [lazyParams, setLazyParams] = useState(null)
+    const [totalRows, setTotalRows] = useState(0);
     const [loading, setLoading] = useState(true)
 
 
@@ -126,6 +128,34 @@ export default function Samples() {
         loadSamples()
     }, [loadSamples])
 
+
+    const fetchSamples = useCallback(async (params) => {
+        const query = new URLSearchParams();
+        query.set('page', params.pageIndex + 1);
+        query.set('page_size', params.pageSize);
+        if (params.sorting.length > 0) {
+            query.set('sort_by', params.sorting[0].id);
+            query.set('sort_order', params.sorting[0].desc ? 'desc' : 'asc');
+        }
+        if (params.globalFilter) {
+            query.set('search', params.globalFilter);
+        }
+        params.columnFilters.forEach(f => {
+            query.set(`filter[${f.id}]`, f.value);
+        });
+
+        const res = await Fetch({
+            api_version: APIVersion.V2,
+            action: `samples/?${query.toString()}`,
+            method: HttpMethod.GET,
+        });
+        if (res?.ok) {
+            setSamples(res.data);
+            setTotalRows(res.total);
+        }
+    }, [])
+
+
     // ---------- ОБРАБОТЧИК ДОБАВЛЕНИЯ ----------
     const handleAddSample = async (newItem) => {
         const data = await Fetch({
@@ -138,8 +168,8 @@ export default function Samples() {
                 descr: newItem.descr || '',
             },
         })
-        if (data?.ok) {
-            await loadSamples()
+        if (data?.ok && lazyParams) {
+            fetchSamples(lazyParams); // обновить список
         } else {
             notify_error(data?.error || "Ошибка добавления")
         }
@@ -205,51 +235,50 @@ export default function Samples() {
         }
     }
 
+    useEffect(() => {
+        if (lazyParams) {
+            fetchSamples(lazyParams);
+        }
+    }, [lazyParams, fetchSamples]);
+
+    const handleLazyLoad = useCallback((params) => {
+        setLazyParams(params); // обновляем параметры -> useEffect загрузит данные
+    }, []);
+
+
     // ---------- РЕНДЕР ----------
     return (
         <>
             <Header />
             <div className="app theme-transition">
-                <header className="app__header">
-                    <div className="app__header-left">
-                        <h1 className="app__title">Образцы (Samples)</h1>
-                        <p className="app__subtitle">Работа с образцами данных через таблицу</p>
-                    </div>
-                </header>
-
-                {/* ======================================== */}
-                {/* СТАТИСТИКА */}
-                {/* ======================================== */}
                 <div className="stats">
-                    <StatCard label="Всего образцов" value={samples.length} color="var(--blue)" />
+                    <StatCard label="Всего образцов" value={totalRows} color="var(--blue)" />
                 </div>
-
                 <section className="section">
                     <h2 className="section__title">Список образцов</h2>
-                    {loading ? (
-                        <Spinner />
-                    ) : (
-                        <Table
-                            data={samples}
-                            columns={columns}
-                            pageSize={10}
-                            enableSelection
-                            enableSorting
-                            enableFiltering
-                            enablePagination
-                            enableColumnVisibility
-                            enableAddButton
-                            enableExport
-                            enableInlineEdit
-                            enableEmptyRow={true}
-                            onDataChange={handleDataChange}
-                            onAddSuccess={handleAddSample}
-                            onEditSuccess={handleEditSample}
-                            onDeleteSuccess={handleDeleteSample}
-                        />
-                    )}
+                    <Table
+                        lazy
+                        data={samples}
+                        totalRows={totalRows}
+                        onLazyLoad={handleLazyLoad}
+                        columns={columns}
+                        pageSize={10}
+                        enableSelection
+                        enableSorting
+                        enableFiltering
+                        enablePagination
+                        enableColumnVisibility
+                        enableAddButton
+                        enableExport
+                        enableInlineEdit
+                        enableEmptyRow={true}
+                        onAddSuccess={handleAddSample}
+                        onEditSuccess={handleEditSample}
+                        onDeleteSuccess={handleDeleteSample}
+                        onDataChange={handleDataChange}   // ← было пропущено
+                    />
                 </section>
             </div>
         </>
-    )
+    );
 }

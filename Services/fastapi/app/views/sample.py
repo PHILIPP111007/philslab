@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request
-from sqlmodel import select
+from fastapi import APIRouter, Query, Request
+from sqlmodel import func, select
 
 from app.database import SessionDep
 from app.models import Sample
@@ -9,16 +9,67 @@ router = APIRouter(tags=["sample"])
 
 
 @router.get("/samples/")
-async def get_samples(session: SessionDep, request: Request):
+async def get_samples(
+    session: SessionDep,
+    request: Request,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+    sort_by: str = Query(None),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
+    search: str = Query(None),
+):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    query = await session.exec(select(Sample))
-    samples = query.all()
-    if not samples:
-        return {"ok": False, "error": "Not found sample."}
+    # Извлекаем все параметры запроса, начинающиеся с 'filter['
+    filters = {}
+    for key, value in request.query_params.items():
+        if key.startswith("filter[") and key.endswith("]"):
+            field_name = key[len("filter[") : -1]
+            filters[field_name] = value
 
-    return {"ok": True, "data": samples}
+    statement = select(Sample)
+
+    # Применяем фильтры
+    for field, value in filters.items():
+        if hasattr(Sample, field):
+            column = getattr(Sample, field)
+            # простой точный фильтр; можно расширить
+            statement = statement.where(column == value)
+
+    # Глобальный поиск
+    if search:
+        search_cond = (
+            Sample.zlims_id.contains(search)
+            | Sample.some_number.contains(search)
+            | Sample.descr.contains(search)
+        )
+        statement = statement.where(search_cond)
+
+    # Сортировка
+    if sort_by and hasattr(Sample, sort_by):
+        column = getattr(Sample, sort_by)
+        statement = statement.order_by(
+            column.desc() if sort_order == "desc" else column.asc()
+        )
+
+    # Подсчёт общего количества
+    count_stmt = select(func.count()).select_from(statement.subquery())
+    total = (await session.exec(count_stmt)).one()
+
+    # Пагинация
+    offset = (page - 1) * page_size
+    statement = statement.offset(offset).limit(page_size)
+
+    results = (await session.exec(statement)).all()
+    print(results)
+    return {
+        "ok": True,
+        "data": results,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
 @router.get("/sample/{sample_id}/")
