@@ -429,35 +429,28 @@ function AddModal({ isOpen, onClose, onSave, columns }) {
 }
 
 
-const TableRow = memo(function TableRow({ row, handleRowContextMenu }) {
-    const isTempRow = row.original.id < 0
+const TableRow = ({ row, handleRowContextMenu }) => {
+    const isTempRow = row.original.id < 0;
     return (
         <tr
             className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${isTempRow ? 'table-row--empty' : ''}`}
             onContextMenu={(e) => handleRowContextMenu(e, row.original)}
         >
             {row.getVisibleCells().map(cell => {
-                const sticky = cell.column.columnDef.sticky
+                const sticky = cell.column.columnDef.sticky;
                 const stickyStyle = sticky === 'left'
                     ? { position: 'sticky', left: 0, zIndex: 1, background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)' }
-                    : {}
+                    : {};
                 return (
                     <td key={cell.id} className={`table-cell ${sticky === 'left' ? 'sticky-left' : ''}`}
                         style={{ width: cell.column.getSize(), ...stickyStyle }}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
-                )
+                );
             })}
         </tr>
-    )
-}, (prev, next) => {
-    return (
-        prev.row.id === next.row.id &&
-        prev.row.original === next.row.original &&
-        prev.row.getIsSelected() === next.row.getIsSelected() &&
-        prev.handleRowContextMenu === next.handleRowContextMenu
-    )
-})
+    );
+};
 
 
 
@@ -726,9 +719,7 @@ export default function Table({
             .filter(([key]) => key !== 'id')
             .map(([key, val]) => `${key}: ${val}`)
             .join('\n')
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Данные строки скопированы в буфер обмена')
-        })
+        navigator.clipboard.writeText(text)
         setContextMenu(prev => ({ ...prev, visible: false }))
     }, [contextMenu.row])
 

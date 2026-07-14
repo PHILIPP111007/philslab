@@ -124,10 +124,6 @@ export default function Samples() {
         setLoading(false)
     }, [])
 
-    useEffect(() => {
-        loadSamples()
-    }, [loadSamples])
-
 
     const fetchSamples = useCallback(async (params) => {
         const query = new URLSearchParams();
@@ -241,6 +237,10 @@ export default function Samples() {
         }
     }, [lazyParams, fetchSamples]);
 
+    useEffect(() => {
+        loadSamples()
+    }, [loadSamples])
+
     const handleLazyLoad = useCallback((params) => {
         setLazyParams(params); // обновляем параметры -> useEffect загрузит данные
     }, []);
@@ -256,27 +256,32 @@ export default function Samples() {
                 </div>
                 <section className="section">
                     <h2 className="section__title">Список образцов</h2>
-                    <Table
-                        lazy
-                        data={samples}
-                        totalRows={totalRows}
-                        onLazyLoad={handleLazyLoad}
-                        columns={columns}
-                        pageSize={10}
-                        enableSelection
-                        enableSorting
-                        enableFiltering
-                        enablePagination
-                        enableColumnVisibility
-                        enableAddButton
-                        enableExport
-                        enableInlineEdit
-                        enableEmptyRow={true}
-                        onAddSuccess={handleAddSample}
-                        onEditSuccess={handleEditSample}
-                        onDeleteSuccess={handleDeleteSample}
-                        onDataChange={handleDataChange}   // ← было пропущено
-                    />
+                    {loading
+                        ?
+                        <Spinner />
+                        :
+                        <Table
+                            lazy
+                            data={samples}
+                            totalRows={totalRows}
+                            onLazyLoad={handleLazyLoad}
+                            columns={columns}
+                            pageSize={10}
+                            enableSelection
+                            enableSorting
+                            enableFiltering
+                            enablePagination
+                            enableColumnVisibility
+                            enableAddButton
+                            enableExport
+                            enableInlineEdit
+                            enableEmptyRow={true}
+                            onAddSuccess={handleAddSample}
+                            onEditSuccess={handleEditSample}
+                            onDeleteSuccess={handleDeleteSample}
+                            onDataChange={handleDataChange}   // ← было пропущено
+                        />
+                    }
                 </section>
             </div>
         </>
