@@ -110,7 +110,14 @@ export default function Samples() {
             method: HttpMethod.GET,
         })
         if (data?.ok) {
-            setSamples(data.data || [])
+            setSamples(prev => {
+                // Если данные не изменились, возвращаем старый массив
+                const newData = data.data || []
+                if (prev.length === newData.length && prev.every((item, i) => item.id === newData[i].id)) {
+                    return prev // не вызывает ререндер
+                }
+                return newData
+            })
         }
         setLoading(false)
     }, [])
