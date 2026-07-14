@@ -838,6 +838,7 @@ export default function Table({
         enableGrouping,
         enableExpanding: enableGrouping,
         autoResetPageIndex: false,
+        getRowId: useCallback(row => String(row.id), []),
     })
 
     // ---------- экспорт ----------
