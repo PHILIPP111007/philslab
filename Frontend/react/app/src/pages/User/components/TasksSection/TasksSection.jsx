@@ -261,6 +261,24 @@ export default function TasksSection() {
         }
     }
 
+    // Переключение статуса выполнения задачи
+    const handleToggleComplete = async (taskId, currentStatus) => {
+        const data = await Fetch({
+            api_version: APIVersion.V2,
+            action: `task/${taskId}/`,
+            method: HttpMethod.PUT,
+            body: { is_completed: !currentStatus },
+        })
+        if (data?.ok) {
+            loadAssignedTasks()
+            loadCreatedTasks()
+            alert('✅ Статус задачи обновлен!')
+        } else {
+            console.error('Ошибка обновления статуса:', data)
+            alert(data?.error || 'Ошибка обновления статуса')
+        }
+    }
+
     const handleUnarchiveTask = async (taskId) => {
         const data = await Fetch({
             api_version: APIVersion.V2,
@@ -407,12 +425,6 @@ export default function TasksSection() {
                         <Badge variant={getPriorityColor(task.priority)}>
                             {task.priority || 'medium'}
                         </Badge>
-                        <Badge variant={task.is_completed ? 'success' : 'secondary'}>
-                            {task.is_completed ? '✅ Выполнена' : '⏳ В работе'}
-                        </Badge>
-                        {task.protocol && (
-                            <Badge variant="info">{task.protocol.code}</Badge>
-                        )}
                     </div>
                 ),
                 icon: task.is_archived ? '📦' : '📋',
@@ -511,6 +523,16 @@ export default function TasksSection() {
                             >
                                 📄 Протокол
                             </Button>
+
+                            {!task.is_archived && (
+                                <Button
+                                    variant={task.is_completed ? 'success' : 'secondary'}
+                                    size="sm"
+                                    onClick={() => handleToggleComplete(task.id, task.is_completed)}
+                                >
+                                    {task.is_completed ? '✅ Выполнена' : '⬜ Отметить выполненной'}
+                                </Button>
+                            )}
 
                             {isCreatedTab && (
                                 <>
