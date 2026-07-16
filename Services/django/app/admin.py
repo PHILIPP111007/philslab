@@ -10,6 +10,7 @@ from app.models import (
     Stage,
     Subsample,
     Task,
+    TaskStage,
     User,
 )
 from app.models.sample import Sample
@@ -36,13 +37,6 @@ class StageAdmin(admin.ModelAdmin):
     search_fields = ("name", "description", "protocol__name", "protocol__code")
     ordering = ("protocol", "order", "created_at")
     readonly_fields = ("created_at", "updated_at")
-    fieldsets = (
-        (
-            "Основная информация",
-            {"fields": ("name", "description", "is_completed", "protocol")},
-        ),
-        ("Порядок и даты", {"fields": ("order", "created_at", "updated_at")}),
-    )
 
     def tasks_count(self, obj):
         """Количество задач, в которых используется этот этап"""
@@ -93,10 +87,6 @@ class ProtocolAdmin(admin.ModelAdmin):
     search_fields = ("code", "name", "description")
     ordering = ("-created_at",)
     readonly_fields = ("created_at", "updated_at")
-    fieldsets = (
-        ("Основная информация", {"fields": ("code", "name", "description", "version")}),
-        ("Метаданные", {"fields": ("created_by", "created_at", "updated_at")}),
-    )
 
     def tasks_count(self, obj):
         """Количество задач, использующих этот протокол"""
@@ -189,18 +179,6 @@ class TaskAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at", "completed_at")
     ordering = ("-priority", "-created_at")
     inlines = [SampleInline, HistoryInline]
-    fieldsets = (
-        (
-            "Основная информация",
-            {
-                "fields": ("name", "description", "department")  # ✅ Добавлено
-            },
-        ),
-        ("Пользователи", {"fields": ("created_by", "assigned_to")}),
-        ("Даты", {"fields": ("deadline", "created_at", "updated_at", "completed_at")}),
-        ("Статус", {"fields": ("priority", "is_completed", "is_archived")}),
-        ("Связи", {"fields": ("protocol",)}),
-    )
     actions = ["mark_as_completed", "mark_as_incomplete", "archive_tasks"]
 
 
@@ -216,4 +194,9 @@ class BatchSubsampleAdmin(admin.ModelAdmin):
 
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(TaskStage)
+class TaskStageAdmin(admin.ModelAdmin):
     pass

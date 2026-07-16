@@ -11,26 +11,35 @@ from app.models import (
     Protocol,
     QueryHistory,
     Sample,
-    Stage,
     Task,
     TaskStage,
 )
-from app.request_body import (
-    StageCreate,
-    TaskCreate,
-    TaskUpdate,
-)
+from app.request_body import TaskCreate, TaskUpdate
 
 router = APIRouter(tags=["task"])
 
 
 # ============================================
-# TASK CRUD (УПРОЩЕННАЯ ВЕРСИЯ)
+# ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ
 # ============================================
+def _format_change_comment(field: str, old_value, new_value) -> str:
+    comments = {
+        "name": f"Название изменено с '{old_value}' на '{new_value}'",
+        "description": "Описание изменено",
+        "department": f"Отдел изменен с '{old_value}' на '{new_value}'",
+        "priority": f"Приоритет изменен с {old_value} на {new_value}",
+        "is_completed": f"Статус изменен на {'выполнена' if new_value else 'в работе'}",
+        "is_archived": f"Задача {'архивирована' if new_value else 'разархивирована'}",
+        "assigned_to_id": f"Исполнитель изменен с {old_value} на {new_value}",
+        "protocol_id": f"Протокол изменен с {old_value} на {new_value}",
+        "deadline": f"Срок изменен с {old_value} на {new_value}",
+    }
+    return comments.get(field, f"Изменено поле '{field}'")
 
-# views/task.py — исправленный get_tasks
 
-
+# ============================================
+# GET /tasks/
+# ============================================
 @router.get("/tasks/")
 async def get_tasks(
     session: SessionDep,
@@ -48,17 +57,15 @@ async def get_tasks(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    # ✅ Загружаем протокол с его этапами
     statement = select(Task).options(
         selectinload(Task.created_by),
         selectinload(Task.assigned_to),
         selectinload(Task.protocol),
         selectinload(Task.samples),
-        selectinload(Task.task_stages),  # ← загружаем task_stages
+        selectinload(Task.task_stages),
         selectinload(Task.history).selectinload(QueryHistory.user),
     )
 
-    # Фильтры
     if assigned_to:
         statement = statement.where(Task.assigned_to_id == assigned_to)
     if created_by:
@@ -68,13 +75,11 @@ async def get_tasks(
     if priority:
         statement = statement.where(Task.priority == priority)
 
-    # Поиск
     if search:
         statement = statement.where(
             (Task.name.contains(search)) | (Task.description.contains(search))
         )
 
-    # Сортировка
     if sort_by and hasattr(Task, sort_by):
         column = getattr(Task, sort_by)
         statement = statement.order_by(
@@ -83,36 +88,32 @@ async def get_tasks(
     else:
         statement = statement.order_by(Task.created_at.desc())
 
-    # Пагинация
     offset = (page - 1) * page_size
     total = (
         await session.exec(select(func.count()).select_from(select(Task).subquery()))
     ).one()
     statement = statement.offset(offset).limit(page_size)
-
     tasks = (await session.exec(statement)).all()
 
-    # ✅ Формируем ответ с этапами из протокола
     result = []
     for task in tasks:
-        # ✅ Формируем stages из task.task_stages
         stages_data = [
             {
-                "id": stage.id,
-                "name": stage.name,
-                "description": stage.description,
-                "is_completed": stage.is_completed,
-                "order": stage.order,
+                "id": s.id,
+                "name": s.name,
+                "description": s.description,
+                "is_completed": s.is_completed,
+                "order": s.order,
             }
-            for stage in task.task_stages
+            for s in task.task_stages
         ]
 
         task_dict = {
             "id": task.id,
             "name": task.name,
             "description": task.description,
-            "deadline": task.deadline.isoformat() if task.deadline else None,
             "department": task.department or "",
+            "deadline": task.deadline.isoformat() if task.deadline else None,
             "priority": task.priority,
             "is_completed": task.is_completed,
             "is_archived": task.is_archived,
@@ -144,36 +145,34 @@ async def get_tasks(
             }
             if task.protocol
             else None,
-            "stages": stages_data,  # ← добавляем этапы задачи
+            "stages": stages_data,
             "samples": [
                 {
-                    "id": sample.id,
-                    "name": sample.name,
-                    "zlims_id": sample.zlims_id,
+                    "id": s.id,
+                    "name": s.name,
+                    "zlims_id": s.zlims_id,
                 }
-                for sample in task.samples
+                for s in task.samples
             ],
             "history": [
                 {
-                    "id": history.id,
-                    "action_type": history.action_type,
-                    "field_name": history.field_name,
-                    "old_value": history.old_value,
-                    "new_value": history.new_value,
-                    "comment": history.comment,
-                    "created_at": history.created_at.isoformat()
-                    if history.created_at
-                    else None,
+                    "id": h.id,
+                    "action_type": h.action_type,
+                    "field_name": h.field_name,
+                    "old_value": h.old_value,
+                    "new_value": h.new_value,
+                    "comment": h.comment,
+                    "created_at": h.created_at.isoformat() if h.created_at else None,
                     "user": {
-                        "id": history.user.id,
-                        "username": history.user.username,
-                        "first_name": history.user.first_name,
-                        "last_name": history.user.last_name,
+                        "id": h.user.id,
+                        "username": h.user.username,
+                        "first_name": h.user.first_name,
+                        "last_name": h.user.last_name,
                     }
-                    if history.user
+                    if h.user
                     else None,
                 }
-                for history in task.history
+                for h in task.history
             ],
         }
         result.append(task_dict)
@@ -187,12 +186,13 @@ async def get_tasks(
     }
 
 
+# ============================================
+# GET /task/{task_id}/
+# ============================================
 @router.get("/task/{task_id}/")
 async def get_task(session: SessionDep, request: Request, task_id: int):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
-
-    from sqlalchemy.orm import selectinload
 
     task = await session.get(
         Task,
@@ -202,23 +202,22 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
             selectinload(Task.assigned_to),
             selectinload(Task.protocol),
             selectinload(Task.samples),
-            selectinload(Task.task_stages),  # ← загружаем task_stages
+            selectinload(Task.task_stages),
             selectinload(Task.history).selectinload(QueryHistory.user),
         ],
     )
-
     if not task:
         return {"ok": False, "error": "Not found task."}
 
     stages_data = [
         {
-            "id": stage.id,
-            "name": stage.name,
-            "description": stage.description,
-            "is_completed": stage.is_completed,
-            "order": stage.order,
+            "id": s.id,
+            "name": s.name,
+            "description": s.description,
+            "is_completed": s.is_completed,
+            "order": s.order,
         }
-        for stage in task.task_stages
+        for s in task.task_stages
     ]
 
     return {
@@ -227,8 +226,8 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
             "id": task.id,
             "name": task.name,
             "description": task.description,
-            "deadline": task.deadline.isoformat() if task.deadline else None,
             "department": task.department or "",
+            "deadline": task.deadline.isoformat() if task.deadline else None,
             "priority": task.priority,
             "is_completed": task.is_completed,
             "is_archived": task.is_archived,
@@ -260,44 +259,42 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
             }
             if task.protocol
             else None,
-            "stages": stages_data,  # ← добавляем этапы задачи
+            "stages": stages_data,
             "samples": [
                 {
-                    "id": sample.id,
-                    "name": sample.name,
-                    "zlims_id": sample.zlims_id,
+                    "id": s.id,
+                    "name": s.name,
+                    "zlims_id": s.zlims_id,
                 }
-                for sample in task.samples
+                for s in task.samples
             ],
             "history": [
                 {
-                    "id": history.id,
-                    "action_type": history.action_type,
-                    "field_name": history.field_name,
-                    "old_value": history.old_value,
-                    "new_value": history.new_value,
-                    "comment": history.comment,
-                    "created_at": history.created_at.isoformat()
-                    if history.created_at
-                    else None,
+                    "id": h.id,
+                    "action_type": h.action_type,
+                    "field_name": h.field_name,
+                    "old_value": h.old_value,
+                    "new_value": h.new_value,
+                    "comment": h.comment,
+                    "created_at": h.created_at.isoformat() if h.created_at else None,
                     "user": {
-                        "id": history.user.id,
-                        "username": history.user.username,
-                        "first_name": history.user.first_name,
-                        "last_name": history.user.last_name,
+                        "id": h.user.id,
+                        "username": h.user.username,
+                        "first_name": h.user.first_name,
+                        "last_name": h.user.last_name,
                     }
-                    if history.user
+                    if h.user
                     else None,
                 }
-                for history in task.history
+                for h in task.history
             ],
         },
     }
 
 
-# views/task.py — обновленный create_task
-
-
+# ============================================
+# POST /tasks/
+# ============================================
 @router.post("/tasks/")
 async def create_task(session: SessionDep, request: Request, task_data: TaskCreate):
     if not request.state.user:
@@ -318,11 +315,10 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
     await session.commit()
     await session.refresh(task)
 
-    # ✅ Сохраняем ID и имя задачи ДО обращения к другим свойствам
     task_id = task.id
     task_name = task.name
 
-    # ✅ Если выбран протокол — загружаем его с этапами через selectinload
+    # Копируем этапы из протокола, если он выбран
     if task_data.protocol_id:
         protocol = await session.get(
             Protocol, task_data.protocol_id, options=[selectinload(Protocol.stages)]
@@ -330,7 +326,7 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
         if protocol and protocol.stages:
             for stage in protocol.stages:
                 task_stage = TaskStage(
-                    task_id=task_id,  # ← используем сохранённый ID
+                    task_id=task_id,
                     name=stage.name,
                     description=stage.description,
                     order=stage.order,
@@ -339,7 +335,7 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
                 session.add(task_stage)
             await session.commit()
 
-    # ... добавление образцов (если есть)
+    # Добавляем образцы
     if task_data.sample_ids:
         samples = (
             await session.exec(
@@ -349,12 +345,12 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
         task.samples = samples
         await session.commit()
 
-    # ✅ Создаём запись в истории, используя сохранённый task_id и task_name
+    # История
     history = QueryHistory(
         action_type=ActionType.CREATED,
         user_id=request.state.user.id,
-        task_id=task_id,  # ← используем переменную
-        comment=f"Задача '{task_name}' создана",  # ← используем сохранённое имя
+        task_id=task_id,
+        comment=f"Задача '{task_name}' создана",
     )
     session.add(history)
     await session.commit()
@@ -363,14 +359,9 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
     return {"ok": True, "data": task}
 
 
-# views/task.py — полностью переписанный update_task
-
-# views/task.py — исправленный update_task
-
-# views/task.py — исправленный update_task
-# views/task.py — исправленный update_task
-
-
+# ============================================
+# PUT /task/{task_id}/
+# ============================================
 @router.put("/task/{task_id}/")
 async def update_task(
     session: SessionDep, request: Request, task_id: int, task_data: TaskUpdate
@@ -383,25 +374,23 @@ async def update_task(
         return {"ok": False, "error": "Not found task."}
 
     task_id_value = task.id
-
-    # ✅ Отслеживаем изменения ТОЛЬКО для переданных полей
     changes = []
     update_data = task_data.model_dump(exclude_unset=True)
 
-    # ✅ Если protocol_id изменился — пересоздаём этапы
+    # --- Обработка смены протокола ---
     if "protocol_id" in update_data:
         new_protocol_id = update_data["protocol_id"]
         old_protocol_id = task.protocol_id
 
         if new_protocol_id != old_protocol_id:
-            # Удаляем старые этапы задачи
+            # Удаляем старые TaskStage
             old_stages = await session.exec(
                 select(TaskStage).where(TaskStage.task_id == task.id)
             )
             for s in old_stages:
                 await session.delete(s)
 
-            # Копируем этапы из нового протокола (если есть)
+            # Копируем этапы из нового протокола
             if new_protocol_id:
                 protocol = await session.get(Protocol, new_protocol_id)
                 if protocol and protocol.stages:
@@ -416,7 +405,7 @@ async def update_task(
                         session.add(task_stage)
             await session.commit()
 
-    # ✅ Список полей, которые можно обновлять
+    # --- Обновление простых полей ---
     editable_fields = [
         "name",
         "description",
@@ -424,47 +413,37 @@ async def update_task(
         "priority",
         "is_completed",
         "assigned_to_id",
-        "protocol_id",
         "deadline",
         "is_archived",
     ]
 
     for field in editable_fields:
-        # ✅ Проверяем, что поле было передано в запросе
         if field not in update_data:
             continue
 
         new_value = update_data[field]
         old_value = getattr(task, field)
 
-        # ✅ Сравниваем значения
         changed = False
-
         if field == "deadline":
-            # Для дат — сравниваем строки
             old_str = old_value.isoformat() if old_value else None
             new_str = new_value.isoformat() if new_value else None
             if old_str != new_str:
                 changed = True
         elif field in ["assigned_to_id", "protocol_id"]:
-            # Для ID — сравниваем числа
             if old_value != new_value:
                 changed = True
         elif field in ["is_completed", "is_archived"]:
-            # Для булевых значений
             if old_value != new_value:
                 changed = True
         else:
-            # Для строк
             if old_value != new_value:
                 changed = True
 
         if changed:
-            # ✅ Сохраняем старое значение для лога
             old_for_log = old_value
             if isinstance(old_value, datetime):
                 old_for_log = old_value.isoformat()
-
             changes.append(
                 {
                     "field": field,
@@ -476,35 +455,24 @@ async def update_task(
             )
             setattr(task, field, new_value)
 
-    # ✅ Обновляем связанные данные — только если переданы
-    if "stage_ids" in update_data:
-        old_stage_ids = [s.id for s in task.stages]
-        new_stage_ids = update_data["stage_ids"]
-
-        if set(old_stage_ids) != set(new_stage_ids):
-            stages = (
-                await session.exec(select(Stage).where(Stage.id.in_(new_stage_ids)))
-            ).all()
-            task.stages = stages
-            changes.append(
-                {"field": "stages", "old": old_stage_ids, "new": new_stage_ids}
-            )
-
-    # ✅ Обновляем образцы — только если переданы
+    # --- Обновление образцов (если переданы) ---
     if "sample_ids" in update_data:
         old_sample_ids = [s.id for s in task.samples]
         new_sample_ids = update_data["sample_ids"]
-
         if set(old_sample_ids) != set(new_sample_ids):
             samples = (
                 await session.exec(select(Sample).where(Sample.id.in_(new_sample_ids)))
             ).all()
             task.samples = samples
             changes.append(
-                {"field": "samples", "old": old_sample_ids, "new": new_sample_ids}
+                {
+                    "field": "samples",
+                    "old": old_sample_ids,
+                    "new": new_sample_ids,
+                }
             )
 
-    # ✅ Если задача помечена как выполненная
+    # --- Обработка завершения задачи ---
     if (
         "is_completed" in update_data
         and update_data["is_completed"]
@@ -514,14 +482,13 @@ async def update_task(
     elif "is_completed" in update_data and not update_data["is_completed"]:
         task.completed_at = None
 
-    # ✅ Обновляем дату изменения ТОЛЬКО если были изменения
+    # --- Сохранение и логирование ---
     if changes:
         task.updated_at = datetime.now()
         session.add(task)
         await session.commit()
         await session.refresh(task)
 
-        # ✅ Сохраняем изменения в историю
         for change in changes:
             action_type = ActionType.UPDATED
             field_action_map = {
@@ -537,7 +504,6 @@ async def update_task(
             comment = _format_change_comment(
                 change["field"], change["old"], change["new"]
             )
-
             history = QueryHistory(
                 action_type=action_type,
                 user_id=request.state.user.id,
@@ -548,15 +514,11 @@ async def update_task(
                 comment=comment,
             )
             session.add(history)
-
         await session.commit()
     else:
-        # ✅ Если изменений нет — просто возвращаем задачу
         await session.refresh(task)
 
-    # ✅ Получаем обновленную задачу
-    from sqlalchemy.orm import selectinload
-
+    # --- Возврат обновлённой задачи ---
     result = await session.get(
         Task,
         task_id_value,
@@ -572,24 +534,9 @@ async def update_task(
     return {"ok": True, "data": result}
 
 
-def _format_change_comment(field: str, old_value, new_value) -> str:
-    """Форматирует комментарий для изменения поля"""
-    comments = {
-        "name": f"Название изменено с '{old_value}' на '{new_value}'",
-        "description": "Описание изменено",
-        "department": f"Отдел изменен с '{old_value}' на '{new_value}'",
-        "priority": f"Приоритет изменен с {old_value} на {new_value}",
-        "is_completed": f"Статус изменен на {'выполнена' if new_value else 'в работе'}",
-        "is_archived": f"Задача {'архивирована' if new_value else 'разархивирована'}",
-        "assigned_to_id": f"Исполнитель изменен с {old_value} на {new_value}",
-        "protocol_id": f"Протокол изменен с {old_value} на {new_value}",
-        "deadline": f"Срок изменен с {old_value} на {new_value}",
-        "stages": "Этапы изменены",
-        "samples": "Образцы изменены",
-    }
-    return comments.get(field, f"Изменено поле '{field}'")
-
-
+# ============================================
+# DELETE /task/{task_id}/
+# ============================================
 @router.delete("/task/{task_id}/")
 async def delete_task(session: SessionDep, request: Request, task_id: int):
     if not request.state.user:
@@ -605,37 +552,9 @@ async def delete_task(session: SessionDep, request: Request, task_id: int):
 
 
 # ============================================
-# ОСТАЛЬНЫЕ ЭНДПОИНТЫ (STAGES, SAMPLES, HISTORY)
+# PUT /task/{task_id}/stage/{stage_id}/
+# (переключение состояния TaskStage)
 # ============================================
-
-
-@router.post("/task/{task_id}/stages/")
-async def add_stage_to_task(
-    session: SessionDep, request: Request, task_id: int, stage_data: StageCreate
-):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
-    task = await session.get(Task, task_id)
-    if not task:
-        return {"ok": False, "error": "Not found task."}
-
-    stage = Stage(
-        name=stage_data.name,
-        description=stage_data.description or "",
-        order=stage_data.order or 0,
-    )
-    session.add(stage)
-    await session.commit()
-    await session.refresh(stage)
-
-    task.stages.append(stage)
-    session.add(task)
-    await session.commit()
-
-    return {"ok": True, "data": stage}
-
-
 @router.put("/task/{task_id}/stage/{stage_id}/")
 async def toggle_task_stage(
     session: SessionDep,
@@ -647,22 +566,18 @@ async def toggle_task_stage(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    from sqlalchemy.orm import selectinload
-
     task_stage = await session.get(TaskStage, stage_id)
     if not task_stage or task_stage.task_id != task_id:
         return {"ok": False, "error": "Stage not found for this task."}
 
-    # Обновляем состояние этапа
     task_stage.is_completed = stage_data.get("is_completed", False)
     session.add(task_stage)
     await session.commit()
     await session.refresh(task_stage)
 
-    # ✅ Загружаем задачу вместе с её этапами
+    # Проверяем, все ли этапы выполнены
     task = await session.get(Task, task_id, options=[selectinload(Task.task_stages)])
     if task:
-        # Проверяем, все ли этапы выполнены
         all_completed = all(s.is_completed for s in task.task_stages)
         if all_completed and not task.is_completed:
             task.is_completed = True
@@ -674,6 +589,9 @@ async def toggle_task_stage(
     return {"ok": True, "data": task_stage}
 
 
+# ============================================
+# GET /task/{task_id}/history/
+# ============================================
 @router.get("/task/{task_id}/history/")
 async def get_task_history(session: SessionDep, request: Request, task_id: int):
     if not request.state.user:
@@ -709,15 +627,9 @@ async def get_task_history(session: SessionDep, request: Request, task_id: int):
     return {"ok": True, "data": result}
 
 
-# views/task.py — добавить новые эндпоинты
-
 # ============================================
-# TASK - ARCHIVE
+# POST /task/{task_id}/archive/
 # ============================================
-
-# views/task.py — исправленные функции архивации
-
-
 @router.post("/task/{task_id}/archive/")
 async def archive_task(session: SessionDep, request: Request, task_id: int):
     if not request.state.user:
@@ -727,26 +639,22 @@ async def archive_task(session: SessionDep, request: Request, task_id: int):
     if not task:
         return {"ok": False, "error": "Not found task."}
 
-    # ✅ Сохраняем значения ДО изменения
     task_id_value = task.id
     task_name = task.name
 
-    # Проверяем, что пользователь является создателем задачи
     if task.created_by_id != request.state.user.id:
         return {"ok": False, "error": "Only the creator can archive this task."}
 
-    # Архивируем
     task.is_archived = True
     task.updated_at = datetime.now()
     session.add(task)
     await session.commit()
     await session.refresh(task)
 
-    # ✅ Используем сохраненные значения
     history = QueryHistory(
         action_type=ActionType.UPDATED,
         user_id=request.state.user.id,
-        task_id=task_id_value,  # ← используем сохраненное значение
+        task_id=task_id_value,
         field_name="is_archived",
         old_value={"is_archived": False},
         new_value={"is_archived": True},
@@ -758,6 +666,9 @@ async def archive_task(session: SessionDep, request: Request, task_id: int):
     return {"ok": True, "data": {"id": task_id_value, "is_archived": True}}
 
 
+# ============================================
+# POST /task/{task_id}/unarchive/
+# ============================================
 @router.post("/task/{task_id}/unarchive/")
 async def unarchive_task(session: SessionDep, request: Request, task_id: int):
     if not request.state.user:
@@ -767,26 +678,22 @@ async def unarchive_task(session: SessionDep, request: Request, task_id: int):
     if not task:
         return {"ok": False, "error": "Not found task."}
 
-    # ✅ Сохраняем значения ДО изменения
     task_id_value = task.id
     task_name = task.name
 
-    # Проверяем, что пользователь является создателем задачи
     if task.created_by_id != request.state.user.id:
         return {"ok": False, "error": "Only the creator can unarchive this task."}
 
-    # Разархивируем
     task.is_archived = False
     task.updated_at = datetime.now()
     session.add(task)
     await session.commit()
     await session.refresh(task)
 
-    # ✅ Используем сохраненные значения
     history = QueryHistory(
         action_type=ActionType.UPDATED,
         user_id=request.state.user.id,
-        task_id=task_id_value,  # ← используем сохраненное значение
+        task_id=task_id_value,
         field_name="is_archived",
         old_value={"is_archived": True},
         new_value={"is_archived": False},
@@ -798,6 +705,9 @@ async def unarchive_task(session: SessionDep, request: Request, task_id: int):
     return {"ok": True, "data": {"id": task_id_value, "is_archived": False}}
 
 
+# ============================================
+# GET /tasks/archived/
+# ============================================
 @router.get("/tasks/archived/")
 async def get_archived_tasks(
     session: SessionDep,
@@ -805,7 +715,6 @@ async def get_archived_tasks(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
 ):
-    """Получить архивированные задачи, созданные пользователем"""
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
@@ -815,10 +724,8 @@ async def get_archived_tasks(
         .order_by(Task.updated_at.desc())
     )
 
-    # Пагинация
     offset = (page - 1) * page_size
     statement = statement.offset(offset).limit(page_size)
-
     tasks = (await session.exec(statement)).all()
 
     result = []
