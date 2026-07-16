@@ -52,10 +52,9 @@ async def get_tasks(
     statement = select(Task).options(
         selectinload(Task.created_by),
         selectinload(Task.assigned_to),
-        selectinload(Task.protocol).selectinload(
-            Protocol.stages
-        ),  # ← загружаем этапы из протокола
+        selectinload(Task.protocol),
         selectinload(Task.samples),
+        selectinload(Task.task_stages),  # ← загружаем task_stages
         selectinload(Task.history).selectinload(QueryHistory.user),
     )
 
@@ -96,15 +95,23 @@ async def get_tasks(
     # ✅ Формируем ответ с этапами из протокола
     result = []
     for task in tasks:
-        # ✅ Берем этапы из протокола (если есть)
-        stages = task.protocol.stages if task.protocol else []
+        # ✅ Формируем stages из task.task_stages
+        stages_data = [
+            {
+                "id": stage.id,
+                "name": stage.name,
+                "description": stage.description,
+                "is_completed": stage.is_completed,
+                "order": stage.order,
+            }
+            for stage in task.task_stages
+        ]
 
         task_dict = {
             "id": task.id,
             "name": task.name,
             "description": task.description,
             "deadline": task.deadline.isoformat() if task.deadline else None,
-            "department": task.department,
             "priority": task.priority,
             "is_completed": task.is_completed,
             "is_archived": task.is_archived,
@@ -133,19 +140,10 @@ async def get_tasks(
                 "id": task.protocol.id,
                 "name": task.protocol.name,
                 "code": task.protocol.code,
-                "stages": [  # ✅ Этапы внутри протокола
-                    {
-                        "id": stage.id,
-                        "name": stage.name,
-                        "description": stage.description,
-                        "is_completed": stage.is_completed,
-                        "order": stage.order,
-                    }
-                    for stage in stages
-                ],
             }
             if task.protocol
             else None,
+            "stages": stages_data,  # ← добавляем этапы задачи
             "samples": [
                 {
                     "id": sample.id,
@@ -201,8 +199,9 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
         options=[
             selectinload(Task.created_by),
             selectinload(Task.assigned_to),
-            selectinload(Task.protocol).selectinload(Protocol.stages),
+            selectinload(Task.protocol),
             selectinload(Task.samples),
+            selectinload(Task.task_stages),  # ← загружаем task_stages
             selectinload(Task.history).selectinload(QueryHistory.user),
         ],
     )
@@ -210,7 +209,16 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
     if not task:
         return {"ok": False, "error": "Not found task."}
 
-    stages = task.protocol.stages if task.protocol else []
+    stages_data = [
+        {
+            "id": stage.id,
+            "name": stage.name,
+            "description": stage.description,
+            "is_completed": stage.is_completed,
+            "order": stage.order,
+        }
+        for stage in task.task_stages
+    ]
 
     return {
         "ok": True,
@@ -218,7 +226,6 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
             "id": task.id,
             "name": task.name,
             "description": task.description,
-            "department": task.department,
             "deadline": task.deadline.isoformat() if task.deadline else None,
             "priority": task.priority,
             "is_completed": task.is_completed,
@@ -248,19 +255,10 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
                 "id": task.protocol.id,
                 "name": task.protocol.name,
                 "code": task.protocol.code,
-                "stages": [
-                    {
-                        "id": stage.id,
-                        "name": stage.name,
-                        "description": stage.description,
-                        "is_completed": stage.is_completed,
-                        "order": stage.order,
-                    }
-                    for stage in stages
-                ],
             }
             if task.protocol
             else None,
+            "stages": stages_data,  # ← добавляем этапы задачи
             "samples": [
                 {
                     "id": sample.id,
@@ -642,27 +640,34 @@ async def toggle_task_stage(
     request: Request,
     task_id: int,
     stage_id: int,
-    stage_data: dict,  # { "is_completed": bool }
+    stage_data: dict,  # {"is_completed": bool}
 ):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
+
+    from sqlalchemy.orm import selectinload
 
     task_stage = await session.get(TaskStage, stage_id)
     if not task_stage or task_stage.task_id != task_id:
         return {"ok": False, "error": "Stage not found for this task."}
 
+    # Обновляем состояние этапа
     task_stage.is_completed = stage_data.get("is_completed", False)
     session.add(task_stage)
     await session.commit()
     await session.refresh(task_stage)
 
-    # Проверяем, все ли этапы выполнены
-    task = await session.get(Task, task_id)
-    if task and all(s.is_completed for s in task.task_stages):
-        task.is_completed = True
-        task.completed_at = datetime.now()
-        session.add(task)
-        await session.commit()
+    # ✅ Загружаем задачу вместе с её этапами
+    task = await session.get(Task, task_id, options=[selectinload(Task.task_stages)])
+    if task:
+        # Проверяем, все ли этапы выполнены
+        all_completed = all(s.is_completed for s in task.task_stages)
+        if all_completed and not task.is_completed:
+            task.is_completed = True
+            task.completed_at = datetime.now()
+            session.add(task)
+            await session.commit()
+            await session.refresh(task)
 
     return {"ok": True, "data": task_stage}
 
