@@ -1,34 +1,26 @@
-__all__ = ["Sample"]
+__all__ = ["Subsample"]
 
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .task_sample_link import TaskSampleLink
-
 if TYPE_CHECKING:
-    from .task import Task
+    from .batch_subsample import BatchSubsample
+    from .sample import Sample
     from .user import User
 
 
-class Sample(SQLModel, table=True):
-    """Первичный образец, поступивший в лабораторию"""
+class Subsample(SQLModel, table=True):
+    """Подобразец (повторное выделение / копия) — относится к конкретному Sample"""
 
-    __tablename__ = "app_sample"
+    __tablename__ = "app_subsample"
 
     id: int = Field(primary_key=True)
 
     # Основные идентификаторы
     sample_code: Optional[str] = Field(default=None, max_length=255, index=True)
     sample_group_code: Optional[str] = Field(default=None, max_length=255, index=True)
-    zlims_code: Optional[str] = Field(default=None, max_length=255, unique=True)
-    uin1: Optional[str] = Field(default=None, max_length=255, index=True)
-    uin2: Optional[str] = Field(default=None, max_length=255)
-
-    # Детали образца
-    project_code: Optional[str] = Field(default=None, max_length=50)
-    sample_index: Optional[str] = Field(default=None, max_length=50)
 
     # Дополнительные поля
     name: Optional[str] = Field(default=None, max_length=255)
@@ -36,25 +28,21 @@ class Sample(SQLModel, table=True):
     qc_1: Optional[float] = Field(default=None)
     qc_2: Optional[float] = Field(default=None)
     descr: Optional[str] = Field(default=None, max_length=5000)
-    material_type: Optional[str] = Field(default=None, max_length=100)
 
     # Даты
     timestamp: datetime = Field(default_factory=lambda: datetime.now())
     updated_at: datetime = Field(default_factory=lambda: datetime.now())
 
     # Внешние ключи
+    sample_id: int = Field(foreign_key="app_sample.id", index=True)
     user_id: Optional[int] = Field(foreign_key="app_user.id", index=True, default=None)
 
     # Связи
+    sample: "Sample" = Relationship(back_populates="subsamples")
     user: Optional["User"] = Relationship(
-        back_populates="samples",
-        sa_relationship_kwargs={"foreign_keys": "[Sample.user_id]"},
+        back_populates="subsamples",
+        sa_relationship_kwargs={"foreign_keys": "[Subsample.user_id]"},
     )
 
-    # Подобразцы
-    subsamples: List["Subsample"] = Relationship(back_populates="sample")
-
-    # Связь с Task (многие ко многим)
-    tasks: List["Task"] = Relationship(
-        back_populates="samples", link_model=TaskSampleLink
-    )
+    # BatchSubsample (обратная связь)
+    batch_subsamples: List["BatchSubsample"] = Relationship(back_populates="subsample")

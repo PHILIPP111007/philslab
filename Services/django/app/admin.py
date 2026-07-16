@@ -1,7 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from app.models import Protocol, QueryHistory, Sample, Stage, Task, User
+from app.models import (
+    Batch,
+    BatchSubsample,
+    Protocol,
+    QueryHistory,
+    Sample,
+    Stage,
+    Subsample,
+    Task,
+    User,
+)
 from app.models.sample import Sample
 from app.models.user import User
 
@@ -54,27 +64,14 @@ class SampleAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "user",
-        "zlims_id",
+        "zlims_code",
         "some_number",
         "timestamp",
-        "tasks_count",
     )
     list_filter = ("user", "timestamp")
-    search_fields = ("name", "zlims_id", "descr", "user__username")
+    search_fields = ("name", "zlims_code", "descr", "user__username")
     ordering = ("-timestamp",)
     readonly_fields = ("timestamp",)
-    fieldsets = (
-        (
-            "Основная информация",
-            {"fields": ("name", "user", "zlims_id", "some_number")},
-        ),
-        ("Описание", {"fields": ("descr",)}),
-        ("Дата", {"fields": ("timestamp",)}),
-    )
-
-    def tasks_count(self, obj):
-        """Количество задач, в которых используется образец"""
-        return obj.tasks.count()
 
 
 # ============================================
@@ -205,3 +202,18 @@ class TaskAdmin(admin.ModelAdmin):
         ("Связи", {"fields": ("protocol",)}),
     )
     actions = ["mark_as_completed", "mark_as_incomplete", "archive_tasks"]
+
+
+@admin.register(Subsample)
+class SubsampleAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(BatchSubsample)
+class BatchSubsampleAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Batch)
+class BatchAdmin(admin.ModelAdmin):
+    pass

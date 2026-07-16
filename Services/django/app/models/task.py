@@ -68,11 +68,6 @@ class Task(models.Model):
         verbose_name="Образцы",
     )
 
-    class Meta:
-        ordering = ["-priority", "-created_at"]
-        verbose_name = "Задача"
-        verbose_name_plural = "Задачи"
-
     def __str__(self):
         return self.name
 

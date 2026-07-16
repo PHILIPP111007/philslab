@@ -1,12 +1,21 @@
 __all__ = ["Task"]
 
 from datetime import datetime
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.models.task_batch_link import TaskBatchLink
+from app.models.task_sample_link import TaskSampleLink
+
 from .enums import Priority
-from .task_sample_link import TaskSampleLink
+
+if TYPE_CHECKING:
+    from .batch import Batch
+    from .protocol import Protocol
+    from .query_history import QueryHistory
+    from .sample import Sample
+    from .user import User
 
 
 class Task(SQLModel, table=True):
@@ -17,7 +26,6 @@ class Task(SQLModel, table=True):
     id: int = Field(primary_key=True)
     name: str = Field(max_length=255)
     description: str = Field(default="")
-    department: str = Field(default="", max_length=150)
 
     # Даты
     created_at: datetime = Field(default_factory=lambda: datetime.now())
@@ -29,14 +37,13 @@ class Task(SQLModel, table=True):
     priority: Priority = Field(default=Priority.medium)
     is_completed: bool = Field(default=False)
     is_archived: bool = Field(default=False)
+    department: str = Field(default="", max_length=150)
 
     # Внешние ключи
     created_by_id: int = Field(foreign_key="app_user.id", index=True)
     assigned_to_id: Optional[int] = Field(
         foreign_key="app_user.id", index=True, default=None
     )
-
-    # ✅ Только protocol_id (без stages напрямую)
     protocol_id: Optional[int] = Field(
         foreign_key="app_protocol.id", index=True, default=None
     )
@@ -52,26 +59,24 @@ class Task(SQLModel, table=True):
     )
     protocol: Optional["Protocol"] = Relationship(back_populates="tasks")
 
-    # ✅ Убираем stages — они теперь в protocol
-    # stages: List["Stage"] = Relationship(...)  # ← УДАЛИТЬ
-    task_stages: List["TaskStage"] = Relationship(back_populates="task")
-
-    # Образцы (остаются)
     samples: List["Sample"] = Relationship(
         back_populates="tasks", link_model=TaskSampleLink
+    )
+
+    batches: List["Batch"] = Relationship(
+        back_populates="tasks",
+        link_model=TaskBatchLink,
     )
 
     # История
     history: List["QueryHistory"] = Relationship(back_populates="task")
 
     def get_progress(self) -> int:
-        """Прогресс выполнения — теперь считаем по этапам протокола"""
-        if not self.protocol:
-            return 0
-        total = len(self.protocol.stages)
+        """Прогресс выполнения — считаем по этапам задачи (TaskStage)"""
+        total = len(self.task_stages)
         if total == 0:
             return 0
-        completed = sum(1 for s in self.protocol.stages if s.is_completed)
+        completed = sum(1 for s in self.task_stages if s.is_completed)
         return int((completed / total) * 100)
 
     def is_overdue(self) -> bool:

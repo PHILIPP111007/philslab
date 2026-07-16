@@ -26,10 +26,22 @@ class User(SQLModel, table=True):
     # Связи
     tokens: List["Token"] = Relationship(back_populates="user")
 
-    # Образцы, принадлежащие пользователю (владелец)
+    # Образцы
     samples: List["Sample"] = Relationship(
         back_populates="user",
-        sa_relationship_kwargs={"foreign_keys": "[Sample.user_id]"},  # ← указываем явно
+        sa_relationship_kwargs={"foreign_keys": "[Sample.user_id]"},
+    )
+
+    # Подобразцы
+    subsamples: List["Subsample"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"foreign_keys": "[Subsample.user_id]"},
+    )
+
+    # Батчи
+    batches: List["Batch"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"foreign_keys": "[Batch.user_id]"},
     )
 
     # Протоколы, созданные пользователем
