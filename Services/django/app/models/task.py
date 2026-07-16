@@ -84,8 +84,3 @@ class Task(models.Model):
         if self.is_completed:
             return False
         return timezone.now() > self.deadline
-
-    def save(self, *args, **kwargs):
-        if self.is_completed and not self.completed_at:
-            self.completed_at = timezone.now()
-        super().save(*args, **kwargs)

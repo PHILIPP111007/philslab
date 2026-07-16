@@ -29,7 +29,9 @@ class Protocol(SQLModel, table=True):
 
     # Связи
     created_by: "User" = Relationship(back_populates="created_protocols")
-    tasks: List["Task"] = Relationship(back_populates="protocol")
 
-    # ✅ Этапы теперь принадлежат протоколу
+    # ✅ Этапы принадлежат протоколу
     stages: List["Stage"] = Relationship(back_populates="protocol")
+
+    # Задачи, использующие этот протокол
+    tasks: List["Task"] = Relationship(back_populates="protocol")

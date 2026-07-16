@@ -22,5 +22,8 @@ class TaskStage(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now())
     updated_at: datetime = Field(default_factory=lambda: datetime.now())
 
+    # Внешний ключ
     task_id: int = Field(foreign_key="app_task.id", index=True)
+
+    # Связи
     task: "Task" = Relationship(back_populates="task_stages")
