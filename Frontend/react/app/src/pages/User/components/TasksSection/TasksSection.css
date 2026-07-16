@@ -1,0 +1,569 @@
+/* ========================================
+   TASKS SECTION - VSCODE STYLE
+   ======================================== */
+
+.tasks-section {
+    margin-top: 24px;
+    padding: 0 4px;
+}
+
+.tasks-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.tasks-section__title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0;
+}
+
+.tasks-section__loading,
+.tasks-section__empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-dark);
+    background: var(--bg-light);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border);
+}
+
+.tasks-section__empty-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* ========================================
+   ACCORDION ВНУТРИ ЗАДАЧ
+   ======================================== */
+.tasks-accordion__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.tasks-accordion__task-name {
+    font-weight: 500;
+    color: var(--text-white);
+}
+
+/* Контент внутри аккордеона */
+.tasks-accordion__content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.tasks-accordion__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tasks-accordion__label {
+    font-weight: 500;
+    color: var(--text-dark);
+    min-width: 100px;
+}
+
+.tasks-accordion__actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+/* ========================================
+   МОДАЛЬНЫЕ ОКНА
+   ======================================== */
+.tasks-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.tasks-modal {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 540px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+}
+
+.tasks-modal--steps {
+    max-width: 480px;
+}
+
+.tasks-modal--history {
+    max-width: 600px;
+}
+
+.tasks-modal__title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0 0 20px 0;
+}
+
+.tasks-modal__form-group {
+    margin-bottom: 14px;
+}
+
+.tasks-modal__form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.tasks-modal__input,
+.tasks-modal__textarea {
+    width: 100%;
+    padding: 8px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.tasks-modal__input:focus,
+.tasks-modal__textarea:focus {
+    border-color: var(--blue);
+}
+
+.tasks-modal__textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.tasks-modal__buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.tasks-modal__empty {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--text-dark);
+}
+
+/* ========================================
+   СПИСОК ШАГОВ
+   ======================================== */
+.tasks-steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+}
+
+.tasks-steps-list__item {
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tasks-steps-list__checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.tasks-steps-list__checkbox input[type="checkbox"] {
+    accent-color: var(--blue);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.tasks-steps-list__name {
+    font-size: 14px;
+    color: var(--text);
+}
+
+.tasks-steps-list__desc {
+    font-size: 12px;
+    color: var(--text-dark);
+    margin-left: 28px;
+    width: 100%;
+}
+
+/* ========================================
+   ИСТОРИЯ
+   ======================================== */
+.tasks-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.tasks-history-list__item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+}
+
+.tasks-history-list__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.tasks-history-list__user {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.tasks-history-list__date {
+    font-size: 12px;
+}
+
+.tasks-history-list__body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.tasks-history-list__field {
+    color: var(--blue);
+}
+
+.tasks-history-list__old {
+    color: var(--red);
+}
+
+.tasks-history-list__new {
+    color: var(--green);
+}
+
+.tasks-history-list__comment {
+    color: var(--orange);
+    font-style: italic;
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 768px) {
+    .tasks-modal {
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .tasks-accordion__title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tasks-accordion__row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tasks-accordion__label {
+        min-width: auto;
+    }
+}
+
+/* ========================================
+   ВКЛАДКИ
+   ======================================== */
+.tasks-section__tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    border: 1px solid var(--border);
+}
+
+.tasks-section__tab {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.tasks-section__tab:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+}
+
+.tasks-section__tab--active {
+    background: var(--bg-selected);
+    color: var(--text-white);
+}
+
+.tasks-section__tab--active:hover {
+    background: var(--bg-selected);
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 480px) {
+    .tasks-section__tabs {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .tasks-section__tab {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+}
+
+
+/* TasksSection.css — добавить */
+
+/* Архивированные задачи */
+.tasks-accordion__task-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tasks-accordion__task-name--archived {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+/* Кнопка архивации */
+.tasks-accordion__actions .btn--danger {
+    background: var(--red);
+    color: var(--text-white);
+    border-color: var(--red);
+}
+
+.tasks-accordion__actions .btn--danger:hover {
+    background: #f55a5a;
+    border-color: #f55a5a;
+}
+
+/* TasksSection.css — добавить */
+
+/* ========================================
+   ПРОТОКОЛ
+   ======================================== */
+.tasks-modal--protocol {
+    max-width: 560px;
+}
+
+.tasks-protocol-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tasks-protocol-modal__header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.tasks-protocol-modal__code,
+.tasks-protocol-modal__name,
+.tasks-protocol-modal__version {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tasks-protocol-modal__label {
+    font-size: 11px;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.tasks-protocol-modal__code strong {
+    color: var(--blue);
+}
+
+.tasks-protocol-modal__name strong {
+    color: var(--text-white);
+}
+
+.tasks-protocol-modal__version strong {
+    color: var(--text);
+}
+
+.tasks-protocol-modal__description {
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--blue);
+}
+
+.tasks-protocol-modal__description p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.tasks-protocol-modal__stages h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 8px 0;
+}
+
+.tasks-protocol-modal__meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-dark);
+    border: 1px solid var(--border);
+}
+
+.tasks-protocol-modal__meta .tasks-protocol-modal__label {
+    font-size: 11px;
+    color: var(--text-dark);
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 768px) {
+    .tasks-protocol-modal__header {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+}
+
+/* TasksSection.css — добавить */
+
+/* ========================================
+   СОРТИРОВКА
+   ======================================== */
+.tasks-sort-panel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+}
+
+.tasks-sort-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-right: 4px;
+}
+
+.tasks-sort-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.tasks-sort-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.tasks-sort-btn--active {
+    border-color: var(--blue);
+    background: var(--bg-selected);
+    color: var(--text-white);
+}
+
+.tasks-sort-btn--active:hover {
+    background: var(--bg-selected);
+}
+
+.tasks-sort-arrow {
+    font-size: 10px;
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 480px) {
+    .tasks-sort-panel {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+
+    .tasks-sort-btn {
+        text-align: center;
+    }
+}

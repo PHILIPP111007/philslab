@@ -1,0 +1,327 @@
+/* ========================================
+   MAIN PAGE - VSCODE STYLE (исправленный)
+   ======================================== */
+
+/* ========================================
+   КОНТЕЙНЕР
+   ======================================== */
+.main-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: var(--bg);
+    padding: 40px 20px;
+}
+
+.main-page__container {
+    width: 100%;
+    max-width: 900px;
+}
+
+/* ========================================
+   ЗАГОЛОВОК
+   ======================================== */
+.main-page__header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+
+@keyframes mainLogoFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.main-page__title {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0 0 8px 0;
+}
+
+.main-page__subtitle {
+    font-size: 16px;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* ========================================
+   СЕТКА КАРТОЧЕК
+   ======================================== */
+.main-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+/* ========================================
+   КАРТОЧКА-КНОПКА (БАЗОВЫЙ СТИЛЬ)
+   ======================================== */
+.main-page__card {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 24px 20px !important;
+    background: var(--bg-light) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    text-decoration: none !important;
+    transition: var(--transition) !important;
+    min-height: 180px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer !important;
+}
+
+/* Левая цветная полоса (общая) */
+.main-page__card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--card-color, var(--blue));
+    opacity: 0.6;
+    transition: var(--transition);
+    border-radius: 0;
+}
+
+.main-page__card:hover::before {
+    opacity: 1;
+    width: 5px;
+}
+
+/* ========================================
+   ЦВЕТА ДЛЯ РАЗНЫХ ВАРИАНТОВ
+   ======================================== */
+.main-page__card.link-btn-primary {
+    --card-color: var(--blue);
+}
+
+.main-page__card.link-btn-secondary {
+    --card-color: var(--text-dark);
+}
+
+.main-page__card.link-btn-success {
+    --card-color: var(--green);
+}
+
+.main-page__card.link-btn-danger {
+    --card-color: var(--red);
+}
+
+.main-page__card.link-btn-warning {
+    --card-color: var(--orange);
+}
+
+/* ========================================
+   ХОВЕР ЭФФЕКТЫ
+   ======================================== */
+.main-page__card:hover {
+    transform: translateY(-4px) !important;
+    border-color: var(--card-color, var(--border-light)) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ========================================
+   ИКОНКА КАРТОЧКИ
+   ======================================== */
+.main-page__card-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+    opacity: 0.8;
+    transition: var(--transition);
+}
+
+.main-page__card:hover .main-page__card-icon {
+    opacity: 1;
+}
+
+/* ========================================
+   КОНТЕНТ КАРТОЧКИ
+   ======================================== */
+.main-page__card-content {
+    flex: 1;
+}
+
+.main-page__card-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0 0 6px 0;
+}
+
+.main-page__card-description {
+    font-size: 13px;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ========================================
+   СТРЕЛКА
+   ======================================== */
+.main-page__card-arrow {
+    font-size: 18px;
+    color: var(--text-dark);
+    align-self: flex-end;
+    margin-top: 12px;
+    transition: var(--transition);
+    opacity: 0.4;
+}
+
+.main-page__card:hover .main-page__card-arrow {
+    opacity: 1;
+    color: var(--card-color, var(--text-white));
+    transform: translateX(4px);
+}
+
+/* ========================================
+   ФУТЕР
+   ======================================== */
+.main-page__footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dark);
+    flex-wrap: wrap;
+}
+
+.main-page__footer-divider {
+    color: var(--border);
+}
+
+/* ========================================
+   АНИМАЦИЯ ПОЯВЛЕНИЯ
+   ======================================== */
+.main-page {
+    animation: mainFadeIn 0.4s ease;
+}
+
+@keyframes mainFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Анимация карточек с задержкой */
+.main-page__card {
+    animation: cardSlideUp 0.3s ease both;
+}
+
+.main-page__card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.main-page__card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.main-page__card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.main-page__card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.main-page__card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 768px) {
+    .main-page {
+        padding: 24px 16px;
+    }
+
+    .main-page__title {
+        font-size: 26px;
+    }
+
+    .main-page__grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .main-page__card {
+        min-height: 140px;
+        padding: 20px 16px !important;
+    }
+
+    .main-page__card-icon {
+        font-size: 28px;
+    }
+
+    .main-page__card-title {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-page {
+        padding: 16px 12px;
+    }
+
+    .main-page__title {
+        font-size: 22px;
+    }
+
+    .main-page__subtitle {
+        font-size: 14px;
+    }
+
+    .main-page__card {
+        min-height: 120px;
+        padding: 16px 14px !important;
+    }
+
+    .main-page__card-icon {
+        font-size: 24px;
+    }
+
+    .main-page__card-title {
+        font-size: 15px;
+    }
+
+    .main-page__card-description {
+        font-size: 12px;
+    }
+}

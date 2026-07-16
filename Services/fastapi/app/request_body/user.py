@@ -8,3 +8,4 @@ class UserBody(BaseModel):
     last_name: Optional[str]
     email: Optional[str]
     descr: Optional[str]
+    department: Optional[str]

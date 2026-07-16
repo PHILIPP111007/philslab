@@ -44,6 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             "Unselect this instead of deleting accounts."
         ),
     )
+    department = models.CharField(_("department"), max_length=150, blank=True)
     objects = UserManager()
 
     EMAIL_FIELD = "email"

@@ -3,6 +3,7 @@ var Login = lazy(() => import("../pages/Login/Login.jsx"))
 var User = lazy(() => import("../pages/User/User.jsx"))
 var Hello = lazy(() => import("../pages/Hello/Hello.jsx"))
 var Samples = lazy(() => import("../pages/Sample/Samples.jsx"))
+var MainPage = lazy(() => import("../pages/MainPage/MainPage.jsx"))
 
 export var PublicRoutes = [
     {
@@ -30,5 +31,10 @@ export var PrivateRoutes = [
         path: "/samples/:username/",
         name: "Samples",
         element: <Samples />
+    },
+    {
+        path: "/main_page/:username/",
+        name: "MainPage",
+        element: <MainPage />
     },
 ]

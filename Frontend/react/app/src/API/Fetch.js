@@ -20,9 +20,9 @@ export default async function Fetch({ api_version, action, method, body, token, 
         } else if (api_version === APIVersion.V2) {
             url = `${DEVELOPMENT_FASTAPI_FETCH_URL}api/v${api_version}/${action}`
         }
-    } else (
+    } else {
         url = `${PROD_FETCH_URL}api/v${api_version}/${action}`
-    )
+    }
 
     var credentials = api_version === APIVersion.V2 ? "include" : "same-origin"
 

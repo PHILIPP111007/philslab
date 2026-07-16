@@ -11,7 +11,7 @@ from app.constants import (
 )
 from app.database import engine
 from app.models import Token, User
-from app.views import sample, user
+from app.views import protocol, sample, stage, task, user
 
 app = FastAPI(
     title="PhilsLab",
@@ -89,3 +89,6 @@ async def attach_user_to_request(request: Request, call_next: Callable):
 
 app.include_router(user.router, prefix=API_PREFIX)
 app.include_router(sample.router, prefix=API_PREFIX)
+app.include_router(protocol.router, prefix=API_PREFIX)
+app.include_router(stage.router, prefix=API_PREFIX)
+app.include_router(task.router, prefix=API_PREFIX)

@@ -1,13 +1,14 @@
 import './User.css'
 import { useState, useContext, useEffect } from 'react'
-import Header from '../components/Header/Header'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
+import Header from '../components/Header/Header'
 import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
 import { UserContext } from "../../data/context.js"
 import { useSetUser } from "../../hooks/useAuth.js"
 import Button from "../components/Button/Button"
+import TasksSection from './components/TasksSection/TasksSection'
 
 export default function User() {
     const { user, setUser } = useContext(UserContext)
@@ -15,6 +16,7 @@ export default function User() {
     var [userLocal, setUserLocal] = useState(user)
     const [isEditing, setIsEditing] = useState(false)
     const [editData, setEditData] = useState({})
+    const [loading, setLoading] = useState(false)
 
     useSetUser({ username: params.username, setUser: setUser, setUserLocal: setUserLocal })
 
@@ -28,20 +30,34 @@ export default function User() {
             last_name: user.last_name || '',
             email: user.email || '',
             descr: user.descr || '',
+            department: user.department || '', // ✅ добавлено
         })
         setIsEditing(true)
     }
 
     const handleSave = async () => {
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: `user/${params.username}/`,
-            method: HttpMethod.PUT,
-            body: editData,
-        })
-        if (data?.ok) {
-            setUser(prev => ({ ...prev, ...editData }))
-            setIsEditing(false)
+        setLoading(true)
+        try {
+            const data = await Fetch({
+                api_version: APIVersion.V2,
+                action: `user/${params.username}/`,
+                method: HttpMethod.PUT,
+                body: {
+                    first_name: editData.first_name || '',
+                    last_name: editData.last_name || '',
+                    email: editData.email || '',
+                    descr: editData.descr || '',
+                    department: editData.department || '', // ✅ добавлено
+                },
+            })
+            if (data?.ok) {
+                setUser(prev => ({ ...prev, ...editData }))
+                setIsEditing(false)
+            }
+        } catch (error) {
+            console.error('Ошибка обновления:', error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -54,7 +70,6 @@ export default function User() {
         const { name, value } = e.target
         setEditData(prev => ({ ...prev, [name]: value }))
     }
-
 
     useEffect(() => {
         rememberPage(`users/${params.username}`)
@@ -85,8 +100,9 @@ export default function User() {
                                     className="btn btn-secondary"
                                     onClick={handleEdit}
                                     title="Редактировать"
+                                    disabled={loading}
                                 >
-                                    Редактировать
+                                    {loading ? '⏳ Сохранение...' : '✏️ Редактировать'}
                                 </Button>
                             </div>
                         </div>
@@ -95,6 +111,10 @@ export default function User() {
                             <div className="user-card-main-page__detail">
                                 <span className="user-card-main-page__detail-icon">📧</span>
                                 <span>{user.email || '—'}</span>
+                            </div>
+                            <div className="user-card-main-page__detail">
+                                <span className="user-card-main-page__detail-icon">🏢</span> {/* ✅ добавлено */}
+                                <span>{user.department || '—'}</span>
                             </div>
                             <div className="user-card-main-page__detail">
                                 <span className="user-card-main-page__detail-icon">📝</span>
@@ -140,6 +160,17 @@ export default function User() {
                                     />
                                 </div>
                                 <div className="user-modal__form-group">
+                                    <label>Отдел</label> {/* ✅ добавлено */}
+                                    <input
+                                        type="text"
+                                        name="department"
+                                        value={editData.department || ''}
+                                        onChange={handleChange}
+                                        className="user-modal__input"
+                                        placeholder="Например: Разработка, HR, Маркетинг..."
+                                    />
+                                </div>
+                                <div className="user-modal__form-group">
                                     <label>О себе</label>
                                     <textarea
                                         name="descr"
@@ -147,20 +178,23 @@ export default function User() {
                                         onChange={handleChange}
                                         className="user-modal__textarea"
                                         rows="3"
+                                        placeholder="Расскажите о себе..."
                                     />
                                 </div>
                                 <div className="user-modal__buttons">
-                                    <Button className="btn btn-secondary" onClick={handleCancel}>
+                                    <Button className="btn btn-secondary" onClick={handleCancel} disabled={loading}>
                                         Отмена
                                     </Button>
-                                    <Button className="btn btn-primary" onClick={handleSave}>
-                                        Сохранить
+                                    <Button className="btn btn-primary" onClick={handleSave} disabled={loading}>
+                                        {loading ? '⏳ Сохранение...' : '💾 Сохранить'}
                                     </Button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 )}
+
+                <TasksSection />
             </div>
         </>
     )
