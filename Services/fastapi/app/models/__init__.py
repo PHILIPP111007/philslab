@@ -1,5 +1,5 @@
 from app.models.batch import Batch
-from app.models.batch_subsample import BatchSubsample
+from app.models.batch_subsample_link import BatchSubsampleLink
 from app.models.enums import ActionType, Priority
 from app.models.protocol import Protocol
 from app.models.protocol_stage_link import ProtocolStageLink

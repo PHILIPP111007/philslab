@@ -35,5 +35,12 @@ class Batch(models.Model):
         verbose_name="Дата обновления",
     )
 
-    def __str__(self):
-        return self.name
+    subsamples = models.ManyToManyField(
+        "app.Subsample",
+        blank=True,
+        related_name="batches",
+        verbose_name="Подобразцы",
+    )
+
+    # def __str__(self):
+    #     return self.name

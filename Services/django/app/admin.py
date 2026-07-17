@@ -3,7 +3,6 @@ from django.contrib.auth.admin import UserAdmin
 
 from app.models import (
     Batch,
-    BatchSubsample,
     Protocol,
     QueryHistory,
     Sample,
@@ -184,11 +183,6 @@ class TaskAdmin(admin.ModelAdmin):
 
 @admin.register(Subsample)
 class SubsampleAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(BatchSubsample)
-class BatchSubsampleAdmin(admin.ModelAdmin):
     pass
 
 

@@ -27,22 +27,13 @@ class User(SQLModel, table=True):
     tokens: List["Token"] = Relationship(back_populates="user")
 
     # Образцы
-    samples: List["Sample"] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"foreign_keys": "[Sample.user_id]"},
-    )
+    samples: List["Sample"] = Relationship(back_populates="user")
 
     # Подобразцы
-    subsamples: List["Subsample"] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"foreign_keys": "[Subsample.user_id]"},
-    )
+    subsamples: List["Subsample"] = Relationship(back_populates="user")
 
     # Батчи
-    batches: List["Batch"] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"foreign_keys": "[Batch.user_id]"},
-    )
+    batches: List["Batch"] = Relationship(back_populates="user")
 
     # Протоколы, созданные пользователем
     created_protocols: List["Protocol"] = Relationship(back_populates="created_by")

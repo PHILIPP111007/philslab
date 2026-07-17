@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.models import BatchSubsampleLink
+
 if TYPE_CHECKING:
-    from .batch_subsample import BatchSubsample
     from .sample import Sample
     from .user import User
 
@@ -20,7 +21,6 @@ class Subsample(SQLModel, table=True):
 
     # Основные идентификаторы
     sample_code: Optional[str] = Field(default=None, max_length=255, index=True)
-    sample_group_code: Optional[str] = Field(default=None, max_length=255, index=True)
 
     # Дополнительные поля
     name: Optional[str] = Field(default=None, max_length=255)
@@ -45,4 +45,7 @@ class Subsample(SQLModel, table=True):
     )
 
     # BatchSubsample (обратная связь)
-    batch_subsamples: List["BatchSubsample"] = Relationship(back_populates="subsample")
+    batches: List["Batch"] = Relationship(
+        back_populates="subsamples",
+        link_model=BatchSubsampleLink,
+    )

@@ -5,16 +5,17 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from app.models.task_batch_link import TaskBatchLink
+from .batch_subsample_link import BatchSubsampleLink
+from .task_batch_link import TaskBatchLink
 
 if TYPE_CHECKING:
-    from .batch_subsample import BatchSubsample
+    from .subsample import Subsample
     from .task import Task
     from .user import User
 
 
 class Batch(SQLModel, table=True):
-    """Батч (партия) образцов — группа подобразцов, объединённых по какому-либо признаку"""
+    """Батч (партия) образцов."""
 
     __tablename__ = "app_batch"
 
@@ -24,11 +25,9 @@ class Batch(SQLModel, table=True):
     department: Optional[str] = Field(default=None, max_length=150)
     descr: Optional[str] = Field(default=None, max_length=5000)
 
-    # Даты
     timestamp: datetime = Field(default_factory=lambda: datetime.now())
     updated_at: datetime = Field(default_factory=lambda: datetime.now())
 
-    # Внешние ключи
     user_id: Optional[int] = Field(foreign_key="app_user.id", index=True, default=None)
 
     # Связи
@@ -37,10 +36,13 @@ class Batch(SQLModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "[Batch.user_id]"},
     )
 
-    # Подобразцы в батче (через BatchSubsample)
-    batch_subsamples: List["BatchSubsample"] = Relationship(back_populates="batch")
+    # ✅ ManyToMany связь с Subsample
+    subsamples: List["Subsample"] = Relationship(
+        back_populates="batches",
+        link_model=BatchSubsampleLink,
+    )
 
-    # Задачи, связанные с батчем (многие ко многим)
+    # Связь с задачами (остаётся)
     tasks: List["Task"] = Relationship(
         back_populates="batches",
         link_model=TaskBatchLink,
@@ -49,4 +51,4 @@ class Batch(SQLModel, table=True):
     @property
     def subsample_count(self) -> int:
         """Количество подобразцов в батче."""
-        return len(self.batch_subsamples)
+        return len(self.subsamples)

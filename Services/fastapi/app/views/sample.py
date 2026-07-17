@@ -40,7 +40,7 @@ async def get_samples(
     # Глобальный поиск
     if search:
         search_cond = (
-            Sample.zlims_id.contains(search)
+            Sample.zlims_code.contains(search)
             | Sample.some_number.contains(search)
             | Sample.descr.contains(search)
         )
@@ -85,14 +85,28 @@ async def get_sample(session: SessionDep, request: Request, sample_id: int):
 
 
 @router.post("/sample/")
-async def post_sample(session: SessionDep, request: Request, sample_data: SampleCreate):
+async def create_sample(
+    session: SessionDep,
+    request: Request,
+    sample_data: SampleCreate,
+):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
     sample = Sample(
-        zlims_id=sample_data.zlims_id,
+        sample_code=sample_data.sample_code,
+        sample_group_code=sample_data.sample_group_code,
+        zlims_code=sample_data.zlims_code,
+        uin1=sample_data.uin1,
+        uin2=sample_data.uin2,
+        project_code=sample_data.project_code,
+        sample_index=sample_data.sample_index,
+        name=sample_data.name,
         some_number=sample_data.some_number,
+        qc_1=sample_data.qc_1,
+        qc_2=sample_data.qc_2,
         descr=sample_data.descr,
+        material_type=sample_data.material_type,
         user_id=request.state.user.id,
     )
 

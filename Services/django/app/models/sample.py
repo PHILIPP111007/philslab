@@ -185,19 +185,3 @@ class Subsample(models.Model):
 
     def __str__(self):
         return f"{self.sample_code} (of {self.sample.sample_code})"
-
-
-class BatchSubsample(Subsample):
-    subsample = models.ForeignKey(
-        "app.Subsample",
-        on_delete=models.CASCADE,
-        related_name="subsamples",
-        null=True,
-        blank=True,
-    )
-    batch = models.ForeignKey(
-        "app.Batch",
-        on_delete=models.CASCADE,
-        related_name="batch_subsamples",
-        verbose_name="Батч",
-    )
