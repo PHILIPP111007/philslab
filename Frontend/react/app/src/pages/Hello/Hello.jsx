@@ -84,6 +84,86 @@ export default function Hello() {
         },
     ]
 
+    // ---------- КОЛОНКИ ТАБЛИЦЫ (обновлены с учётом zlims_id) ----------
+    // const columns = [
+    //     {
+    //         accessorKey: 'id',
+    //         header: 'ID',
+    //         size: 70,
+    //         enableEditing: false,
+    //         enableSorting: true,
+    //     },
+    //     {
+    //         accessorKey: 'name',
+    //         header: 'имя',
+    //         size: 80,
+    //         editType: 'text',
+    //     },
+    //     {
+    //         accessorKey: 'zlims_id',
+    //         header: 'ZLIMS ID',
+    //         size: 120,
+    //         editType: 'text',
+    //     },
+    //     {
+    //         accessorKey: 'some_number',
+    //         header: 'Число (плохо когда красное)',
+    //         size: 120,
+    //         editType: 'number',
+    //         conditionalFormatting: (value, row, column) => {
+    //             if (value > 100) {
+    //                 return { backgroundColor: '#ffcccc', color: '#900' }
+    //             }
+    //             return {}
+    //         },
+    //         aggregation: 'sum',
+    //     },
+    //     {
+    //         accessorKey: 'descr',
+    //         header: 'Описание',
+    //         size: 300,
+    //         editType: 'text',
+    //     },
+    //     {
+    //         accessorKey: 'timestamp',
+    //         header: 'Дата создания',
+    //         size: 180,
+    //         enableEditing: false,
+    //         cell: ({ getValue }) => {
+    //             const val = getValue()
+    //             if (!val) return '—'
+    //             return new Date(val).toLocaleString('ru-RU')
+    //         },
+    //     },
+    //     {
+    //         id: 'days_ago',
+    //         header: 'Дней назад',
+    //         size: 100,
+    //         enableEditing: false,
+    //         accessorFn: (row) => {
+    //             if (!row.timestamp) return '—'
+    //             const created = new Date(row.timestamp)
+    //             const now = new Date()
+    //             const diff = Math.floor((now - created) / (1000 * 60 * 60 * 24))
+    //             return diff
+    //         },
+    //         cell: ({ getValue }) => {
+    //             const days = getValue()
+    //             if (days === '—') return '—'
+    //             return `${days} дн.`
+    //         },
+    //     },
+    //     {
+    //         id: 'full_info',
+    //         header: 'zlims_id + some_number',
+    //         size: 250,
+    //         enableEditing: false,
+    //         accessorFn: (row) => {
+    //             return `${row.zlims_id || ''}_${row.some_number || 0}`
+    //         },
+    //     }
+    // ]
+
     // ============================================
     // ОБРАБОТЧИКИ
     // ============================================
