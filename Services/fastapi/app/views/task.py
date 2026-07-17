@@ -407,27 +407,26 @@ async def update_task(
         return {"ok": False, "error": "Not found task."}
 
     task_id_value = task.id
-
-    # ✅ Отслеживаем изменения ТОЛЬКО для переданных полей
     changes = []
     update_data = task_data.model_dump(exclude_unset=True)
 
-    # ✅ Если protocol_id изменился — пересоздаём этапы
+    # Обработка смены протокола (без немедленного коммита)
     if "protocol_id" in update_data:
         new_protocol_id = update_data["protocol_id"]
         old_protocol_id = task.protocol_id
 
         if new_protocol_id != old_protocol_id:
-            # Удаляем старые этапы задачи
+            # Удаляем старые этапы
             old_stages = await session.exec(
                 select(TaskStage).where(TaskStage.task_id == task.id)
             )
             for s in old_stages:
                 await session.delete(s)
 
-            # Копируем этапы из нового протокола (если есть)
             if new_protocol_id:
-                protocol = await session.get(Protocol, new_protocol_id)
+                protocol = await session.get(
+                    Protocol, new_protocol_id, options=[selectinload(Protocol.stages)]
+                )
                 if protocol and protocol.stages:
                     for stage in protocol.stages:
                         task_stage = TaskStage(
@@ -438,9 +437,9 @@ async def update_task(
                             is_completed=False,
                         )
                         session.add(task_stage)
-            await session.commit()
+            # Не делаем commit, пойдём дальше
 
-    # ✅ Список полей, которые можно обновлять
+    # Обновление остальных полей
     editable_fields = [
         "name",
         "description",
@@ -454,37 +453,29 @@ async def update_task(
     ]
 
     for field in editable_fields:
-        # ✅ Проверяем, что поле было передано в запросе
         if field not in update_data:
             continue
 
         new_value = update_data[field]
         old_value = getattr(task, field)
 
-        # ✅ Сравниваем значения
         changed = False
-
         if field == "deadline":
-            # Для дат — сравниваем строки
             old_str = old_value.isoformat() if old_value else None
             new_str = new_value.isoformat() if new_value else None
             if old_str != new_str:
                 changed = True
         elif field in ["assigned_to_id", "protocol_id"]:
-            # Для ID — сравниваем числа
             if old_value != new_value:
                 changed = True
         elif field in ["is_completed", "is_archived"]:
-            # Для булевых значений
             if old_value != new_value:
                 changed = True
         else:
-            # Для строк
             if old_value != new_value:
                 changed = True
 
         if changed:
-            # ✅ Сохраняем старое значение для лога
             old_for_log = old_value
             if isinstance(old_value, datetime):
                 old_for_log = old_value.isoformat()
@@ -500,11 +491,10 @@ async def update_task(
             )
             setattr(task, field, new_value)
 
-    # ✅ Обновляем батчи — только если переданы
+    # Обработка batch_ids
     if "batch_ids" in update_data:
         old_batch_ids = [b.id for b in task.batches]
         new_batch_ids = update_data["batch_ids"]
-
         if set(old_batch_ids) != set(new_batch_ids):
             batches = (
                 await session.exec(select(Batch).where(Batch.id.in_(new_batch_ids)))
@@ -514,24 +504,32 @@ async def update_task(
                 {"field": "batches", "old": old_batch_ids, "new": new_batch_ids}
             )
 
-    # ✅ Если задача помечена как выполненная
-    if (
-        "is_completed" in update_data
-        and update_data["is_completed"]
-        and not task.completed_at
-    ):
-        task.completed_at = datetime.now()
-    elif "is_completed" in update_data and not update_data["is_completed"]:
-        task.completed_at = None
+    # Установка completed_at
+    if "is_completed" in update_data:
+        if update_data["is_completed"] and not task.completed_at:
+            task.completed_at = datetime.now()
+        elif not update_data["is_completed"]:
+            task.completed_at = None
 
-    # ✅ Обновляем дату изменения ТОЛЬКО если были изменения
+    # Единый коммит всех изменений
     if changes:
         task.updated_at = datetime.now()
         session.add(task)
         await session.commit()
-        await session.refresh(task)
-
-        # ✅ Сохраняем изменения в историю
+        # После коммита загружаем свежую задачу со связями
+        result = await session.get(
+            Task,
+            task_id_value,
+            options=[
+                selectinload(Task.created_by),
+                selectinload(Task.assigned_to),
+                selectinload(Task.protocol).selectinload(Protocol.stages),
+                selectinload(Task.task_stages),
+                selectinload(Task.batches),
+                selectinload(Task.history).selectinload(QueryHistory.user),
+            ],
+        )
+        # Сохраняем историю изменений
         for change in changes:
             action_type = ActionType.UPDATED
             field_action_map = {
@@ -558,29 +556,36 @@ async def update_task(
                 comment=comment,
             )
             session.add(history)
-
         await session.commit()
+        # Перезагружаем результат с историей
+        result = await session.get(
+            Task,
+            task_id_value,
+            options=[
+                selectinload(Task.created_by),
+                selectinload(Task.assigned_to),
+                selectinload(Task.protocol).selectinload(Protocol.stages),
+                selectinload(Task.task_stages),
+                selectinload(Task.batches),
+                selectinload(Task.history).selectinload(QueryHistory.user),
+            ],
+        )
+        return {"ok": True, "data": result}
     else:
-        # ✅ Если изменений нет — просто возвращаем задачу
-        await session.refresh(task)
-
-    # ✅ Получаем обновленную задачу (без samples)
-    from sqlalchemy.orm import selectinload
-
-    result = await session.get(
-        Task,
-        task_id_value,
-        options=[
-            selectinload(Task.created_by),
-            selectinload(Task.assigned_to),
-            selectinload(Task.protocol).selectinload(Protocol.stages),
-            selectinload(Task.task_stages),
-            selectinload(Task.batches),  # ✅ Добавляем батчи
-            selectinload(Task.history).selectinload(QueryHistory.user),
-        ],
-    )
-
-    return {"ok": True, "data": result}
+        # Если изменений не было, просто возвращаем задачу
+        result = await session.get(
+            Task,
+            task_id_value,
+            options=[
+                selectinload(Task.created_by),
+                selectinload(Task.assigned_to),
+                selectinload(Task.protocol).selectinload(Protocol.stages),
+                selectinload(Task.task_stages),
+                selectinload(Task.batches),
+                selectinload(Task.history).selectinload(QueryHistory.user),
+            ],
+        )
+        return {"ok": True, "data": result}
 
 
 # ============================================

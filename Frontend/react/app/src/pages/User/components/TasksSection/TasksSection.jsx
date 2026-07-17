@@ -1032,7 +1032,7 @@ export default function TasksSection() {
                                                 {protocol.stages.map((stage) => (
                                                     <li key={stage.id} className="tasks-steps-list__item">
                                                         <span className="tasks-steps-list__order">
-                                                            Шаг {stage.order}
+                                                            Шаг {stage.order}:
                                                         </span>
                                                         <span className="tasks-steps-list__name">
                                                             {stage.name}

@@ -22,16 +22,32 @@ export default function Batch() {
     const [batch, setBatch] = useState(null)
     const [subsamples, setSubsamples] = useState([])
     const [loading, setLoading] = useState(true)
+
+    // Состояния для редактирования батча
     const [showEditModal, setShowEditModal] = useState(false)
     const [editFormData, setEditFormData] = useState({
         name: '',
         department: '',
         descr: '',
     })
+
+    // Состояния для добавления подобразца
     const [showAddSubsampleModal, setShowAddSubsampleModal] = useState(false)
     const [availableSubsamples, setAvailableSubsamples] = useState([])
     const [selectedSubsampleId, setSelectedSubsampleId] = useState('')
-    const [totalSubsamplesCount, setTotalSubsamplesCount] = useState(0) // Для пагинации
+
+    // Состояния для редактирования подобразца
+    const [showEditSubsampleModal, setShowEditSubsampleModal] = useState(false)
+    const [editingSubsample, setEditingSubsample] = useState(null)
+    const [subsampleEditForm, setSubsampleEditForm] = useState({
+        sample_code: '',
+        name: '',
+        some_number: '',
+        qc_1: '',
+        qc_2: '',
+        descr: '',
+        material_type: '',
+    })
 
     useEffect(() => {
         rememberPage(`batch/${batchId}`)
@@ -60,13 +76,11 @@ export default function Batch() {
             api_version: APIVersion.V2,
             action: 'subsamples/',
             method: HttpMethod.GET,
-            // Добавляем параметры для получения всех подобразцов
             params: {
-                page_size: 1000, // Получаем максимум для выбора
+                page_size: 1000,
             }
         })
         if (data?.ok) {
-            // Исключаем уже добавленные в батч
             const existingIds = new Set(subsamples.map(s => s.id))
             const available = (data.data || []).filter(s => !existingIds.has(s.id))
             setAvailableSubsamples(available)
@@ -105,6 +119,54 @@ export default function Batch() {
         }
     }
 
+    // ---------- РЕДАКТИРОВАНИЕ ПОДОБРАЗЦА ----------
+    const handleEditSubsample = (subsample) => {
+        setEditingSubsample(subsample)
+        setSubsampleEditForm({
+            sample_code: subsample.sample_code || '',
+            name: subsample.name || '',
+            some_number: subsample.some_number ?? '',
+            qc_1: subsample.qc_1 ?? '',
+            qc_2: subsample.qc_2 ?? '',
+            descr: subsample.descr || '',
+            material_type: subsample.material_type || '',
+        })
+        setShowEditSubsampleModal(true)
+    }
+
+    const handleSaveSubsampleEdit = async () => {
+        if (!editingSubsample) return
+
+        // Преобразуем пустые строки в null для числовых полей
+        const body = {
+            sample_code: subsampleEditForm.sample_code || null,
+            name: subsampleEditForm.name || null,
+            some_number: subsampleEditForm.some_number === '' ? null : Number(subsampleEditForm.some_number),
+            qc_1: subsampleEditForm.qc_1 === '' ? null : Number(subsampleEditForm.qc_1),
+            qc_2: subsampleEditForm.qc_2 === '' ? null : Number(subsampleEditForm.qc_2),
+            descr: subsampleEditForm.descr || null,
+            material_type: subsampleEditForm.material_type || null,
+        }
+
+        const data = await Fetch({
+            api_version: APIVersion.V2,
+            action: `subsample/${editingSubsample.id}/`,
+            method: HttpMethod.PUT,
+            body: body,
+        })
+
+        if (data?.ok) {
+            setSubsamples(prev =>
+                prev.map(s => s.id === editingSubsample.id ? { ...s, ...body } : s)
+            )
+            setShowEditSubsampleModal(false)
+            setEditingSubsample(null)
+            notify_success('Подобразец обновлен!')
+        } else {
+            notify_error(data?.error || 'Ошибка обновления подобразца')
+        }
+    }
+
     // ---------- ДОБАВЛЕНИЕ ПОДОБРАЗЦА В БАТЧ ----------
     const handleAddSubsample = async () => {
         if (!selectedSubsampleId) {
@@ -118,12 +180,10 @@ export default function Batch() {
             method: HttpMethod.POST,
         })
         if (data?.ok) {
-            // Проверяем структуру ответа
             if (data.data) {
                 setBatch(data.data)
                 setSubsamples(data.data.subsamples || [])
             } else {
-                // Если ответ не содержит data, перезагружаем батч
                 await loadBatch()
             }
             setShowAddSubsampleModal(false)
@@ -148,7 +208,6 @@ export default function Batch() {
                 setBatch(data.data)
                 setSubsamples(data.data.subsamples || [])
             } else {
-                // Если ответ не содержит data, перезагружаем батч
                 await loadBatch()
             }
             notify_success('Подобразец удален из батча!')
@@ -195,7 +254,6 @@ export default function Batch() {
             enableEditing: false,
             cell: ({ getValue, row }) => {
                 const subsampleId = row.original.id
-
                 return (
                     <LinkButton to={`/subsample/${subsampleId}`}>
                         {subsampleId}
@@ -243,15 +301,27 @@ export default function Batch() {
         {
             id: 'actions',
             header: 'Действия',
-            size: 100,
+            size: 130,
             enableEditing: false,
+            enableSorting: false,
+            enableColumnFilter: false,
             cell: ({ row }) => (
-                <Button
-                    variant="danger"
-                    onClick={() => handleRemoveSubsample(row.original.id)}
-                >
-                    🗑️
-                </Button>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleEditSubsample(row.original)}
+                    >
+                        ✏️
+                    </Button>
+                    <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleRemoveSubsample(row.original.id)}
+                    >
+                        🗑️
+                    </Button>
+                </div>
             ),
         },
     ]
@@ -402,7 +472,7 @@ export default function Batch() {
                                 enableExport={true}
                                 enableInlineEdit={false}
                                 enableEmptyRow={false}
-                                enableActionsColumn={false}  // Отключаем встроенную колонку действий
+                                enableActionsColumn={false}
                             />
                         )}
                     </div>
@@ -453,6 +523,94 @@ export default function Batch() {
                                     Отмена
                                 </Button>
                                 <Button variant="primary" onClick={handleSaveEdit}>
+                                    💾 Сохранить
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Модальное окно редактирования подобразца */}
+            {showEditSubsampleModal && editingSubsample && (
+                <div className="modal-overlay" onClick={() => setShowEditSubsampleModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-title">✏️ Редактирование подобразца #{editingSubsample.id}</h2>
+                        <form onSubmit={(e) => {
+                            e.preventDefault()
+                            handleSaveSubsampleEdit()
+                        }}>
+                            <div className="modal-form-group">
+                                <label>Sample Code</label>
+                                <input
+                                    type="text"
+                                    value={subsampleEditForm.sample_code}
+                                    onChange={(e) => setSubsampleEditForm({ ...subsampleEditForm, sample_code: e.target.value })}
+                                    className="modal-input"
+                                />
+                            </div>
+                            <div className="modal-form-group">
+                                <label>Название</label>
+                                <input
+                                    type="text"
+                                    value={subsampleEditForm.name}
+                                    onChange={(e) => setSubsampleEditForm({ ...subsampleEditForm, name: e.target.value })}
+                                    className="modal-input"
+                                />
+                            </div>
+                            <div className="modal-form-group">
+                                <label>Номер</label>
+                                <input
+                                    type="number"
+                                    value={subsampleEditForm.some_number}
+                                    onChange={(e) => setSubsampleEditForm({ ...subsampleEditForm, some_number: e.target.value })}
+                                    className="modal-input"
+                                    step="any"
+                                />
+                            </div>
+                            <div className="modal-form-group">
+                                <label>QC 1</label>
+                                <input
+                                    type="number"
+                                    value={subsampleEditForm.qc_1}
+                                    onChange={(e) => setSubsampleEditForm({ ...subsampleEditForm, qc_1: e.target.value })}
+                                    className="modal-input"
+                                    step="any"
+                                />
+                            </div>
+                            <div className="modal-form-group">
+                                <label>QC 2</label>
+                                <input
+                                    type="number"
+                                    value={subsampleEditForm.qc_2}
+                                    onChange={(e) => setSubsampleEditForm({ ...subsampleEditForm, qc_2: e.target.value })}
+                                    className="modal-input"
+                                    step="any"
+                                />
+                            </div>
+                            <div className="modal-form-group">
+                                <label>Описание</label>
+                                <textarea
+                                    value={subsampleEditForm.descr}
+                                    onChange={(e) => setSubsampleEditForm({ ...subsampleEditForm, descr: e.target.value })}
+                                    className="modal-textarea"
+                                    rows="3"
+                                />
+                            </div>
+                            <div className="modal-form-group">
+                                <label>Тип материала</label>
+                                <input
+                                    type="text"
+                                    value={subsampleEditForm.material_type}
+                                    onChange={(e) => setSubsampleEditForm({ ...subsampleEditForm, material_type: e.target.value })}
+                                    className="modal-input"
+                                />
+                            </div>
+                            <div className="modal-button-group">
+                                <Button variant="secondary" onClick={() => setShowEditSubsampleModal(false)}>
+                                    Отмена
+                                </Button>
+                                <Button variant="primary" onClick={handleSaveSubsampleEdit}>
                                     💾 Сохранить
                                 </Button>
                             </div>
