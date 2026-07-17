@@ -24,6 +24,88 @@ export default function Samples() {
     }, [params.username])
 
     // ---------- КОЛОНКИ ТАБЛИЦЫ (обновлены с учётом zlims_id) ----------
+    // const columns = [
+    //     {
+    //         accessorKey: 'id',
+    //         header: 'ID',
+    //         size: 70,
+    //         enableEditing: false,
+    //         enableSorting: true,
+    //     },
+    //     {
+    //         accessorKey: 'name',
+    //         header: 'имя',
+    //         size: 80,
+    //         editType: 'text',
+    //     },
+    //     {
+    //         accessorKey: 'zlims_id',
+    //         header: 'ZLIMS ID',
+    //         size: 120,
+    //         editType: 'text',
+    //     },
+    //     {
+    //         accessorKey: 'some_number',
+    //         header: 'Число (плохо когда красное)',
+    //         size: 120,
+    //         editType: 'number',
+    //         conditionalFormatting: (value, row, column) => {
+    //             if (value > 100) {
+    //                 return { backgroundColor: '#ffcccc', color: '#900' }
+    //             }
+    //             return {}
+    //         },
+    //         aggregation: 'sum',
+    //     },
+    //     {
+    //         accessorKey: 'descr',
+    //         header: 'Описание',
+    //         size: 300,
+    //         editType: 'text',
+    //     },
+    //     {
+    //         accessorKey: 'timestamp',
+    //         header: 'Дата создания',
+    //         size: 180,
+    //         enableEditing: false,
+    //         cell: ({ getValue }) => {
+    //             const val = getValue()
+    //             if (!val) return '—'
+    //             return new Date(val).toLocaleString('ru-RU')
+    //         },
+    //     },
+    //     {
+    //         id: 'days_ago',
+    //         header: 'Дней назад',
+    //         size: 100,
+    //         enableEditing: false,
+    //         accessorFn: (row) => {
+    //             if (!row.timestamp) return '—'
+    //             const created = new Date(row.timestamp)
+    //             const now = new Date()
+    //             const diff = Math.floor((now - created) / (1000 * 60 * 60 * 24))
+    //             return diff
+    //         },
+    //         cell: ({ getValue }) => {
+    //             const days = getValue()
+    //             if (days === '—') return '—'
+    //             return `${days} дн.`
+    //         },
+    //     },
+    //     {
+    //         id: 'full_info',
+    //         header: 'zlims_id + some_number',
+    //         size: 250,
+    //         enableEditing: false,
+    //         accessorFn: (row) => {
+    //             return `${row.zlims_id || ''}_${row.some_number || 0}`
+    //         },
+    //     }
+    // ]
+
+
+
+
     const columns = [
         {
             accessorKey: 'id',
@@ -39,28 +121,75 @@ export default function Samples() {
             editType: 'text',
         },
         {
-            accessorKey: 'zlims_id',
-            header: 'ZLIMS ID',
-            size: 120,
+            accessorKey: 'sample_code',
+            header: 'sample_code',
+            size: 80,
             editType: 'text',
         },
         {
-            accessorKey: 'some_number',
-            header: 'Число (плохо когда красное)',
-            size: 120,
-            editType: 'number',
-            conditionalFormatting: (value, row, column) => {
-                if (value > 100) {
-                    return { backgroundColor: '#ffcccc', color: '#900' }
-                }
-                return {}
-            },
-            aggregation: 'sum',
+            accessorKey: 'sample_group_code',
+            header: 'sample_group_code',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'zlims_code',
+            header: 'zlims_code',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'uin1',
+            header: 'uin1',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'uin2',
+            header: 'uin',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'project_code',
+            header: 'project_code',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'sample_index',
+            header: 'sample_index',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'user',
+            header: 'user',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'qc_1',
+            header: 'qc_1',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'qc_2',
+            header: 'qc_2',
+            size: 80,
+            editType: 'text',
         },
         {
             accessorKey: 'descr',
-            header: 'Описание',
-            size: 300,
+            header: 'descr',
+            size: 80,
+            editType: 'text',
+        },
+        {
+            accessorKey: 'material_type',
+            header: 'material_type',
+            size: 80,
             editType: 'text',
         },
         {
@@ -92,16 +221,8 @@ export default function Samples() {
                 return `${days} дн.`
             },
         },
-        {
-            id: 'full_info',
-            header: 'zlims_id + some_number',
-            size: 250,
-            enableEditing: false,
-            accessorFn: (row) => {
-                return `${row.zlims_id || ''}_${row.some_number || 0}`
-            },
-        }
     ]
+
 
     // ---------- ЗАГРУЗКА ДАННЫХ ----------
     const loadSamples = useCallback(async () => {
