@@ -1,0 +1,248 @@
+/* ========================================
+   BATCH DETAIL - VSCODE STYLE
+   ======================================== */
+
+.batch-detail {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.batch-detail__container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ========================================
+   НАВИГАЦИЯ
+   ======================================== */
+.batch-detail__nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   КАРТОЧКА БАТЧА
+   ======================================== */
+.batch-detail__card {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow);
+}
+
+.batch-detail__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.batch-detail__title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.batch-detail__title {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0;
+}
+
+.batch-detail__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   ИНФОРМАЦИЯ О БАТЧЕ
+   ======================================== */
+.batch-detail__info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.batch-detail__info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.batch-detail__info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.batch-detail__info-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.batch-detail__info-value {
+    font-size: 14px;
+    color: var(--text);
+}
+
+.batch-detail__description {
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--blue);
+}
+
+.batch-detail__description p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* ========================================
+   ПОДОБРАЗЦЫ
+   ======================================== */
+.batch-detail__subsamples {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.batch-detail__subsamples-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.batch-detail__subsamples-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-white);
+    margin: 0;
+}
+
+/* ========================================
+   ПУСТОЕ СОСТОЯНИЕ
+   ======================================== */
+.batch-detail__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    gap: 12px;
+}
+
+.batch-detail__empty-icon {
+    font-size: 48px;
+    opacity: 0.5;
+}
+
+.batch-detail__empty p {
+    font-size: 16px;
+    color: var(--text-dark);
+}
+
+/* ========================================
+   НЕ НАЙДЕН
+   ======================================== */
+.batch-detail__not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    gap: 16px;
+}
+
+.batch-detail__not-found h2 {
+    font-size: 24px;
+    color: var(--text-dark);
+}
+
+/* ========================================
+   ТЕКСТОВОЕ ПОЛЕ В МОДАЛКЕ
+   ======================================== */
+.modal-textarea {
+    width: 100%;
+    padding: 8px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: var(--transition);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.modal-textarea:focus {
+    border-color: var(--blue);
+    outline: none;
+    box-shadow: 0 0 20px rgba(55, 148, 255, 0.1);
+}
+
+.modal-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-dark);
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 768px) {
+    .batch-detail {
+        padding: 12px;
+    }
+
+    .batch-detail__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .batch-detail__actions {
+        justify-content: flex-start;
+    }
+
+    .batch-detail__info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .batch-detail__title {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .batch-detail__info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .batch-detail__title-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

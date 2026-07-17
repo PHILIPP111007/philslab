@@ -471,6 +471,7 @@ export default function Table({
     enableAddButton = true,
     enableExport = true,
     enableImport = true,
+    enableActionsColumn = true,
     enableInlineEdit = true,
     enableEmptyRow = true,
     onDataChange,
@@ -758,22 +759,26 @@ export default function Table({
         enableColumnFilter: false,
     }] : [], [enableSelection])
 
-    const actionsColumn = useMemo(() => [{
-        id: 'actions',
-        header: 'Действия',
-        cell: ({ row }) => {
-            if (row.original.id < 0) return <span style={{ fontSize: '11px', color: 'var(--text-dark)', opacity: 0.6 }}>Новая запись</span>
-            return (
-                <div className="table-action-buttons">
-                    <button onClick={() => { setSelectedItem(row.original); setEditModalOpen(true) }} className="table-action-edit" title="Редактировать">✏️</button>
-                    <button onClick={() => { setSelectedItem(row.original); setDeleteModalOpen(true) }} className="table-action-delete" title="Удалить">🗑️</button>
-                </div>
-            )
-        },
-        size: 90,
-        enableSorting: false,
-        enableColumnFilter: false,
-    }], [])
+    const actionsColumn = useMemo(() => {
+        if (!enableActionsColumn) return [];
+
+        return [{
+            id: 'actions',
+            header: 'Действия',
+            cell: ({ row }) => {
+                if (row.original.id < 0) return <span style={{ fontSize: '11px', color: 'var(--text-dark)', opacity: 0.6 }}>Новая запись</span>
+                return (
+                    <div className="table-action-buttons">
+                        <button onClick={() => { setSelectedItem(row.original); setEditModalOpen(true) }} className="table-action-edit" title="Редактировать">✏️</button>
+                        <button onClick={() => { setSelectedItem(row.original); setDeleteModalOpen(true) }} className="table-action-delete" title="Удалить">🗑️</button>
+                    </div>
+                )
+            },
+            size: 90,
+            enableSorting: false,
+            enableColumnFilter: false,
+        }]
+    }, [enableActionsColumn])
 
     const columns = useMemo(() => {
         const processedColumns = userColumns.map(col => {

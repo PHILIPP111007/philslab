@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, use } from 'react'
+import { useState, useEffect, useCallback, useContext } from 'react'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
 import { UserContext } from "../../data/context"
@@ -9,21 +9,21 @@ import Spinner from "../components/Spinner/Spinner"
 import Table from "../components/Table/Table"
 import Header from '../components/Header/Header'
 import StatCard from '../components/StatCard/StatCard'
+import LinkButton from '../components/LinkButton/LinkButton'
 
 export default function Batches() {
-    var { user, setUser } = use(UserContext)
-    var params = useParams()
-    const [samples, setSamples] = useState([])
+    const { user, setUser } = useContext(UserContext)
+    const params = useParams()
+    const [batches, setBatches] = useState([])
     const [lazyParams, setLazyParams] = useState(null)
-    const [totalRows, setTotalRows] = useState(0);
+    const [totalRows, setTotalRows] = useState(0)
     const [loading, setLoading] = useState(true)
-
 
     useEffect(() => {
         rememberPage(`batches/${params.username}`)
     }, [params.username])
 
-
+    // ✅ Колонки с subsample_count
     const columns = [
         {
             accessorKey: 'id',
@@ -31,31 +31,72 @@ export default function Batches() {
             size: 70,
             enableEditing: false,
             enableSorting: true,
+            cell: ({ getValue, row }) => {
+                const id = getValue()
+                if (id > 0) {
+                    return (
+                        <LinkButton to={`/batch/${id}`}>
+                            {id}
+                        </LinkButton>
+                    )
+                }
+                return id
+            },
         },
         {
             accessorKey: 'name',
             header: 'Название',
-            size: 150,
+            size: 180,
             editType: 'text',
             required: true,
         },
         {
             accessorKey: 'department',
             header: 'Отдел',
-            size: 120,
+            size: 140,
             editType: 'text',
         },
         {
             accessorKey: 'descr',
             header: 'Описание',
-            size: 200,
+            size: 220,
             editType: 'text',
+        },
+        {
+            accessorKey: 'subsample_count',  // ✅ новое поле
+            header: 'Подобразцов',
+            size: 130,
+            enableEditing: false,
+            enableSorting: true,
+            cell: ({ getValue }) => {
+                const count = getValue()
+                return (
+                    <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontWeight: count > 0 ? '600' : '400',
+                        color: count > 0 ? 'var(--text)' : 'var(--text-dark)',
+                    }}>
+                        {count > 0 ? '📋' : '📭'} {count || 0}
+                    </span>
+                )
+            },
+        },
+        {
+            accessorKey: 'timestamp',
+            header: 'Создан',
+            size: 180,
+            enableEditing: false,
+            cell: ({ getValue }) => {
+                const date = getValue()
+                return date ? new Date(date).toLocaleString('ru-RU') : '—'
+            },
         },
     ]
 
-
     // ---------- ЗАГРУЗКА ДАННЫХ ----------
-    const loadSamples = useCallback(async () => {
+    const loadBatches = useCallback(async () => {
         setLoading(true)
         const data = await Fetch({
             api_version: APIVersion.V2,
@@ -63,80 +104,80 @@ export default function Batches() {
             method: HttpMethod.GET,
         })
         if (data?.ok) {
-            setSamples(prev => {
-                // Если данные не изменились, возвращаем старый массив
+            setBatches(prev => {
                 const newData = data.data || []
                 if (prev.length === newData.length && prev.every((item, i) => item.id === newData[i].id)) {
-                    return prev // не вызывает ререндер
+                    return prev
                 }
                 return newData
             })
+            setTotalRows(data.total || data.data?.length || 0)
         }
         setLoading(false)
     }, [])
 
-
-    const fetchSamples = useCallback(async (params) => {
-        const query = new URLSearchParams();
-        query.set('page', params.pageIndex + 1);
-        query.set('page_size', params.pageSize);
+    const fetchBatches = useCallback(async (params) => {
+        const query = new URLSearchParams()
+        query.set('page', params.pageIndex + 1)
+        query.set('page_size', params.pageSize)
         if (params.sorting.length > 0) {
-            query.set('sort_by', params.sorting[0].id);
-            query.set('sort_order', params.sorting[0].desc ? 'desc' : 'asc');
+            query.set('sort_by', params.sorting[0].id)
+            query.set('sort_order', params.sorting[0].desc ? 'desc' : 'asc')
         }
         if (params.globalFilter) {
-            query.set('search', params.globalFilter);
+            query.set('search', params.globalFilter)
         }
         params.columnFilters.forEach(f => {
-            query.set(`filter[${f.id}]`, f.value);
-        });
+            query.set(`filter[${f.id}]`, f.value)
+        })
 
         const res = await Fetch({
             api_version: APIVersion.V2,
             action: `batches/?${query.toString()}`,
             method: HttpMethod.GET,
-        });
+        })
         if (res?.ok) {
-            setSamples(res.data);
-            setTotalRows(res.total);
+            setBatches(res.data || [])
+            setTotalRows(res.total || 0)
         }
     }, [])
 
-
-    // ---------- ОБРАБОТЧИК ДОБАВЛЕНИЯ ----------
-    const handleAddSample = async (newItem) => {
+    // ---------- ОБРАБОТЧИКИ CRUD ----------
+    const handleAddBatch = async (newItem) => {
         const data = await Fetch({
             api_version: APIVersion.V2,
             action: 'batch/',
             method: HttpMethod.POST,
             body: {
-                zlims_id: newItem.zlims_id || '',
-                some_number: newItem.some_number,
+                name: newItem.name || 'Новый батч',
+                department: newItem.department || '',
                 descr: newItem.descr || '',
             },
         })
-        if (data?.ok && lazyParams) {
-            fetchSamples(lazyParams); // обновить список
+        if (data?.ok) {
+            if (lazyParams) {
+                fetchBatches(lazyParams)
+            } else {
+                loadBatches()
+            }
         } else {
-            notify_error(data?.error || "Ошибка добавления")
+            notify_error(data?.error || 'Ошибка добавления')
         }
     }
 
-    // ---------- ОБРАБОТЧИК РЕДАКТИРОВАНИЯ (модальное окно) ----------
-    const handleEditSample = async (updatedItem) => {
+    const handleEditBatch = async (updatedItem) => {
         const data = await Fetch({
             api_version: APIVersion.V2,
             action: `batch/${updatedItem.id}/`,
             method: HttpMethod.PUT,
             body: {
-                zlims_id: updatedItem.zlims_id,
-                some_number: updatedItem.some_number,
-                descr: updatedItem.descr,
+                name: updatedItem.name,
+                department: updatedItem.department || '',
+                descr: updatedItem.descr || '',
             },
         })
         if (data?.ok) {
-            // обновляем локальный стейт или перезагружаем
-            setSamples(prev =>
+            setBatches(prev =>
                 prev.map(s => (s.id === updatedItem.id ? { ...s, ...updatedItem } : s))
             )
         } else {
@@ -144,23 +185,21 @@ export default function Batches() {
         }
     }
 
-    // ---------- ОБРАБОТЧИК УДАЛЕНИЯ ----------
-    const handleDeleteSample = async (item) => {
+    const handleDeleteBatch = async (item) => {
         const data = await Fetch({
             api_version: APIVersion.V2,
             action: `batch/${item.id}/`,
             method: HttpMethod.DELETE,
         })
         if (data?.ok) {
-            setSamples(prev => prev.filter(s => s.id !== item.id))
+            setBatches(prev => prev.filter(s => s.id !== item.id))
+            setTotalRows(prev => prev - 1)
         } else {
             notify_error(data?.error || 'Ошибка удаления')
         }
     }
 
-    // ---------- ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАННЫХ (инлайн-редактирование) ----------
     const handleDataChange = async (newData, meta) => {
-        // синхронизация с сервером при инлайн-редактировании
         if (meta?.operation === 'edit' && meta.data) {
             const updatedItem = meta.data
             const data = await Fetch({
@@ -168,34 +207,40 @@ export default function Batches() {
                 action: `batch/${updatedItem.id}/`,
                 method: HttpMethod.PUT,
                 body: {
-                    zlims_id: updatedItem.zlims_id,
-                    some_number: updatedItem.some_number,
-                    descr: updatedItem.descr,
+                    name: updatedItem.name,
+                    department: updatedItem.department || '',
+                    descr: updatedItem.descr || '',
                 },
             })
-            setSamples(newData)
-            if (!data?.ok) {
+            if (data?.ok) {
+                setBatches(newData)
+            } else {
                 notify_error(data?.error || 'Ошибка сохранения')
-                // откатываем изменения? можно перезагрузить
-                await loadSamples()
+                await loadBatches()
             }
+        } else {
+            setBatches(newData)
         }
     }
 
+    // ---------- ЭФФЕКТЫ ----------
     useEffect(() => {
         if (lazyParams) {
-            fetchSamples(lazyParams);
+            fetchBatches(lazyParams)
         }
-    }, [lazyParams, fetchSamples]);
+    }, [lazyParams, fetchBatches])
 
     useEffect(() => {
-        loadSamples()
-    }, [loadSamples])
+        loadBatches()
+    }, [loadBatches])
 
     const handleLazyLoad = useCallback((params) => {
-        setLazyParams(params); // обновляем параметры -> useEffect загрузит данные
-    }, []);
+        setLazyParams(params)
+    }, [])
 
+    // ---------- ПОДСЧЁТ СТАТИСТИКИ ----------
+    const totalSubsamples = batches.reduce((sum, b) => sum + (b.subsample_count || 0), 0)
+    const batchesWithSubsamples = batches.filter(b => (b.subsample_count || 0) > 0).length
 
     // ---------- РЕНДЕР ----------
     return (
@@ -203,17 +248,33 @@ export default function Batches() {
             <Header />
             <div className="app theme-transition">
                 <div className="stats">
-                    <StatCard label="Всего образцов" value={totalRows} color="var(--blue)" />
+                    <StatCard
+                        icon="📦"
+                        label="Всего батчей"
+                        value={totalRows}
+                        color="var(--blue)"
+                    />
+                    <StatCard
+                        icon="📋"
+                        label="Всего подобразцов"
+                        value={totalSubsamples}
+                        color="var(--green)"
+                    />
+                    <StatCard
+                        icon="✅"
+                        label="Батчей с подобразцами"
+                        value={batchesWithSubsamples}
+                        color="var(--orange)"
+                    />
                 </div>
                 <section className="section">
-                    <h2 className="section__title">Батчи</h2>
-                    {loading
-                        ?
+                    <h2 className="section__title">📦 Батчи</h2>
+                    {loading ? (
                         <Spinner />
-                        :
+                    ) : (
                         <Table
                             lazy
-                            data={samples}
+                            data={batches}
                             totalRows={totalRows}
                             onLazyLoad={handleLazyLoad}
                             columns={columns}
@@ -225,16 +286,16 @@ export default function Batches() {
                             enableColumnVisibility
                             enableAddButton
                             enableExport
-                            enableInlineEdit
+                            enableInlineEdit={false}
                             enableEmptyRow={true}
-                            onAddSuccess={handleAddSample}
-                            onEditSuccess={handleEditSample}
-                            onDeleteSuccess={handleDeleteSample}
-                            onDataChange={handleDataChange}   // ← было пропущено
+                            onAddSuccess={handleAddBatch}
+                            onEditSuccess={handleEditBatch}
+                            onDeleteSuccess={handleDeleteBatch}
+                            onDataChange={handleDataChange}
                         />
-                    }
+                    )}
                 </section>
             </div>
         </>
-    );
+    )
 }

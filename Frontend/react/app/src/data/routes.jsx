@@ -5,6 +5,7 @@ var Hello = lazy(() => import("../pages/Hello/Hello.jsx"))
 var Samples = lazy(() => import("../pages/Sample/Samples.jsx"))
 var Subsamples = lazy(() => import("../pages/Subsample/Subsamples.jsx"))
 var Batches = lazy(() => import("../pages/Batch/Batches.jsx"))
+var Batch = lazy(() => import("../pages/Batch/Batch.jsx"))
 var MainPage = lazy(() => import("../pages/MainPage/MainPage.jsx"))
 
 export var PublicRoutes = [
@@ -43,6 +44,11 @@ export var PrivateRoutes = [
         path: "/batches/:username/",
         name: "Batches",
         element: <Batches />
+    },
+    {
+        path: "/batch/:id/",
+        name: "Batch",
+        element: <Batch />
     },
     {
         path: "/main_page/:username/",
