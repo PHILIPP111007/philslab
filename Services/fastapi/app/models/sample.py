@@ -5,10 +5,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .task_sample_link import TaskSampleLink
-
 if TYPE_CHECKING:
-    from .task import Task
     from .user import User
 
 
@@ -54,7 +51,7 @@ class Sample(SQLModel, table=True):
     # Подобразцы
     subsamples: List["Subsample"] = Relationship(back_populates="sample")
 
-    # Связь с Task (многие ко многим)
-    tasks: List["Task"] = Relationship(
-        back_populates="samples", link_model=TaskSampleLink
-    )
+    # # Связь с Task (многие ко многим)
+    # tasks: List["Task"] = Relationship(
+    #     back_populates="samples", link_model=TaskSampleLink
+    # )

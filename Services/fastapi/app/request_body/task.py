@@ -13,9 +13,9 @@ class TaskCreate(BaseModel):
     priority: Priority = Priority.medium
     assigned_to_id: Optional[int] = None
     protocol_id: Optional[int] = None
-    stage_ids: Optional[List[int]] = []
     sample_ids: Optional[List[int]] = []
     department: Optional[str] = ""  # ✅ Добавлено
+    batch_ids: Optional[List[int]] = []  # ✅ Добавляем
 
 
 class TaskUpdate(BaseModel):
@@ -27,8 +27,8 @@ class TaskUpdate(BaseModel):
     assigned_to_id: Optional[int] = None
     protocol_id: Optional[int] = None
     stage_ids: Optional[List[int]] = None
-    sample_ids: Optional[List[int]] = None
     department: Optional[str] = None  # ✅ Добавлено
+    batch_ids: Optional[List[int]] = None
 
 
 class StageCreate(BaseModel):

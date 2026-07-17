@@ -924,11 +924,6 @@ export default function TasksSection() {
                                             {stage.description && (
                                                 <span className="tasks-steps-list__desc">{stage.description}</span>
                                             )}
-                                            {stage.order !== undefined && (
-                                                <span className="tasks-steps-list__order">
-                                                    Шаг {stage.order + 1}
-                                                </span>
-                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -1035,7 +1030,7 @@ export default function TasksSection() {
                                                 {protocol.stages.map((stage) => (
                                                     <li key={stage.id} className="tasks-steps-list__item">
                                                         <span className="tasks-steps-list__order">
-                                                            Шаг {stage.order + 1}
+                                                            Шаг {stage.order}
                                                         </span>
                                                         <span className="tasks-steps-list__name">
                                                             {stage.name}

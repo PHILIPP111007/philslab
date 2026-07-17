@@ -9,7 +9,6 @@ from app.models.stage import Stage
 from app.models.subsample import Subsample
 from app.models.task import Task
 from app.models.task_batch_link import TaskBatchLink
-from app.models.task_sample_link import TaskSampleLink
 from app.models.task_stage import TaskStage
 from app.models.task_stage_link import TaskStageLink
 from app.models.token import Token

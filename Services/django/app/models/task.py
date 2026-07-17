@@ -68,6 +68,14 @@ class Task(models.Model):
         verbose_name="Образцы",
     )
 
+    # ✅ Батчи (многие ко многим)
+    batches = models.ManyToManyField(
+        "app.Batch",
+        blank=True,
+        related_name="tasks",
+        verbose_name="Батчи",
+    )
+
     def __str__(self):
         return self.name
 

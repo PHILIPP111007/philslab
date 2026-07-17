@@ -7,13 +7,11 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from .enums import Priority
 from .task_batch_link import TaskBatchLink
-from .task_sample_link import TaskSampleLink
 
 if TYPE_CHECKING:
     from .batch import Batch
     from .protocol import Protocol
     from .query_history import QueryHistory
-    from .sample import Sample
     from .task_stage import TaskStage
     from .user import User
 
@@ -62,11 +60,11 @@ class Task(SQLModel, table=True):
     # ✅ Убираем связь с Stage, так как этапы принадлежат протоколу
     # stages: List["Stage"] = Relationship(...)  # ← УДАЛИТЬ
 
-    # Образцы (многие ко многим)
-    samples: List["Sample"] = Relationship(
-        back_populates="tasks",
-        link_model=TaskSampleLink,
-    )
+    # # Образцы (многие ко многим)
+    # samples: List["Sample"] = Relationship(
+    #     back_populates="tasks",
+    #     link_model=TaskSampleLink,
+    # )
 
     # Батчи (многие ко многим)
     batches: List["Batch"] = Relationship(

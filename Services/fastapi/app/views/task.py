@@ -8,6 +8,7 @@ from sqlmodel import func, select
 from app.database import SessionDep
 from app.models import (
     ActionType,
+    Batch,
     Protocol,
     QueryHistory,
     Sample,
@@ -61,8 +62,8 @@ async def get_tasks(
         selectinload(Task.created_by),
         selectinload(Task.assigned_to),
         selectinload(Task.protocol),
-        selectinload(Task.samples),
         selectinload(Task.task_stages),
+        selectinload(Task.batches),  # ✅ Добавляем
         selectinload(Task.history).selectinload(QueryHistory.user),
     )
 
@@ -146,14 +147,6 @@ async def get_tasks(
             if task.protocol
             else None,
             "stages": stages_data,
-            "samples": [
-                {
-                    "id": s.id,
-                    "name": s.name,
-                    "zlims_id": s.zlims_id,
-                }
-                for s in task.samples
-            ],
             "history": [
                 {
                     "id": h.id,
@@ -173,6 +166,14 @@ async def get_tasks(
                     else None,
                 }
                 for h in task.history
+            ],
+            "batches": [
+                {
+                    "id": b.id,
+                    "name": b.name,
+                    "department": b.department,
+                }
+                for b in task.batches
             ],
         }
         result.append(task_dict)
@@ -203,6 +204,7 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
             selectinload(Task.protocol),
             selectinload(Task.samples),
             selectinload(Task.task_stages),
+            selectinload(Task.batches),  # ✅ Добавляем
             selectinload(Task.history).selectinload(QueryHistory.user),
         ],
     )
@@ -288,6 +290,14 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
                 }
                 for h in task.history
             ],
+            "batches": [
+                {
+                    "id": b.id,
+                    "name": b.name,
+                    "department": b.department,
+                }
+                for b in task.batches
+            ],
         },
     }
 
@@ -317,6 +327,13 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
 
     task_id = task.id
     task_name = task.name
+
+    if task_data.batch_ids:
+        batches = (
+            await session.exec(select(Batch).where(Batch.id.in_(task_data.batch_ids)))
+        ).all()
+        task.batches = batches
+        await session.commit()
 
     # Копируем этапы из протокола, если он выбран
     if task_data.protocol_id:
@@ -362,6 +379,9 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
 # ============================================
 # PUT /task/{task_id}/
 # ============================================
+# views/task.py — update_task (исправленный)
+
+
 @router.put("/task/{task_id}/")
 async def update_task(
     session: SessionDep, request: Request, task_id: int, task_data: TaskUpdate
@@ -374,23 +394,25 @@ async def update_task(
         return {"ok": False, "error": "Not found task."}
 
     task_id_value = task.id
+
+    # ✅ Отслеживаем изменения ТОЛЬКО для переданных полей
     changes = []
     update_data = task_data.model_dump(exclude_unset=True)
 
-    # --- Обработка смены протокола ---
+    # ✅ Если protocol_id изменился — пересоздаём этапы
     if "protocol_id" in update_data:
         new_protocol_id = update_data["protocol_id"]
         old_protocol_id = task.protocol_id
 
         if new_protocol_id != old_protocol_id:
-            # Удаляем старые TaskStage
+            # Удаляем старые этапы задачи
             old_stages = await session.exec(
                 select(TaskStage).where(TaskStage.task_id == task.id)
             )
             for s in old_stages:
                 await session.delete(s)
 
-            # Копируем этапы из нового протокола
+            # Копируем этапы из нового протокола (если есть)
             if new_protocol_id:
                 protocol = await session.get(Protocol, new_protocol_id)
                 if protocol and protocol.stages:
@@ -405,7 +427,7 @@ async def update_task(
                         session.add(task_stage)
             await session.commit()
 
-    # --- Обновление простых полей ---
+    # ✅ Список полей, которые можно обновлять
     editable_fields = [
         "name",
         "description",
@@ -413,37 +435,47 @@ async def update_task(
         "priority",
         "is_completed",
         "assigned_to_id",
+        "protocol_id",
         "deadline",
         "is_archived",
     ]
 
     for field in editable_fields:
+        # ✅ Проверяем, что поле было передано в запросе
         if field not in update_data:
             continue
 
         new_value = update_data[field]
         old_value = getattr(task, field)
 
+        # ✅ Сравниваем значения
         changed = False
+
         if field == "deadline":
+            # Для дат — сравниваем строки
             old_str = old_value.isoformat() if old_value else None
             new_str = new_value.isoformat() if new_value else None
             if old_str != new_str:
                 changed = True
         elif field in ["assigned_to_id", "protocol_id"]:
+            # Для ID — сравниваем числа
             if old_value != new_value:
                 changed = True
         elif field in ["is_completed", "is_archived"]:
+            # Для булевых значений
             if old_value != new_value:
                 changed = True
         else:
+            # Для строк
             if old_value != new_value:
                 changed = True
 
         if changed:
+            # ✅ Сохраняем старое значение для лога
             old_for_log = old_value
             if isinstance(old_value, datetime):
                 old_for_log = old_value.isoformat()
+
             changes.append(
                 {
                     "field": field,
@@ -455,24 +487,21 @@ async def update_task(
             )
             setattr(task, field, new_value)
 
-    # --- Обновление образцов (если переданы) ---
-    if "sample_ids" in update_data:
-        old_sample_ids = [s.id for s in task.samples]
-        new_sample_ids = update_data["sample_ids"]
-        if set(old_sample_ids) != set(new_sample_ids):
-            samples = (
-                await session.exec(select(Sample).where(Sample.id.in_(new_sample_ids)))
+    # ✅ Обновляем батчи — только если переданы
+    if "batch_ids" in update_data:
+        old_batch_ids = [b.id for b in task.batches]
+        new_batch_ids = update_data["batch_ids"]
+
+        if set(old_batch_ids) != set(new_batch_ids):
+            batches = (
+                await session.exec(select(Batch).where(Batch.id.in_(new_batch_ids)))
             ).all()
-            task.samples = samples
+            task.batches = batches
             changes.append(
-                {
-                    "field": "samples",
-                    "old": old_sample_ids,
-                    "new": new_sample_ids,
-                }
+                {"field": "batches", "old": old_batch_ids, "new": new_batch_ids}
             )
 
-    # --- Обработка завершения задачи ---
+    # ✅ Если задача помечена как выполненная
     if (
         "is_completed" in update_data
         and update_data["is_completed"]
@@ -482,13 +511,14 @@ async def update_task(
     elif "is_completed" in update_data and not update_data["is_completed"]:
         task.completed_at = None
 
-    # --- Сохранение и логирование ---
+    # ✅ Обновляем дату изменения ТОЛЬКО если были изменения
     if changes:
         task.updated_at = datetime.now()
         session.add(task)
         await session.commit()
         await session.refresh(task)
 
+        # ✅ Сохраняем изменения в историю
         for change in changes:
             action_type = ActionType.UPDATED
             field_action_map = {
@@ -504,6 +534,7 @@ async def update_task(
             comment = _format_change_comment(
                 change["field"], change["old"], change["new"]
             )
+
             history = QueryHistory(
                 action_type=action_type,
                 user_id=request.state.user.id,
@@ -514,11 +545,15 @@ async def update_task(
                 comment=comment,
             )
             session.add(history)
+
         await session.commit()
     else:
+        # ✅ Если изменений нет — просто возвращаем задачу
         await session.refresh(task)
 
-    # --- Возврат обновлённой задачи ---
+    # ✅ Получаем обновленную задачу (без samples)
+    from sqlalchemy.orm import selectinload
+
     result = await session.get(
         Task,
         task_id_value,
@@ -526,7 +561,8 @@ async def update_task(
             selectinload(Task.created_by),
             selectinload(Task.assigned_to),
             selectinload(Task.protocol).selectinload(Protocol.stages),
-            selectinload(Task.samples),
+            selectinload(Task.task_stages),
+            selectinload(Task.batches),  # ✅ Добавляем батчи
             selectinload(Task.history).selectinload(QueryHistory.user),
         ],
     )
