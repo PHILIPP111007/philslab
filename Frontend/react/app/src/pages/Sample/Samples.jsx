@@ -23,89 +23,6 @@ export default function Samples() {
         rememberPage(`samples/${params.username}`)
     }, [params.username])
 
-    // ---------- КОЛОНКИ ТАБЛИЦЫ (обновлены с учётом zlims_id) ----------
-    // const columns = [
-    //     {
-    //         accessorKey: 'id',
-    //         header: 'ID',
-    //         size: 70,
-    //         enableEditing: false,
-    //         enableSorting: true,
-    //     },
-    //     {
-    //         accessorKey: 'name',
-    //         header: 'имя',
-    //         size: 80,
-    //         editType: 'text',
-    //     },
-    //     {
-    //         accessorKey: 'zlims_id',
-    //         header: 'ZLIMS ID',
-    //         size: 120,
-    //         editType: 'text',
-    //     },
-    //     {
-    //         accessorKey: 'some_number',
-    //         header: 'Число (плохо когда красное)',
-    //         size: 120,
-    //         editType: 'number',
-    //         conditionalFormatting: (value, row, column) => {
-    //             if (value > 100) {
-    //                 return { backgroundColor: '#ffcccc', color: '#900' }
-    //             }
-    //             return {}
-    //         },
-    //         aggregation: 'sum',
-    //     },
-    //     {
-    //         accessorKey: 'descr',
-    //         header: 'Описание',
-    //         size: 300,
-    //         editType: 'text',
-    //     },
-    //     {
-    //         accessorKey: 'timestamp',
-    //         header: 'Дата создания',
-    //         size: 180,
-    //         enableEditing: false,
-    //         cell: ({ getValue }) => {
-    //             const val = getValue()
-    //             if (!val) return '—'
-    //             return new Date(val).toLocaleString('ru-RU')
-    //         },
-    //     },
-    //     {
-    //         id: 'days_ago',
-    //         header: 'Дней назад',
-    //         size: 100,
-    //         enableEditing: false,
-    //         accessorFn: (row) => {
-    //             if (!row.timestamp) return '—'
-    //             const created = new Date(row.timestamp)
-    //             const now = new Date()
-    //             const diff = Math.floor((now - created) / (1000 * 60 * 60 * 24))
-    //             return diff
-    //         },
-    //         cell: ({ getValue }) => {
-    //             const days = getValue()
-    //             if (days === '—') return '—'
-    //             return `${days} дн.`
-    //         },
-    //     },
-    //     {
-    //         id: 'full_info',
-    //         header: 'zlims_id + some_number',
-    //         size: 250,
-    //         enableEditing: false,
-    //         accessorFn: (row) => {
-    //             return `${row.zlims_id || ''}_${row.some_number || 0}`
-    //         },
-    //     }
-    // ]
-
-
-
-
     const columns = [
         {
             accessorKey: 'id',
@@ -116,80 +33,88 @@ export default function Samples() {
         },
         {
             accessorKey: 'name',
-            header: 'имя',
-            size: 80,
+            header: 'Название',
+            size: 120,
             editType: 'text',
+            required: true,
         },
         {
             accessorKey: 'sample_code',
-            header: 'sample_code',
-            size: 80,
+            header: 'Код образца',
+            size: 120,
             editType: 'text',
         },
         {
             accessorKey: 'sample_group_code',
-            header: 'sample_group_code',
-            size: 80,
+            header: 'Код группы',
+            size: 120,
             editType: 'text',
         },
         {
             accessorKey: 'zlims_code',
-            header: 'zlims_code',
-            size: 80,
+            header: 'ZLIMS код',
+            size: 100,
             editType: 'text',
         },
         {
             accessorKey: 'uin1',
-            header: 'uin1',
-            size: 80,
+            header: 'UIN 1',
+            size: 100,
             editType: 'text',
         },
         {
             accessorKey: 'uin2',
-            header: 'uin',
-            size: 80,
+            header: 'UIN 2',
+            size: 100,
             editType: 'text',
         },
         {
             accessorKey: 'project_code',
-            header: 'project_code',
-            size: 80,
+            header: 'Код проекта',
+            size: 100,
             editType: 'text',
         },
         {
             accessorKey: 'sample_index',
-            header: 'sample_index',
+            header: 'Индекс',
             size: 80,
             editType: 'text',
         },
         {
-            accessorKey: 'user',
-            header: 'user',
+            accessorKey: 'some_number',
+            header: 'Число',
             size: 80,
-            editType: 'text',
+            editType: 'number',
+            conditionalFormatting: (value, row, column) => {
+                if (value > 100) {
+                    return { backgroundColor: '#ffcccc', color: '#900' }
+                }
+                return {}
+            },
+            aggregation: 'sum',
         },
         {
             accessorKey: 'qc_1',
-            header: 'qc_1',
+            header: 'QC 1',
             size: 80,
-            editType: 'text',
+            editType: 'number',
         },
         {
             accessorKey: 'qc_2',
-            header: 'qc_2',
+            header: 'QC 2',
             size: 80,
-            editType: 'text',
+            editType: 'number',
         },
         {
             accessorKey: 'descr',
-            header: 'descr',
-            size: 80,
+            header: 'Описание',
+            size: 200,
             editType: 'text',
         },
         {
             accessorKey: 'material_type',
-            header: 'material_type',
-            size: 80,
+            header: 'Тип материала',
+            size: 120,
             editType: 'text',
         },
         {
@@ -221,31 +146,19 @@ export default function Samples() {
                 return `${days} дн.`
             },
         },
+        {
+            id: 'full_info',
+            header: 'ZLIMS + Число',
+            size: 200,
+            enableEditing: false,
+            accessorFn: (row) => {
+                return `${row.zlims_code || ''}_${row.some_number || 0}`
+            },
+        }
     ]
 
 
     // ---------- ЗАГРУЗКА ДАННЫХ ----------
-    const loadSamples = useCallback(async () => {
-        setLoading(true)
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: 'samples/',
-            method: HttpMethod.GET,
-        })
-        if (data?.ok) {
-            setSamples(prev => {
-                // Если данные не изменились, возвращаем старый массив
-                const newData = data.data || []
-                if (prev.length === newData.length && prev.every((item, i) => item.id === newData[i].id)) {
-                    return prev // не вызывает ререндер
-                }
-                return newData
-            })
-        }
-        setLoading(false)
-    }, [])
-
-
     const fetchSamples = useCallback(async (params) => {
         const query = new URLSearchParams();
         query.set('page', params.pageIndex + 1);
@@ -269,24 +182,41 @@ export default function Samples() {
         if (res?.ok) {
             setSamples(res.data);
             setTotalRows(res.total);
+            setLoading(false);
         }
     }, [])
 
 
     // ---------- ОБРАБОТЧИК ДОБАВЛЕНИЯ ----------
     const handleAddSample = async (newItem) => {
+        // Проверяем обязательные поля
+        if (!newItem.name) {
+            notify_error("Необходимо указать название")
+            return
+        }
+
         const data = await Fetch({
             api_version: APIVersion.V2,
             action: 'sample/',
             method: HttpMethod.POST,
             body: {
-                zlims_id: newItem.zlims_id || '',
-                some_number: newItem.some_number,
+                sample_code: newItem.sample_code || '',
+                sample_group_code: newItem.sample_group_code || '',
+                zlims_code: newItem.zlims_code || '',
+                uin1: newItem.uin1 || '',
+                uin2: newItem.uin2 || '',
+                project_code: newItem.project_code || '',
+                sample_index: newItem.sample_index || '',
+                name: newItem.name,
+                some_number: newItem.some_number || null,
+                qc_1: newItem.qc_1 || null,
+                qc_2: newItem.qc_2 || null,
                 descr: newItem.descr || '',
+                material_type: newItem.material_type || '',
             },
         })
         if (data?.ok && lazyParams) {
-            fetchSamples(lazyParams); // обновить список
+            fetchSamples(lazyParams);
         } else {
             notify_error(data?.error || "Ошибка добавления")
         }
@@ -299,13 +229,22 @@ export default function Samples() {
             action: `sample/${updatedItem.id}/`,
             method: HttpMethod.PUT,
             body: {
-                zlims_id: updatedItem.zlims_id,
+                sample_code: updatedItem.sample_code,
+                sample_group_code: updatedItem.sample_group_code,
+                zlims_code: updatedItem.zlims_code,
+                uin1: updatedItem.uin1,
+                uin2: updatedItem.uin2,
+                project_code: updatedItem.project_code,
+                sample_index: updatedItem.sample_index,
+                name: updatedItem.name,
                 some_number: updatedItem.some_number,
+                qc_1: updatedItem.qc_1,
+                qc_2: updatedItem.qc_2,
                 descr: updatedItem.descr,
+                material_type: updatedItem.material_type,
             },
         })
         if (data?.ok) {
-            // обновляем локальный стейт или перезагружаем
             setSamples(prev =>
                 prev.map(s => (s.id === updatedItem.id ? { ...s, ...updatedItem } : s))
             )
@@ -330,7 +269,6 @@ export default function Samples() {
 
     // ---------- ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАННЫХ (инлайн-редактирование) ----------
     const handleDataChange = async (newData, meta) => {
-        // синхронизация с сервером при инлайн-редактировании
         if (meta?.operation === 'edit' && meta.data) {
             const updatedItem = meta.data
             const data = await Fetch({
@@ -338,33 +276,83 @@ export default function Samples() {
                 action: `sample/${updatedItem.id}/`,
                 method: HttpMethod.PUT,
                 body: {
-                    zlims_id: updatedItem.zlims_id,
+                    sample_code: updatedItem.sample_code,
+                    sample_group_code: updatedItem.sample_group_code,
+                    zlims_code: updatedItem.zlims_code,
+                    uin1: updatedItem.uin1,
+                    uin2: updatedItem.uin2,
+                    project_code: updatedItem.project_code,
+                    sample_index: updatedItem.sample_index,
+                    name: updatedItem.name,
                     some_number: updatedItem.some_number,
+                    qc_1: updatedItem.qc_1,
+                    qc_2: updatedItem.qc_2,
                     descr: updatedItem.descr,
+                    material_type: updatedItem.material_type,
                 },
             })
-            setSamples(newData)
-            if (!data?.ok) {
+            if (data?.ok) {
+                setSamples(newData)
+            } else {
                 notify_error(data?.error || 'Ошибка сохранения')
-                // откатываем изменения? можно перезагрузить
-                await loadSamples()
+                if (lazyParams) {
+                    await fetchSamples(lazyParams)
+                }
+            }
+        } else if (meta?.operation === 'add' && meta.data) {
+            // Обработка добавления через инлайн-редактирование
+            const newItem = meta.data
+            const data = await Fetch({
+                api_version: APIVersion.V2,
+                action: 'sample/',
+                method: HttpMethod.POST,
+                body: {
+                    sample_code: newItem.sample_code || '',
+                    sample_group_code: newItem.sample_group_code || '',
+                    zlims_code: newItem.zlims_code || '',
+                    uin1: newItem.uin1 || '',
+                    uin2: newItem.uin2 || '',
+                    project_code: newItem.project_code || '',
+                    sample_index: newItem.sample_index || '',
+                    name: newItem.name,
+                    some_number: newItem.some_number || null,
+                    qc_1: newItem.qc_1 || null,
+                    qc_2: newItem.qc_2 || null,
+                    descr: newItem.descr || '',
+                    material_type: newItem.material_type || '',
+                },
+            })
+            if (data?.ok && lazyParams) {
+                await fetchSamples(lazyParams)
+            } else {
+                notify_error(data?.error || 'Ошибка добавления')
             }
         }
     }
 
+    // Инициализация lazy-загрузки
+    const handleLazyLoad = useCallback((params) => {
+        setLazyParams(params);
+    }, []);
+
+    // Первая загрузка при монтировании
+    useEffect(() => {
+        setLoading(true)
+        const initialParams = {
+            pageIndex: 0,
+            pageSize: 10,
+            sorting: [],
+            globalFilter: '',
+            columnFilters: [],
+        }
+        setLazyParams(initialParams)
+    }, [])
+
     useEffect(() => {
         if (lazyParams) {
-            fetchSamples(lazyParams);
+            fetchSamples(lazyParams)
         }
-    }, [lazyParams, fetchSamples]);
-
-    useEffect(() => {
-        loadSamples()
-    }, [loadSamples])
-
-    const handleLazyLoad = useCallback((params) => {
-        setLazyParams(params); // обновляем параметры -> useEffect загрузит данные
-    }, []);
+    }, [lazyParams, fetchSamples])
 
 
     // ---------- РЕНДЕР ----------
@@ -377,7 +365,7 @@ export default function Samples() {
                 </div>
                 <section className="section">
                     <h2 className="section__title">Список образцов</h2>
-                    {loading
+                    {loading && !lazyParams
                         ?
                         <Spinner />
                         :
@@ -400,7 +388,7 @@ export default function Samples() {
                             onAddSuccess={handleAddSample}
                             onEditSuccess={handleEditSample}
                             onDeleteSuccess={handleDeleteSample}
-                            onDataChange={handleDataChange}   // ← было пропущено
+                            onDataChange={handleDataChange}
                         />
                     }
                 </section>

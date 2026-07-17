@@ -33,46 +33,60 @@ export default function Subsamples() {
             enableSorting: true,
         },
         {
+            accessorKey: 'sample_id',
+            header: 'Sample ID',
+            size: 70,
+            enableEditing: false,
+            enableSorting: true,
+        },
+        {
+            accessorKey: 'name',
+            header: 'Название',
+            size: 120,
+            editType: 'text',
+            required: true,
+        },
+        {
             accessorKey: 'sample_code',
-            header: 'sample_code',
-            size: 80,
+            header: 'Код образца',
+            size: 120,
             editType: 'text',
         },
         {
-            accessorKey: 'zlims_code',
-            header: 'zlims_code',
+            accessorKey: 'some_number',
+            header: 'Номер',
             size: 80,
-            editType: 'text',
-        },
-        {
-            accessorKey: 'user',
-            header: 'user',
-            size: 80,
-            editType: 'text',
+            editType: 'number',
         },
         {
             accessorKey: 'qc_1',
-            header: 'qc_1',
+            header: 'QC 1',
             size: 80,
-            editType: 'text',
+            editType: 'number',
         },
         {
             accessorKey: 'qc_2',
-            header: 'qc_2',
+            header: 'QC 2',
             size: 80,
-            editType: 'text',
+            editType: 'number',
         },
         {
             accessorKey: 'descr',
-            header: 'descr',
-            size: 80,
+            header: 'Описание',
+            size: 150,
             editType: 'text',
         },
         {
             accessorKey: 'material_type',
-            header: 'material_type',
-            size: 80,
+            header: 'Тип материала',
+            size: 120,
             editType: 'text',
+        },
+        {
+            accessorKey: 'user_id',
+            header: 'Пользователь',
+            size: 80,
+            enableEditing: false,
         },
         {
             accessorKey: 'timestamp',
@@ -85,49 +99,10 @@ export default function Subsamples() {
                 return new Date(val).toLocaleString('ru-RU')
             },
         },
-        {
-            id: 'days_ago',
-            header: 'Дней назад',
-            size: 100,
-            enableEditing: false,
-            accessorFn: (row) => {
-                if (!row.timestamp) return '—'
-                const created = new Date(row.timestamp)
-                const now = new Date()
-                const diff = Math.floor((now - created) / (1000 * 60 * 60 * 24))
-                return diff
-            },
-            cell: ({ getValue }) => {
-                const days = getValue()
-                if (days === '—') return '—'
-                return `${days} дн.`
-            },
-        },
     ]
 
 
     // ---------- ЗАГРУЗКА ДАННЫХ ----------
-    const loadSamples = useCallback(async () => {
-        setLoading(true)
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: 'subsamples/',
-            method: HttpMethod.GET,
-        })
-        if (data?.ok) {
-            setSamples(prev => {
-                // Если данные не изменились, возвращаем старый массив
-                const newData = data.data || []
-                if (prev.length === newData.length && prev.every((item, i) => item.id === newData[i].id)) {
-                    return prev // не вызывает ререндер
-                }
-                return newData
-            })
-        }
-        setLoading(false)
-    }, [])
-
-
     const fetchSamples = useCallback(async (params) => {
         const query = new URLSearchParams();
         query.set('page', params.pageIndex + 1);
@@ -151,20 +126,36 @@ export default function Subsamples() {
         if (res?.ok) {
             setSamples(res.data);
             setTotalRows(res.total);
+            setLoading(false);
         }
     }, [])
 
 
     // ---------- ОБРАБОТЧИК ДОБАВЛЕНИЯ ----------
     const handleAddSample = async (newItem) => {
+        // Проверяем обязательные поля
+        if (!newItem.sample_id) {
+            notify_error("Необходимо указать sample_id")
+            return
+        }
+        if (!newItem.name) {
+            notify_error("Необходимо указать название")
+            return
+        }
+
         const data = await Fetch({
             api_version: APIVersion.V2,
             action: 'subsample/',
             method: HttpMethod.POST,
             body: {
-                zlims_id: newItem.zlims_id || '',
-                some_number: newItem.some_number,
+                sample_id: newItem.sample_id,
+                sample_code: newItem.sample_code || '',
+                name: newItem.name,
+                some_number: newItem.some_number || null,
+                qc_1: newItem.qc_1 || null,
+                qc_2: newItem.qc_2 || null,
                 descr: newItem.descr || '',
+                material_type: newItem.material_type || '',
             },
         })
         if (data?.ok && lazyParams) {
@@ -181,13 +172,17 @@ export default function Subsamples() {
             action: `subsample/${updatedItem.id}/`,
             method: HttpMethod.PUT,
             body: {
-                zlims_id: updatedItem.zlims_id,
+                sample_code: updatedItem.sample_code,
+                name: updatedItem.name,
                 some_number: updatedItem.some_number,
+                qc_1: updatedItem.qc_1,
+                qc_2: updatedItem.qc_2,
                 descr: updatedItem.descr,
+                material_type: updatedItem.material_type,
             },
         })
         if (data?.ok) {
-            // обновляем локальный стейт или перезагружаем
+            // обновляем локальный стейт
             setSamples(prev =>
                 prev.map(s => (s.id === updatedItem.id ? { ...s, ...updatedItem } : s))
             )
@@ -212,7 +207,6 @@ export default function Subsamples() {
 
     // ---------- ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАННЫХ (инлайн-редактирование) ----------
     const handleDataChange = async (newData, meta) => {
-        // синхронизация с сервером при инлайн-редактировании
         if (meta?.operation === 'edit' && meta.data) {
             const updatedItem = meta.data
             const data = await Fetch({
@@ -220,33 +214,76 @@ export default function Subsamples() {
                 action: `subsample/${updatedItem.id}/`,
                 method: HttpMethod.PUT,
                 body: {
-                    zlims_id: updatedItem.zlims_id,
+                    sample_code: updatedItem.sample_code,
+                    name: updatedItem.name,
                     some_number: updatedItem.some_number,
+                    qc_1: updatedItem.qc_1,
+                    qc_2: updatedItem.qc_2,
                     descr: updatedItem.descr,
+                    material_type: updatedItem.material_type,
                 },
             })
-            setSamples(newData)
-            if (!data?.ok) {
+            if (data?.ok) {
+                setSamples(newData)
+            } else {
                 notify_error(data?.error || 'Ошибка сохранения')
-                // откатываем изменения? можно перезагрузить
-                await loadSamples()
+                // Откатываем изменения - перезагружаем текущую страницу
+                if (lazyParams) {
+                    await fetchSamples(lazyParams)
+                }
+            }
+        } else if (meta?.operation === 'add' && meta.data) {
+            // Обработка добавления через инлайн-редактирование пустой строки
+            const newItem = meta.data
+            const data = await Fetch({
+                api_version: APIVersion.V2,
+                action: 'subsample/',
+                method: HttpMethod.POST,
+                body: {
+                    sample_id: newItem.sample_id,
+                    sample_code: newItem.sample_code || '',
+                    name: newItem.name,
+                    some_number: newItem.some_number || null,
+                    qc_1: newItem.qc_1 || null,
+                    qc_2: newItem.qc_2 || null,
+                    descr: newItem.descr || '',
+                    material_type: newItem.material_type || '',
+                },
+            })
+            if (data?.ok) {
+                setSamples(newData.filter(item => item.id > 0))
+                if (lazyParams) {
+                    await fetchSamples(lazyParams)
+                }
+            } else {
+                notify_error(data?.error || 'Ошибка добавления')
             }
         }
     }
 
+    // Инициализация lazy-загрузки
+    const handleLazyLoad = useCallback((params) => {
+        setLazyParams(params);
+    }, []);
+
+    // Первая загрузка при монтировании
+    useEffect(() => {
+        setLoading(true)
+        const initialParams = {
+            pageIndex: 0,
+            pageSize: 10,
+            sorting: [],
+            globalFilter: '',
+            columnFilters: [],
+        }
+        setLazyParams(initialParams)
+    }, [])
+
     useEffect(() => {
         if (lazyParams) {
-            fetchSamples(lazyParams);
+            fetchSamples(lazyParams)
         }
-    }, [lazyParams, fetchSamples]);
-
-    useEffect(() => {
-        loadSamples()
-    }, [loadSamples])
-
-    const handleLazyLoad = useCallback((params) => {
-        setLazyParams(params); // обновляем параметры -> useEffect загрузит данные
-    }, []);
+    }, [lazyParams, fetchSamples])
 
 
     // ---------- РЕНДЕР ----------
@@ -255,11 +292,11 @@ export default function Subsamples() {
             <Header />
             <div className="app theme-transition">
                 <div className="stats">
-                    <StatCard label="Всего образцов" value={totalRows} color="var(--blue)" />
+                    <StatCard label="Всего суб-образцов" value={totalRows} color="var(--blue)" />
                 </div>
                 <section className="section">
-                    <h2 className="section__title">Список суб образцов</h2>
-                    {loading
+                    <h2 className="section__title">Список суб-образцов</h2>
+                    {loading && !lazyParams
                         ?
                         <Spinner />
                         :
@@ -282,7 +319,7 @@ export default function Subsamples() {
                             onAddSuccess={handleAddSample}
                             onEditSuccess={handleEditSample}
                             onDeleteSuccess={handleDeleteSample}
-                            onDataChange={handleDataChange}   // ← было пропущено
+                            onDataChange={handleDataChange}
                         />
                     }
                 </section>
