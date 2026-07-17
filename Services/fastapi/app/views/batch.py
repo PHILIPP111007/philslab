@@ -37,6 +37,7 @@ def serialize_batch(batch: Batch) -> dict:
     }
 
 
+# TODO: implement sorting
 @router.get("/batches/")
 async def get_batches(
     session: SessionDep,

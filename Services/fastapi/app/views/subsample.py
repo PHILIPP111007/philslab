@@ -17,9 +17,10 @@ router = APIRouter(tags=["subsample"])
 async def get_subsamples(
     session: SessionDep,
     request: Request,
-    sample_id: int = Query(None, description="Фильтр по родительскому образцу"),
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(10, ge=1, le=100),
+    sort_by: str = Query(None),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     search: str = Query(None),
 ):
     if not request.state.user:
@@ -27,14 +28,18 @@ async def get_subsamples(
 
     statement = select(Subsample).options(selectinload(Subsample.sample))
 
-    if sample_id:
-        statement = statement.where(Subsample.sample_id == sample_id)
-
     if search:
         statement = statement.where(
             (Subsample.sample_code.contains(search))
             | (Subsample.name.contains(search))
             | (Subsample.descr.contains(search))
+        )
+
+    # Сортировка
+    if sort_by and hasattr(Subsample, sort_by):
+        column = getattr(Subsample, sort_by)
+        statement = statement.order_by(
+            column.desc() if sort_order == "desc" else column.asc()
         )
 
     statement = statement.order_by(Subsample.timestamp.desc())
