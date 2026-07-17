@@ -17,3 +17,6 @@ class Protocol(models.Model):
         related_name="created_protocols",
         verbose_name="Создал",
     )
+
+    def __str__(self):
+        return self.name

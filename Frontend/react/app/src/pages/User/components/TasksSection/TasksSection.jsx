@@ -404,7 +404,6 @@ export default function TasksSection() {
     // Построение элементов Accordion
     const buildAccordionItems = (tasks, isCreatedTab = false) => {
         return tasks.map((task) => {
-            // Используем task.stages (это TaskStage, скопированные из протокола)
             const stages = task.stages || []
             const progress = stages.length
                 ? Math.round((stages.filter(s => s.is_completed).length / stages.length) * 100)
@@ -425,6 +424,9 @@ export default function TasksSection() {
                         <Badge variant={getPriorityColor(task.priority)}>
                             {task.priority || 'medium'}
                         </Badge>
+                        {task.protocol && (
+                            <Badge variant="info">{task.protocol.code}</Badge>
+                        )}
                     </div>
                 ),
                 icon: task.is_archived ? '📦' : '📋',

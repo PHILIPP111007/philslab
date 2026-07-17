@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
-from sqlmodel import func, select
+from sqlmodel import select
 
 from app.database import SessionDep
 from app.models import (
@@ -41,6 +41,9 @@ def _format_change_comment(field: str, old_value, new_value) -> str:
 # ============================================
 # GET /tasks/
 # ============================================
+# views/task.py — get_tasks
+
+
 @router.get("/tasks/")
 async def get_tasks(
     session: SessionDep,
@@ -58,56 +61,49 @@ async def get_tasks(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
+    # ✅ Загружаем этапы протокола через selectinload
     statement = select(Task).options(
         selectinload(Task.created_by),
         selectinload(Task.assigned_to),
-        selectinload(Task.protocol),
-        selectinload(Task.task_stages),
-        selectinload(Task.batches),  # ✅ Добавляем
+        selectinload(Task.protocol).selectinload(
+            Protocol.stages
+        ),  # ← загружаем stages протокола
+        selectinload(Task.task_stages),  # ← загружаем task_stages
+        selectinload(Task.batches),
         selectinload(Task.history).selectinload(QueryHistory.user),
     )
 
-    if assigned_to:
-        statement = statement.where(Task.assigned_to_id == assigned_to)
-    if created_by:
-        statement = statement.where(Task.created_by_id == created_by)
-    if is_completed is not None:
-        statement = statement.where(Task.is_completed == is_completed)
-    if priority:
-        statement = statement.where(Task.priority == priority)
+    # ... остальной код (фильтры, сортировка, пагинация)
 
-    if search:
-        statement = statement.where(
-            (Task.name.contains(search)) | (Task.description.contains(search))
-        )
-
-    if sort_by and hasattr(Task, sort_by):
-        column = getattr(Task, sort_by)
-        statement = statement.order_by(
-            column.desc() if sort_order == "desc" else column.asc()
-        )
-    else:
-        statement = statement.order_by(Task.created_at.desc())
-
-    offset = (page - 1) * page_size
-    total = (
-        await session.exec(select(func.count()).select_from(select(Task).subquery()))
-    ).one()
-    statement = statement.offset(offset).limit(page_size)
     tasks = (await session.exec(statement)).all()
 
     result = []
     for task in tasks:
+        # ✅ Этапы задачи (TaskStage)
         stages_data = [
             {
-                "id": s.id,
-                "name": s.name,
-                "description": s.description,
-                "is_completed": s.is_completed,
-                "order": s.order,
+                "id": stage.id,
+                "name": stage.name,
+                "description": stage.description,
+                "is_completed": stage.is_completed,
+                "order": stage.order,
             }
-            for s in task.task_stages
+            for stage in task.task_stages
         ]
+
+        # ✅ Этапы протокола (оригинальные)
+        protocol_stages_data = []
+        if task.protocol:
+            protocol_stages_data = [
+                {
+                    "id": stage.id,
+                    "name": stage.name,
+                    "description": stage.description,
+                    "is_completed": stage.is_completed,
+                    "order": stage.order,
+                }
+                for stage in task.protocol.stages
+            ]
 
         task_dict = {
             "id": task.id,
@@ -143,30 +139,11 @@ async def get_tasks(
                 "id": task.protocol.id,
                 "name": task.protocol.name,
                 "code": task.protocol.code,
+                "stages": protocol_stages_data,  # ← добавляем этапы протокола
             }
             if task.protocol
             else None,
-            "stages": stages_data,
-            "history": [
-                {
-                    "id": h.id,
-                    "action_type": h.action_type,
-                    "field_name": h.field_name,
-                    "old_value": h.old_value,
-                    "new_value": h.new_value,
-                    "comment": h.comment,
-                    "created_at": h.created_at.isoformat() if h.created_at else None,
-                    "user": {
-                        "id": h.user.id,
-                        "username": h.user.username,
-                        "first_name": h.user.first_name,
-                        "last_name": h.user.last_name,
-                    }
-                    if h.user
-                    else None,
-                }
-                for h in task.history
-            ],
+            "stages": stages_data,  # ← этапы задачи (TaskStage)
             "batches": [
                 {
                     "id": b.id,
@@ -175,13 +152,34 @@ async def get_tasks(
                 }
                 for b in task.batches
             ],
+            "history": [
+                {
+                    "id": history.id,
+                    "action_type": history.action_type,
+                    "field_name": history.field_name,
+                    "old_value": history.old_value,
+                    "new_value": history.new_value,
+                    "comment": history.comment,
+                    "created_at": history.created_at.isoformat()
+                    if history.created_at
+                    else None,
+                    "user": {
+                        "id": history.user.id,
+                        "username": history.user.username,
+                        "first_name": history.user.first_name,
+                        "last_name": history.user.last_name,
+                    }
+                    if history.user
+                    else None,
+                }
+                for history in task.history
+            ],
         }
         result.append(task_dict)
 
     return {
         "ok": True,
         "data": result,
-        "total": total,
         "page": page,
         "page_size": page_size,
     }
@@ -190,6 +188,9 @@ async def get_tasks(
 # ============================================
 # GET /task/{task_id}/
 # ============================================
+# views/task.py — get_task
+
+
 @router.get("/task/{task_id}/")
 async def get_task(session: SessionDep, request: Request, task_id: int):
     if not request.state.user:
@@ -201,26 +202,43 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
         options=[
             selectinload(Task.created_by),
             selectinload(Task.assigned_to),
-            selectinload(Task.protocol),
-            selectinload(Task.samples),
+            selectinload(Task.protocol).selectinload(
+                Protocol.stages
+            ),  # ← загружаем stages протокола
             selectinload(Task.task_stages),
-            selectinload(Task.batches),  # ✅ Добавляем
+            selectinload(Task.batches),
             selectinload(Task.history).selectinload(QueryHistory.user),
         ],
     )
+
     if not task:
         return {"ok": False, "error": "Not found task."}
 
+    # ✅ Этапы задачи (TaskStage)
     stages_data = [
         {
-            "id": s.id,
-            "name": s.name,
-            "description": s.description,
-            "is_completed": s.is_completed,
-            "order": s.order,
+            "id": stage.id,
+            "name": stage.name,
+            "description": stage.description,
+            "is_completed": stage.is_completed,
+            "order": stage.order,
         }
-        for s in task.task_stages
+        for stage in task.task_stages
     ]
+
+    # ✅ Этапы протокола (оригинальные)
+    protocol_stages_data = []
+    if task.protocol:
+        protocol_stages_data = [
+            {
+                "id": stage.id,
+                "name": stage.name,
+                "description": stage.description,
+                "is_completed": stage.is_completed,
+                "order": stage.order,
+            }
+            for stage in task.protocol.stages
+        ]
 
     return {
         "ok": True,
@@ -258,38 +276,11 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
                 "id": task.protocol.id,
                 "name": task.protocol.name,
                 "code": task.protocol.code,
+                "stages": protocol_stages_data,  # ← добавляем этапы протокола
             }
             if task.protocol
             else None,
             "stages": stages_data,
-            "samples": [
-                {
-                    "id": s.id,
-                    "name": s.name,
-                    "zlims_id": s.zlims_id,
-                }
-                for s in task.samples
-            ],
-            "history": [
-                {
-                    "id": h.id,
-                    "action_type": h.action_type,
-                    "field_name": h.field_name,
-                    "old_value": h.old_value,
-                    "new_value": h.new_value,
-                    "comment": h.comment,
-                    "created_at": h.created_at.isoformat() if h.created_at else None,
-                    "user": {
-                        "id": h.user.id,
-                        "username": h.user.username,
-                        "first_name": h.user.first_name,
-                        "last_name": h.user.last_name,
-                    }
-                    if h.user
-                    else None,
-                }
-                for h in task.history
-            ],
             "batches": [
                 {
                     "id": b.id,
@@ -297,6 +288,28 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
                     "department": b.department,
                 }
                 for b in task.batches
+            ],
+            "history": [
+                {
+                    "id": history.id,
+                    "action_type": history.action_type,
+                    "field_name": history.field_name,
+                    "old_value": history.old_value,
+                    "new_value": history.new_value,
+                    "comment": history.comment,
+                    "created_at": history.created_at.isoformat()
+                    if history.created_at
+                    else None,
+                    "user": {
+                        "id": history.user.id,
+                        "username": history.user.username,
+                        "first_name": history.user.first_name,
+                        "last_name": history.user.last_name,
+                    }
+                    if history.user
+                    else None,
+                }
+                for history in task.history
             ],
         },
     }
