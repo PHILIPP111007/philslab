@@ -188,6 +188,13 @@ class Subsample(models.Model):
 
 
 class BatchSubsample(Subsample):
+    subsample = models.ForeignKey(
+        "app.Subsample",
+        on_delete=models.CASCADE,
+        related_name="subsamples",
+        null=True,
+        blank=True,
+    )
     batch = models.ForeignKey(
         "app.Batch",
         on_delete=models.CASCADE,
