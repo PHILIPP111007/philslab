@@ -1,15 +1,15 @@
 import './TasksSection.css'
 import { useState, useEffect, use, useMemo } from 'react'
-import { UserContext } from '../../../../data/context.js'
-import Fetch from '../../../../API/Fetch'
-import { HttpMethod, APIVersion } from '../../../../data/enums'
-import Accordion from '../../../components/Accordion/Accordion'
-import Button from '../../../components/Button/Button'
-import Badge from '../../../components/Badge/Badge'
-import ProgressBar from '../../../components/ProgressBar/ProgressBar'
-import LinkButton from '../../../components/LinkButton/LinkButton'
+import { UserContext } from '../../../data/context.js'
+import Fetch from '../../../API/Fetch'
+import { HttpMethod, APIVersion } from '../../../data/enums'
+import Accordion from '../../components/Accordion/Accordion'
+import Button from '../../components/Button/Button'
+import Badge from '../../components/Badge/Badge'
+import ProgressBar from '../../components/ProgressBar/ProgressBar'
+import LinkButton from '../../components/LinkButton/LinkButton'
 
-export default function TasksSection() {
+export default function TasksSection({ departmentName }) {
     const { user } = use(UserContext)
     const [assignedTasks, setAssignedTasks] = useState([])
     const [createdTasks, setCreatedTasks] = useState([])
@@ -58,11 +58,15 @@ export default function TasksSection() {
     // Загрузка задач
     const loadAssignedTasks = async () => {
         try {
+            let url = `tasks/?assigned_to=${user.id}`;
+            if (departmentName) {
+                url = `tasks/?department=${departmentName}`; // или другой эндпоинт
+            }
             const data = await Fetch({
                 api_version: APIVersion.V2,
-                action: `tasks/?assigned_to=${user.id}`,
+                action: url,
                 method: HttpMethod.GET,
-            })
+            });
             if (data?.ok && data?.data) {
                 setAssignedTasks(data.data)
             } else {
@@ -76,9 +80,13 @@ export default function TasksSection() {
 
     const loadCreatedTasks = async () => {
         try {
+            let url = `tasks/?created_by=${user.id}`;
+            if (departmentName) {
+                url = `tasks/?department=${departmentName}`;
+            }
             const data = await Fetch({
                 api_version: APIVersion.V2,
-                action: `tasks/?created_by=${user.id}`,
+                action: url,
                 method: HttpMethod.GET,
             })
             if (data?.ok && data?.data) {
@@ -96,9 +104,13 @@ export default function TasksSection() {
 
     const loadArchivedTasks = async () => {
         try {
+            let url = `tasks/archived/`;
+            if (departmentName) {
+                url = `tasks/archived/?department=${departmentName}`;
+            }
             const data = await Fetch({
                 api_version: APIVersion.V2,
-                action: `tasks/archived/`,
+                action: url,
                 method: HttpMethod.GET,
             })
             if (data?.ok && data?.data) {
@@ -146,16 +158,16 @@ export default function TasksSection() {
 
     useEffect(() => {
         if (user.id) {
-            setLoading(true)
+            setLoading(true);
             Promise.all([
                 loadAssignedTasks(),
                 loadCreatedTasks(),
                 loadArchivedTasks(),
                 loadProtocols(),
                 loadUsers()
-            ]).finally(() => setLoading(false))
+            ]).finally(() => setLoading(false));
         }
-    }, [user.id])
+    }, [user.id, departmentName]);   // ← добавить departmentName
 
     // Создание задачи
     const handleCreateTask = async () => {
@@ -633,14 +645,17 @@ export default function TasksSection() {
                     className={`tasks-section__tab ${activeTab === 'assigned' ? 'tasks-section__tab--active' : ''}`}
                     onClick={() => setActiveTab('assigned')}
                 >
-                    📥 Мои задачи ({assignedTasks.length})
+                    📥 Задачи ({assignedTasks.length})
                 </button>
-                <button
-                    className={`tasks-section__tab ${activeTab === 'created' ? 'tasks-section__tab--active' : ''}`}
-                    onClick={() => setActiveTab('created')}
-                >
-                    📤 Созданные мной ({createdTasks.length})
-                </button>
+
+                {!departmentName &&
+                    <button
+                        className={`tasks-section__tab ${activeTab === 'created' ? 'tasks-section__tab--active' : ''}`}
+                        onClick={() => setActiveTab('created')}
+                    >
+                        📤 Созданные мной ({createdTasks.length})
+                    </button>
+                }
                 <button
                     className={`tasks-section__tab ${activeTab === 'archived' ? 'tasks-section__tab--active' : ''}`}
                     onClick={() => setActiveTab('archived')}

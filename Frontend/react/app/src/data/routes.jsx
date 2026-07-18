@@ -6,6 +6,7 @@ var Samples = lazy(() => import("../pages/Sample/Samples.jsx"))
 var Subsamples = lazy(() => import("../pages/Subsample/Subsamples.jsx"))
 var Batches = lazy(() => import("../pages/Batch/Batches.jsx"))
 var Batch = lazy(() => import("../pages/Batch/Batch.jsx"))
+var Department = lazy(() => import("../pages/Department/Department.jsx"))
 var MainPage = lazy(() => import("../pages/MainPage/MainPage.jsx"))
 
 export var PublicRoutes = [
@@ -34,6 +35,11 @@ export var PrivateRoutes = [
         path: "/samples/:username/",
         name: "Samples",
         element: <Samples />
+    },
+    {
+        path: "/department/:username/",
+        name: "Department",
+        element: <Department />
     },
     {
         path: "/subsamples/:username/",

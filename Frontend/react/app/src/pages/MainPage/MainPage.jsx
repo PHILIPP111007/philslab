@@ -1,8 +1,19 @@
 import './MainPage.css'
+import { useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import rememberPage from "../../modules/rememberPage"
 import LinkButton from '../components/LinkButton/LinkButton'
 import Header from '../components/Header/Header'
 
 export default function MainPage() {
+    var params = useParams()
+
+
+    useEffect(() => {
+        rememberPage(`main_page/${params.username}`)
+    }, [params.username])
+
+
     const navigationItems = [
         {
             id: 'search',
@@ -15,7 +26,7 @@ export default function MainPage() {
             id: 'department',
             title: '🏢 Отдел',
             description: 'Задачи отдела',
-            to: '/department/',
+            to: `/department/${params.username}/`,
             variant: 'secondary',
         },
         {

@@ -8,7 +8,7 @@ import { HttpMethod, APIVersion } from '../../data/enums'
 import { UserContext } from "../../data/context.js"
 import { useSetUser } from "../../hooks/useAuth.js"
 import Button from "../components/Button/Button"
-import TasksSection from './components/TasksSection/TasksSection'
+import TasksSection from '../components/TasksSection/TasksSection'
 
 export default function User() {
     const { user, setUser } = useContext(UserContext)

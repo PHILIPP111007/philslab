@@ -57,6 +57,7 @@ async def get_tasks(
     created_by: int = Query(None),
     is_completed: bool = Query(None),
     priority: str = Query(None),
+    department: str = Query(None),  # <-- НОВЫЙ ПАРАМЕТР
 ):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
@@ -92,6 +93,10 @@ async def get_tasks(
 
     if priority:
         statement = statement.where(Task.priority == priority)
+
+    # ✅ Фильтр по отделу (новый)
+    if department is not None:
+        statement = statement.where(Task.department == department)
 
     # --- Сортировка ---
     if sort_by and hasattr(Task, sort_by):
@@ -816,15 +821,21 @@ async def get_archived_tasks(
     request: Request,
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
+    department: str = Query(None),  # <-- НОВЫЙ ПАРАМЕТР
 ):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    statement = (
-        select(Task)
-        .where(Task.created_by_id == request.state.user.id, Task.is_archived == True)
-        .order_by(Task.updated_at.desc())
-    )
+    statement = select(Task).where(Task.is_archived == True)
+
+    # Если передан department – показываем все задачи отдела (игнорируем создателя)
+    if department is not None:
+        statement = statement.where(Task.department == department)
+    else:
+        # Иначе – только созданные текущим пользователем
+        statement = statement.where(Task.created_by_id == request.state.user.id)
+
+    statement = statement.order_by(Task.updated_at.desc())
 
     offset = (page - 1) * page_size
     statement = statement.offset(offset).limit(page_size)
