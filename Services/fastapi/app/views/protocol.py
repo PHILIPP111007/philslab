@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.database import SessionDep
@@ -9,12 +10,54 @@ router = APIRouter(tags=["protocol"])
 
 
 @router.get("/protocols/")
-async def get_protocols(session: SessionDep, request: Request):
+async def get_protocols(
+    session: SessionDep,
+    request: Request,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1, le=500),
+):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    protocols = (await session.exec(select(Protocol))).all()
-    return {"ok": True, "data": protocols}
+    # Загружаем stages и created_by сразу
+    statement = select(Protocol).options(
+        selectinload(Protocol.stages), selectinload(Protocol.created_by)
+    )
+    offset = (page - 1) * page_size
+    statement = statement.offset(offset).limit(page_size)
+    protocols = (await session.exec(statement)).all()
+
+    result = []
+    for p in protocols:
+        result.append(
+            {
+                "id": p.id,
+                "code": p.code,
+                "name": p.name,
+                "description": p.description,
+                "version": p.version,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+                "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+                "created_by": {
+                    "id": p.created_by.id,
+                    "username": p.created_by.username,
+                    "first_name": p.created_by.first_name,
+                    "last_name": p.created_by.last_name,
+                }
+                if p.created_by
+                else None,
+                "stages": [
+                    {
+                        "id": s.id,
+                        "name": s.name,
+                        "description": s.description,
+                        "order": s.order,
+                    }
+                    for s in p.stages
+                ],
+            }
+        )
+    return {"ok": True, "data": result}
 
 
 @router.get("/protocol/{protocol_id}/")

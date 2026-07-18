@@ -40,7 +40,7 @@ export default function MainPage() {
             id: 'protocols',
             title: '📋 Протоколы / СОПы',
             description: 'Стандартные операционные процедуры',
-            to: '/protocols/',
+            to: `/protocols/${params.username}/`,
             variant: 'secondary',
         },
         {
