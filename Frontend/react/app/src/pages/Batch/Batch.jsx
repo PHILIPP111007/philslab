@@ -23,6 +23,8 @@ export default function Batch() {
     const [subsamples, setSubsamples] = useState([])
     const [loading, setLoading] = useState(true)
 
+    const [tasks, setTasks] = useState([]) // ✅ связанные задачи
+
     // Состояния для редактирования батча
     const [showEditModal, setShowEditModal] = useState(false)
     const [editFormData, setEditFormData] = useState({
@@ -49,6 +51,11 @@ export default function Batch() {
         material_type: '',
     })
 
+    // ✅ Состояния для добавления задачи в батч
+    const [showAddTaskModal, setShowAddTaskModal] = useState(false)
+    const [availableTasks, setAvailableTasks] = useState([])
+    const [selectedTaskId, setSelectedTaskId] = useState('')
+
     useEffect(() => {
         rememberPage(`batch/${batchId}`)
     }, [batchId])
@@ -64,6 +71,7 @@ export default function Batch() {
         if (data?.ok) {
             setBatch(data.data)
             setSubsamples(data.data.subsamples || [])
+            setTasks(data.data.tasks || [])  // ✅
         } else {
             notify_error(data?.error || 'Батч не найден')
             navigate('/batches')
@@ -86,6 +94,21 @@ export default function Batch() {
             setAvailableSubsamples(available)
         }
     }, [subsamples])
+
+    // ✅ Загрузка доступных задач (ещё не привязанных)
+    const loadAvailableTasks = useCallback(async () => {
+        const data = await Fetch({
+            api_version: APIVersion.V2,
+            action: 'tasks/',
+            method: HttpMethod.GET,
+            params: { page_size: 1000 }
+        })
+        if (data?.ok) {
+            const existingIds = new Set(tasks.map(t => t.id))
+            const available = (data.data || []).filter(t => !existingIds.has(t.id))
+            setAvailableTasks(available)
+        }
+    }, [tasks])
 
     useEffect(() => {
         loadBatch()
@@ -216,6 +239,45 @@ export default function Batch() {
         }
     }
 
+    // ✅ ДОБАВЛЕНИЕ ЗАДАЧИ В БАТЧ
+    const handleAddTask = async () => {
+        if (!selectedTaskId) {
+            notify_error('Выберите задачу')
+            return
+        }
+        const data = await Fetch({
+            api_version: APIVersion.V2,
+            action: `batch/${batchId}/task/${selectedTaskId}/`,
+            method: HttpMethod.POST,
+        })
+        if (data?.ok) {
+            setBatch(data.data)
+            setTasks(data.data.tasks || [])
+            setShowAddTaskModal(false)
+            setSelectedTaskId('')
+            notify_success('Задача добавлена в батч!')
+        } else {
+            notify_error(data?.error || 'Ошибка добавления задачи')
+        }
+    }
+
+    // ✅ УДАЛЕНИЕ ЗАДАЧИ ИЗ БАТЧА
+    const handleRemoveTask = async (taskId) => {
+        if (!confirm('Удалить задачу из батча?')) return
+        const data = await Fetch({
+            api_version: APIVersion.V2,
+            action: `batch/${batchId}/task/${taskId}/`,
+            method: HttpMethod.DELETE,
+        })
+        if (data?.ok) {
+            setBatch(data.data)
+            setTasks(data.data.tasks || [])
+            notify_success('Задача удалена из батча')
+        } else {
+            notify_error(data?.error || 'Ошибка удаления задачи')
+        }
+    }
+
     // ---------- УДАЛЕНИЕ БАТЧА ----------
     const handleDeleteBatch = async () => {
         if (!confirm('Удалить батч?')) return
@@ -322,6 +384,40 @@ export default function Batch() {
                         🗑️
                     </Button>
                 </div>
+            ),
+        },
+    ]
+
+    // ---------- КОЛОНКИ ДЛЯ ТАБЛИЦЫ ЗАДАЧ ----------
+    const taskColumns = [
+        {
+            accessorKey: 'id',
+            header: 'ID',
+            size: 70,
+            cell: ({ getValue }) => (
+                <LinkButton to={`/task/${getValue()}`}>
+                    {getValue()}
+                </LinkButton>
+            ),
+        },
+        { accessorKey: 'name', header: 'Название', size: 200 },
+        { accessorKey: 'department', header: 'Отдел', size: 120 },
+        { accessorKey: 'priority', header: 'Приоритет', size: 100 },
+        {
+            accessorKey: 'is_completed',
+            header: 'Статус',
+            size: 100,
+            cell: ({ getValue }) => getValue() ? '✅ Завершена' : '🔄 В работе',
+        },
+        {
+            id: 'actions',
+            header: '',
+            size: 80,
+            enableSorting: false,
+            cell: ({ row }) => (
+                <Button variant="danger" size="sm" onClick={() => handleRemoveTask(row.original.id)}>
+                    🗑️
+                </Button>
             ),
         },
     ]
@@ -476,8 +572,98 @@ export default function Batch() {
                             />
                         )}
                     </div>
+
+                    {/* ✅ Блок связанных задач */}
+                    <div className="batch-detail__tasks" style={{ marginTop: '2rem' }}>
+                        <div className="batch-detail__subsamples-header">
+                            <h2 className="batch-detail__subsamples-title">
+                                📋 Связанные задачи ({tasks.length})
+                            </h2>
+                            <Button
+                                variant="success"
+                                onClick={() => {
+                                    loadAvailableTasks()
+                                    setShowAddTaskModal(true)
+                                }}
+                            >
+                                ➕ Добавить задачу
+                            </Button>
+                        </div>
+
+                        {tasks.length === 0 ? (
+                            <div className="batch-detail__empty">
+                                <span className="batch-detail__empty-icon">📭</span>
+                                <p>Нет связанных задач</p>
+                                <Button
+                                    variant="primary"
+                                    onClick={() => {
+                                        loadAvailableTasks()
+                                        setShowAddTaskModal(true)
+                                    }}
+                                >
+                                    ➕ Добавить задачу
+                                </Button>
+                            </div>
+                        ) : (
+                            <Table
+                                data={tasks}
+                                columns={taskColumns}
+                                pageSize={10}
+                                enableSelection={false}
+                                enableSorting={true}
+                                enableFiltering={true}
+                                enablePagination={true}
+                                enableColumnVisibility={false}
+                                enableAddButton={false}
+                                enableExport={false}
+                                enableInlineEdit={false}
+                                enableEmptyRow={false}
+                                enableActionsColumn={false}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Модальное окно добавления задачи */}
+            {showAddTaskModal && (
+                <div className="modal-overlay" onClick={() => setShowAddTaskModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-title">➕ Добавление задачи в батч</h2>
+                        <div className="modal-form-group">
+                            <label>Выберите задачу</label>
+                            {availableTasks.length === 0 ? (
+                                <p className="modal-empty">Нет доступных задач</p>
+                            ) : (
+                                <select
+                                    value={selectedTaskId}
+                                    onChange={(e) => setSelectedTaskId(e.target.value)}
+                                    className="modal-input"
+                                >
+                                    <option value="">Выберите...</option>
+                                    {availableTasks.map(t => (
+                                        <option key={t.id} value={t.id}>
+                                            #{t.id} {t.name} ({t.department || '—'})
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                        <div className="modal-button-group">
+                            <Button variant="secondary" onClick={() => setShowAddTaskModal(false)}>
+                                Отмена
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onClick={handleAddTask}
+                                disabled={!selectedTaskId || availableTasks.length === 0}
+                            >
+                                ➕ Добавить
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Модальное окно редактирования батча */}
             {showEditModal && (

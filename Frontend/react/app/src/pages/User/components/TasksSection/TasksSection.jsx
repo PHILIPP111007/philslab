@@ -7,6 +7,7 @@ import Accordion from '../../../components/Accordion/Accordion'
 import Button from '../../../components/Button/Button'
 import Badge from '../../../components/Badge/Badge'
 import ProgressBar from '../../../components/ProgressBar/ProgressBar'
+import LinkButton from '../../../components/LinkButton/LinkButton'
 
 export default function TasksSection() {
     const { user } = useContext(UserContext)
@@ -477,6 +478,24 @@ export default function TasksSection() {
                         <div className="tasks-accordion__row">
                             <span className="tasks-accordion__label">📋 Этапов:</span>
                             <span>{stagesCount}</span>
+                        </div>
+                        <div className="tasks-accordion__row">
+                            <span className="tasks-accordion__label">📦 Батчи:</span>
+                            <span>
+                                {task.batches && task.batches.length > 0 ? (
+                                    task.batches.map(batch => (
+                                        <LinkButton
+                                            key={batch.id}
+                                            to={`/batch/${batch.id}`}
+                                            style={{ marginRight: '8px' }}
+                                        >
+                                            {batch.name || `#${batch.id}`}
+                                        </LinkButton>
+                                    ))
+                                ) : (
+                                    'Нет'
+                                )}
+                            </span>
                         </div>
                         <div className="tasks-accordion__row">
                             <span className="tasks-accordion__label">📊 Прогресс:</span>

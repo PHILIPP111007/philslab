@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
-from sqlmodel import select
+from sqlmodel import func, select
 
 from app.database import SessionDep
 from app.models import (
@@ -61,25 +61,62 @@ async def get_tasks(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    # ✅ Загружаем этапы протокола через selectinload
+    # Базовый запрос с загрузкой всех необходимых связей
     statement = select(Task).options(
         selectinload(Task.created_by),
         selectinload(Task.assigned_to),
-        selectinload(Task.protocol).selectinload(
-            Protocol.stages
-        ),  # ← загружаем stages протокола
-        selectinload(Task.task_stages),  # ← загружаем task_stages
-        selectinload(Task.batches),
+        selectinload(Task.protocol).selectinload(Protocol.stages),
+        selectinload(Task.task_stages),
+        selectinload(Task.batches).selectinload(
+            Batch.subsamples
+        ),  # ← загружаем subsamples у батчей
         selectinload(Task.history).selectinload(QueryHistory.user),
     )
 
-    # ... остальной код (фильтры, сортировка, пагинация)
+    # --- Применение фильтров ---
+    if search:
+        statement = statement.where(
+            Task.name.contains(search)
+            | Task.description.contains(search)
+            | Task.department.contains(search)
+        )
 
+    if assigned_to is not None:
+        statement = statement.where(Task.assigned_to_id == assigned_to)
+
+    if created_by is not None:
+        statement = statement.where(Task.created_by_id == created_by)
+
+    if is_completed is not None:
+        statement = statement.where(Task.is_completed == is_completed)
+
+    if priority:
+        statement = statement.where(Task.priority == priority)
+
+    # --- Сортировка ---
+    if sort_by and hasattr(Task, sort_by):
+        column = getattr(Task, sort_by)
+        statement = statement.order_by(
+            column.desc() if sort_order == "desc" else column.asc()
+        )
+    else:
+        # По умолчанию сортируем по дате создания (сначала новые)
+        statement = statement.order_by(Task.created_at.desc())
+
+    # --- Подсчёт общего количества (до пагинации) ---
+    count_stmt = select(func.count()).select_from(statement.subquery())
+    total = (await session.exec(count_stmt)).one()
+
+    # --- Пагинация ---
+    offset = (page - 1) * page_size
+    statement = statement.offset(offset).limit(page_size)
+
+    # Выполнение запроса
     tasks = (await session.exec(statement)).all()
 
+    # --- Формирование ответа (как в вашем коде) ---
     result = []
     for task in tasks:
-        # ✅ Этапы задачи (TaskStage)
         stages_data = [
             {
                 "id": stage.id,
@@ -91,7 +128,6 @@ async def get_tasks(
             for stage in task.task_stages
         ]
 
-        # ✅ Этапы протокола (оригинальные)
         protocol_stages_data = []
         if task.protocol:
             protocol_stages_data = [
@@ -104,6 +140,11 @@ async def get_tasks(
                 }
                 for stage in task.protocol.stages
             ]
+
+        all_subsamples = []
+        for batch in task.batches:
+            all_subsamples.extend(batch.subsamples or [])
+        unique_samples = list({s.id: s for s in all_subsamples}.values())
 
         task_dict = {
             "id": task.id,
@@ -139,11 +180,19 @@ async def get_tasks(
                 "id": task.protocol.id,
                 "name": task.protocol.name,
                 "code": task.protocol.code,
-                "stages": protocol_stages_data,  # ← добавляем этапы протокола
+                "stages": protocol_stages_data,
             }
             if task.protocol
             else None,
-            "stages": stages_data,  # ← этапы задачи (TaskStage)
+            "stages": stages_data,
+            "samples": [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "sample_code": s.sample_code,
+                }
+                for s in unique_samples
+            ],
             "batches": [
                 {
                     "id": b.id,
@@ -180,6 +229,7 @@ async def get_tasks(
     return {
         "ok": True,
         "data": result,
+        "total": total,
         "page": page,
         "page_size": page_size,
     }
@@ -202,9 +252,7 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
         options=[
             selectinload(Task.created_by),
             selectinload(Task.assigned_to),
-            selectinload(Task.protocol).selectinload(
-                Protocol.stages
-            ),  # ← загружаем stages протокола
+            selectinload(Task.protocol).selectinload(Protocol.stages),
             selectinload(Task.task_stages),
             selectinload(Task.batches),
             selectinload(Task.history).selectinload(QueryHistory.user),

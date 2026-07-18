@@ -114,25 +114,6 @@ class QueryHistoryAdmin(admin.ModelAdmin):
 # ============================================
 
 
-class SampleInline(admin.TabularInline):
-    """Inline для образцов задачи"""
-
-    model = Task.samples.through
-    extra = 1
-    verbose_name = "Образец"
-    verbose_name_plural = "Образцы"
-    fields = ("sample", "sample_name", "sample_user")
-    readonly_fields = ("sample_name", "sample_user")
-
-    def sample_name(self, obj):
-        """Название образца"""
-        return obj.sample.name if obj.sample else "-"
-
-    def sample_user(self, obj):
-        """Пользователь образца"""
-        return obj.sample.user if obj.sample else "-"
-
-
 class HistoryInline(admin.TabularInline):
     """Inline для истории задачи"""
 
@@ -177,7 +158,7 @@ class TaskAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("created_at", "updated_at", "completed_at")
     ordering = ("-priority", "-created_at")
-    inlines = [SampleInline, HistoryInline]
+    inlines = [HistoryInline]
     actions = ["mark_as_completed", "mark_as_incomplete", "archive_tasks"]
 
 

@@ -61,12 +61,6 @@ class Task(models.Model):
     )
     # Этапы задачи – теперь отдельная модель TaskStage, связанная через related_name='stages'
     # Само поле stages не объявляем, но доступно через related_name
-    samples = models.ManyToManyField(
-        "app.Sample",
-        blank=True,
-        related_name="tasks",
-        verbose_name="Образцы",
-    )
 
     # ✅ Батчи (многие ко многим)
     batches = models.ManyToManyField(
