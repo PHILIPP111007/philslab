@@ -936,6 +936,8 @@ export default function TasksSection() {
                                                     onChange={(e) => toggleStage(showStepsModal, stage.id, e.target.checked)}
                                                 />
                                                 <span className="tasks-steps-list__name">
+                                                    Шаг {stage.order}:
+                                                    <br />
                                                     {stage.name}
                                                     {stage.is_completed && ' ✅'}
                                                 </span>
