@@ -1,5 +1,5 @@
 import './TasksSection.css'
-import { useState, useEffect, useContext, useMemo } from 'react'
+import { useState, useEffect, use, useMemo } from 'react'
 import { UserContext } from '../../../../data/context.js'
 import Fetch from '../../../../API/Fetch'
 import { HttpMethod, APIVersion } from '../../../../data/enums'
@@ -10,7 +10,7 @@ import ProgressBar from '../../../components/ProgressBar/ProgressBar'
 import LinkButton from '../../../components/LinkButton/LinkButton'
 
 export default function TasksSection() {
-    const { user } = useContext(UserContext)
+    const { user } = use(UserContext)
     const [assignedTasks, setAssignedTasks] = useState([])
     const [createdTasks, setCreatedTasks] = useState([])
     const [archivedTasks, setArchivedTasks] = useState([])
@@ -528,13 +528,11 @@ export default function TasksSection() {
                                 📜 История
                             </Button>
 
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => window.open(`/samples/${user.username}/?task=${task.id}`, '_blank')}
+                            <LinkButton
+                                to={`/batches/${user.username}/`}
                             >
                                 📎 Образцы ({task.samples?.length || 0})
-                            </Button>
+                            </LinkButton>
 
                             <Button
                                 variant="secondary"
