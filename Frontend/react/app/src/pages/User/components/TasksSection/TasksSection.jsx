@@ -577,7 +577,7 @@ export default function TasksSection() {
         <div className="tasks-section">
             <div className="tasks-section__header">
                 <h3 className="tasks-section__title">📋 Задачи</h3>
-                <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                <Button onClick={() => setShowCreateModal(true)}>
                     ➕ Создать задачу
                 </Button>
             </div>
