@@ -3,6 +3,7 @@ import { useState, useEffect, use, useMemo } from 'react'
 import { UserContext } from '../../../data/context.js'
 import Fetch from '../../../API/Fetch'
 import { HttpMethod, APIVersion } from '../../../data/enums'
+import { notify_error, notify_success } from '../../../modules/notify'
 import Accordion from '../../components/Accordion/Accordion'
 import Button from '../../components/Button/Button'
 import Badge from '../../components/Badge/Badge'
@@ -204,7 +205,7 @@ export default function TasksSection({ departmentName }) {
             loadCreatedTasks()
         } else {
             console.error('Ошибка создания задачи:', data)
-            alert(data?.error || 'Ошибка создания задачи')
+            notify_error(data?.error || 'Ошибка создания задачи')
         }
     }
 
@@ -247,10 +248,10 @@ export default function TasksSection({ departmentName }) {
             setEditingTask(null)
             loadAssignedTasks()
             loadCreatedTasks()
-            alert('✅ Задача обновлена!')
+            notify_success('Задача обновлена!')
         } else {
             console.error('Ошибка обновления задачи:', data)
-            alert(data?.error || 'Ошибка обновления задачи')
+            notify_error(data?.error || 'Ошибка обновления задачи')
         }
     }
 
@@ -267,10 +268,10 @@ export default function TasksSection({ departmentName }) {
             loadAssignedTasks()
             loadCreatedTasks()
             loadArchivedTasks()
-            alert('✅ Задача архивирована!')
+            notify_success('Задача архивирована!')
         } else {
             console.error('Ошибка архивации:', data)
-            alert(data?.error || 'Ошибка архивации задачи')
+            notify_error(data?.error || 'Ошибка архивации задачи')
         }
     }
 
@@ -285,10 +286,10 @@ export default function TasksSection({ departmentName }) {
         if (data?.ok) {
             loadAssignedTasks()
             loadCreatedTasks()
-            alert('✅ Статус задачи обновлен!')
+            notify_success('Статус задачи обновлен!')
         } else {
             console.error('Ошибка обновления статуса:', data)
-            alert(data?.error || 'Ошибка обновления статуса')
+            notify_error(data?.error || 'Ошибка обновления статуса')
         }
     }
 
@@ -302,10 +303,10 @@ export default function TasksSection({ departmentName }) {
             loadAssignedTasks()
             loadCreatedTasks()
             loadArchivedTasks()
-            alert('✅ Задача разархивирована!')
+            notify_success('Задача разархивирована!')
         } else {
             console.error('Ошибка разархивации:', data)
-            alert(data?.error || 'Ошибка разархивации задачи')
+            notify_error(data?.error || 'Ошибка разархивации задачи')
         }
     }
 
