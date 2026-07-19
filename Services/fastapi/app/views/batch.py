@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Query, Request
+from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
 from app.database import SessionDep
@@ -95,7 +96,6 @@ async def get_batches(
         return {"ok": False, "error": "Can not authenticate."}
 
     # Для списка без коммита можно использовать selectinload
-    from sqlalchemy.orm import selectinload
 
     statement = select(Batch).options(
         selectinload(Batch.subsamples), selectinload(Batch.tasks)
@@ -139,8 +139,6 @@ async def get_batches(
 async def get_batch(session: SessionDep, request: Request, batch_id: int):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
-
-    from sqlalchemy.orm import selectinload
 
     batch = await session.get(
         Batch,
