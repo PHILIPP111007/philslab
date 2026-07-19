@@ -330,6 +330,26 @@ export default function Samples() {
         }
     }
 
+    const handleExportAll = async ({ sorting, globalFilter, columnFilters }) => {
+        const query = new URLSearchParams();
+        if (sorting.length > 0) {
+            query.set('sort_by', sorting[0].id);
+            query.set('sort_order', sorting[0].desc ? 'desc' : 'asc');
+        }
+        if (globalFilter) query.set('search', globalFilter);
+        columnFilters.forEach(f => {
+            query.set(`filter[${f.id}]`, f.value);
+        });
+
+        const res = await Fetch({
+            api_version: APIVersion.V2,
+            action: `samples/export/?${query.toString()}`,
+            method: HttpMethod.GET,
+        });
+        return res?.data || [];
+    };
+
+
     // Инициализация lazy-загрузки
     const handleLazyLoad = useCallback((params) => {
         setLazyParams(params);
@@ -389,6 +409,7 @@ export default function Samples() {
                             onEditSuccess={handleEditSample}
                             onDeleteSuccess={handleDeleteSample}
                             onDataChange={handleDataChange}
+                            onExportAll={handleExportAll}
                         />
                     }
                 </section>

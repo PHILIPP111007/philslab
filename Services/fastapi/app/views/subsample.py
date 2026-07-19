@@ -154,3 +154,75 @@ async def delete_subsample(
     await session.delete(subsample)
     await session.commit()
     return {"ok": True}
+
+
+@router.get("/subsamples/export/")
+async def export_subsamples(
+    session: SessionDep,
+    request: Request,
+    search: str = Query(None),
+):
+    if not request.state.user:
+        return {"ok": False, "error": "Can not authenticate."}
+
+    # Извлекаем все фильтры из query params
+    filters = {}
+    for key, value in request.query_params.items():
+        if key.startswith("filter[") and key.endswith("]"):
+            field_name = key[len("filter[") : -1]
+            filters[field_name] = value
+
+    statement = select(Subsample)
+
+    if search:
+        statement = statement.where(
+            (Subsample.sample_code.contains(search))
+            | (Subsample.name.contains(search))
+            | (Subsample.descr.contains(search))
+        )
+
+    for field, value in filters.items():
+        if not hasattr(Subsample, field):
+            continue
+        column = getattr(Subsample, field)
+        if field in ("some_number", "qc_1", "qc_2", "sample_id", "user_id"):
+            try:
+                if "." in value:
+                    num_val = float(value)
+                else:
+                    num_val = int(value)
+                statement = statement.where(column == num_val)
+            except ValueError:
+                pass
+        else:
+            statement = statement.where(column.ilike(f"%{value}%"))
+
+    sort_by = request.query_params.get("sort_by")
+    sort_order = request.query_params.get("sort_order", "asc")
+    if sort_by and hasattr(Subsample, sort_by):
+        column = getattr(Subsample, sort_by)
+        statement = statement.order_by(
+            column.desc() if sort_order == "desc" else column.asc()
+        )
+    else:
+        statement = statement.order_by(Subsample.timestamp.desc())
+
+    subsamples = (await session.exec(statement)).all()
+
+    result = []
+    for s in subsamples:
+        result.append(
+            {
+                "id": s.id,
+                "sample_id": s.sample_id,
+                "sample_code": s.sample_code,
+                "name": s.name,
+                "some_number": s.some_number,
+                "qc_1": s.qc_1,
+                "qc_2": s.qc_2,
+                "descr": s.descr,
+                "user_id": s.user_id,
+                "timestamp": s.timestamp.isoformat() if s.timestamp else None,
+            }
+        )
+    return {"ok": True, "data": result}

@@ -454,7 +454,6 @@ const TableRow = ({ row, handleRowContextMenu }) => {
 };
 
 
-
 // ============================================
 // ОСНОВНОЙ КОМПОНЕНТ ТАБЛИЦЫ
 // ============================================
@@ -483,6 +482,7 @@ export default function Table({
     lazy = false,
     onLazyLoad,
     totalRows = 0,
+    onExportAll,
 }) {
     // ---------- утилиты для пустой строки ----------
     const createEmptyRowData = useCallback((id) => {
@@ -865,100 +865,118 @@ export default function Table({
     })
 
     // ---------- экспорт ----------
-    const getExportData = useCallback((selectedOnly = false) => {
-        // Для выбранных строк – всегда берём из выделения
+    // ---------- экспорт ----------
+    const getExportData = useCallback(async (selectedOnly = false) => {
+        // 1. Только выбранные строки (локально)
         if (selectedOnly) {
             return table.getSelectedRowModel().rows
                 .map(r => r.original)
-                .filter(item => item.id > 0)
+                .filter(item => item.id > 0);
         }
-        // Для всех строк – берём все отфильтрованные данные до пагинации
-        // В lazy-режиме getPrePaginationRowModel вернёт только текущую страницу,
-        // т.к. фильтрация ручная, но это лучше, чем data с пустыми строками.
+
+        // 2. Если есть onExportAll, запрашиваем все данные с сервера
+        if (onExportAll) {
+            try {
+                const allData = await onExportAll({
+                    sorting,
+                    globalFilter,
+                    columnFilters,
+                });
+                return allData.filter(item => item.id > 0);
+            } catch (error) {
+                console.error('Export all error:', error);
+                notify_error('Ошибка загрузки данных для экспорта');
+                return [];
+            }
+        }
+
+        // 3. Локальный экспорт всех отфильтрованных записей (без пагинации)
         return table.getPrePaginationRowModel().rows
             .map(r => r.original)
-            .filter(item => item.id > 0)
-    }, [table])
+            .filter(item => item.id > 0);
+    }, [table, onExportAll, sorting, globalFilter, columnFilters]);
 
     const exportToExcel = useCallback(async (selectedOnly = false) => {
-        const exportData = getExportData(selectedOnly)
+        const exportData = await getExportData(selectedOnly);
         if (exportData.length === 0) {
-            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
-            return
+            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта');
+            return;
         }
         try {
-            const workbook = new ExcelJS.Workbook()
+            const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Данные', {
                 properties: { tabColor: { argb: selectedOnly ? 'FF4CAF50' : 'FF2196F3' } }
-            })
-            const exportColumns = userColumns.filter(col => col.accessorKey)
-            const headerRow = worksheet.addRow(exportColumns.map(col => col.header || col.accessorKey))
+            });
+            const exportColumns = userColumns.filter(col => col.accessorKey);
+            const headerRow = worksheet.addRow(exportColumns.map(col => col.header || col.accessorKey));
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: selectedOnly ? 'FF4CAF50' : 'FF2196F3' } }
-                cell.alignment = { vertical: 'middle', horizontal: 'center' }
-                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-            })
-            headerRow.height = 25
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: selectedOnly ? 'FF4CAF50' : 'FF2196F3' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            });
+            headerRow.height = 25;
             exportData.forEach((item, index) => {
-                const rowData = exportColumns.map(col => item[col.accessorKey] ?? '')
-                const dataRow = worksheet.addRow(rowData)
+                const rowData = exportColumns.map(col => item[col.accessorKey] ?? '');
+                const dataRow = worksheet.addRow(rowData);
                 if (index % 2 === 0) {
-                    dataRow.eachCell(cell => cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } })
+                    dataRow.eachCell(cell => cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } });
                 }
                 dataRow.eachCell((cell, colNumber) => {
-                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-                    cell.alignment = { horizontal: typeof rowData[colNumber - 1] === 'number' ? 'right' : 'left' }
-                })
-            })
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                    cell.alignment = { horizontal: typeof rowData[colNumber - 1] === 'number' ? 'right' : 'left' };
+                });
+            });
             worksheet.columns = exportColumns.map(col => ({
                 width: Math.min(Math.max(
                     (col.header || col.accessorKey).length,
                     ...exportData.map(item => String(item[col.accessorKey] ?? '').length)
                 ) + 4, 50)
-            }))
+            }));
             worksheet.autoFilter = {
                 from: { row: 1, column: 1 },
                 to: { row: exportData.length + 1, column: exportColumns.length }
-            }
-            const buffer = await workbook.xlsx.writeBuffer()
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-            const link = document.createElement('a')
-            link.href = URL.createObjectURL(blob)
-            link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.xlsx`
-            link.click()
-            URL.revokeObjectURL(link.href)
+            };
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            link.click();
+            URL.revokeObjectURL(link.href);
         } catch (error) {
-            console.error('Export error:', error)
-            notify_error('Ошибка экспорта в Excel')
+            console.error('Export error:', error);
+            notify_error('Ошибка экспорта в Excel');
         }
-    }, [getExportData, userColumns])
+    }, [getExportData, userColumns]);
 
-    const exportToCSV = useCallback((selectedOnly = false) => {
-        const exportData = getExportData(selectedOnly)
+
+    const exportToCSV = useCallback(async (selectedOnly = false) => {
+        const exportData = await getExportData(selectedOnly);
         if (exportData.length === 0) {
-            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
-            return
+            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта');
+            return;
         }
-        const exportColumns = userColumns.filter(col => col.accessorKey)
-        const headers = exportColumns.map(col => col.header || col.accessorKey).join(';')
+        const exportColumns = userColumns.filter(col => col.accessorKey);
+        const headers = exportColumns.map(col => col.header || col.accessorKey).join(';');
         const rows = exportData.map(item =>
             exportColumns.map(col => {
-                let value = item[col.accessorKey] ?? ''
+                let value = item[col.accessorKey] ?? '';
                 if (typeof value === 'string' && (value.includes(';') || value.includes('"'))) {
-                    value = `"${value.replace(/"/g, '""')}"`
+                    value = `"${value.replace(/"/g, '""')}"`;
                 }
-                return value
+                return value;
             }).join(';')
-        )
-        const csvContent = '\uFEFF' + [headers, ...rows].join('\n')
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const link = document.createElement('a')
-        link.href = URL.createObjectURL(blob)
-        link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.csv`
-        link.click()
-        URL.revokeObjectURL(link.href)
-    }, [getExportData, userColumns])
+        );
+        const csvContent = '\uFEFF' + [headers, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }, [getExportData, userColumns]);
+
 
 
     // ---------- рендер ----------

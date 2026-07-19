@@ -153,3 +153,88 @@ async def delete_sample(session: SessionDep, request: Request, sample_id: int):
     await session.delete(sample)
     await session.commit()
     return {"ok": True}
+
+
+@router.get("/samples/export/")
+async def export_samples(
+    session: SessionDep,
+    request: Request,
+    search: str = Query(None),
+):
+    if not request.state.user:
+        return {"ok": False, "error": "Can not authenticate."}
+
+    # Извлекаем все фильтры из query params
+    filters = {}
+    for key, value in request.query_params.items():
+        if key.startswith("filter[") and key.endswith("]"):
+            field_name = key[len("filter[") : -1]
+            filters[field_name] = value
+
+    statement = select(Sample)
+
+    # Глобальный поиск
+    if search:
+        statement = statement.where(
+            (Sample.sample_code.contains(search))
+            | (Sample.name.contains(search))
+            | (Sample.descr.contains(search))
+            # Можно добавить другие поля при необходимости
+        )
+
+    # Применяем фильтры по полям
+    for field, value in filters.items():
+        if not hasattr(Sample, field):
+            continue
+        column = getattr(Sample, field)
+        # Для числовых полей – точное совпадение
+        if field in ("some_number", "qc_1", "qc_2", "sample_id", "user_id"):
+            try:
+                if "." in value:
+                    num_val = float(value)
+                else:
+                    num_val = int(value)
+                statement = statement.where(column == num_val)
+            except ValueError:
+                pass
+        else:
+            # Для текстовых полей – поиск подстроки (регистронезависимый)
+            statement = statement.where(column.ilike(f"%{value}%"))
+
+    # Сортировка
+    sort_by = request.query_params.get("sort_by")
+    sort_order = request.query_params.get("sort_order", "asc")
+    if sort_by and hasattr(Sample, sort_by):
+        column = getattr(Sample, sort_by)
+        statement = statement.order_by(
+            column.desc() if sort_order == "desc" else column.asc()
+        )
+    else:
+        statement = statement.order_by(Sample.timestamp.desc())
+
+    samples = (await session.exec(statement)).all()
+
+    # Формируем полный список полей, соответствующий основному эндпоинту samples
+    result = []
+    for s in samples:
+        result.append(
+            {
+                "id": s.id,
+                "name": s.name,
+                "sample_code": s.sample_code,
+                "sample_group_code": s.sample_group_code,
+                "zlims_code": s.zlims_code,
+                "uin1": s.uin1,
+                "uin2": s.uin2,
+                "project_code": s.project_code,
+                "sample_index": s.sample_index,
+                "some_number": s.some_number,
+                "qc_1": s.qc_1,
+                "qc_2": s.qc_2,
+                "descr": s.descr,
+                "material_type": s.material_type,
+                "user_id": s.user_id,
+                "timestamp": s.timestamp.isoformat() if s.timestamp else None,
+            }
+        )
+    return {"ok": True, "data": result}
