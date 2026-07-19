@@ -61,7 +61,11 @@ export default function Department() {
     return (
         <>
             <Header />
-            <TasksSection departmentName={departmentName} />
+            <div className="app theme-transition">
+                <section className="section">
+                    <TasksSection departmentName={departmentName} />
+                </section>
+            </div>
         </>
     );
 }

@@ -29,8 +29,6 @@ app = FastAPI(
     openapi_url="/docs/openapi.json",
 )
 
-app.openapi_version = "3.0.0"
-
 
 #########################################
 # Middleware ############################
@@ -78,10 +76,7 @@ async def attach_user_to_request(request: Request, call_next: Callable):
         user = await session.exec(select(User).where(User.id == token_obj.user_id))
         user = user.one()
         if user:
-            request.state.user = User(
-                id=user.id,
-                username=user.username,
-            )
+            request.state.user = user
 
     # Продолжаем обработку запроса
     return await call_next(request)
