@@ -265,6 +265,185 @@
 }
 
 /* ========================================
+   ФОН СТРАНИЦЫ
+   ======================================== */
+.main-page {
+    position: relative;
+    background: var(--bg);
+    min-height: 100vh;
+}
+
+/* Убираем старый псевдоэлемент */
+.main-page::after {
+    display: none;
+}
+
+/* ========================================
+   СЕТКА С ЛОГОТИПОМ
+   ======================================== */
+.main-page__grid {
+    position: relative;
+    z-index: 1;
+}
+
+/* Логотип как фон сетки */
+.main-page__grid::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    background: url('/btc_logo.png') center/contain no-repeat;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ========================================
+   КАРТОЧКИ - ВАЖНО! Применяем к элементу LinkButton
+   ======================================== */
+.main-page__card,
+a.main-page__card,
+.link-btn.main-page__card {
+    position: relative !important;
+    z-index: 2 !important;
+
+    /* Полупрозрачный фон */
+    background: rgba(30, 30, 30, 0.7) !important;
+
+    /* Размытие фона */
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+
+    /* Граница */
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+
+    /* Тень */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+
+    /* Переходы */
+    transition: all 0.3s ease !important;
+
+    /* Отступы */
+    padding: 24px 20px !important;
+
+    /* Flex */
+    display: flex !important;
+    flex-direction: column !important;
+
+    /* Текст */
+    text-decoration: none !important;
+    color: inherit !important;
+
+    /* Отключаем стандартные стили LinkButton */
+    min-height: 180px;
+    cursor: pointer !important;
+}
+
+/* Ховер */
+.main-page__card:hover,
+a.main-page__card:hover,
+.link-btn.main-page__card:hover {
+    /* background: rgba(45, 45, 45, 0.85) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important; */
+    /* box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important; */
+    transform: translateY(-4px) !important;
+}
+
+/* Убираем левую полосу */
+.main-page__card::before {
+    display: none !important;
+}
+
+/* ========================================
+   ТЕКСТ В КАРТОЧКАХ
+   ======================================== */
+.main-page__card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0 0 6px 0;
+}
+
+.main-page__card-description {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.main-page__card-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.main-page__card-content {
+    flex: 1;
+}
+
+.main-page__card-arrow {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.5);
+    align-self: flex-end;
+    margin-top: 12px;
+    transition: all 0.3s ease;
+}
+
+.main-page__card:hover .main-page__card-arrow {
+    color: #ffffff;
+    transform: translateX(4px);
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+@media (max-width: 768px) {
+
+    .main-page__card,
+    a.main-page__card,
+    .link-btn.main-page__card {
+        min-height: 140px;
+        padding: 20px 16px !important;
+    }
+
+    .main-page__card-icon {
+        font-size: 28px;
+    }
+
+    .main-page__card-title {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .main-page__card,
+    a.main-page__card,
+    .link-btn.main-page__card {
+        min-height: 120px;
+        padding: 16px 14px !important;
+    }
+
+    .main-page__card-icon {
+        font-size: 24px;
+    }
+
+    .main-page__card-title {
+        font-size: 15px;
+    }
+
+    .main-page__card-description {
+        font-size: 12px;
+    }
+}
+
+/* ========================================
    АДАПТИВНОСТЬ
    ======================================== */
 @media (max-width: 768px) {

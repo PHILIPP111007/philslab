@@ -347,12 +347,12 @@
 }
 
 .tasks-section__tab--active {
-    background: var(--bg-selected);
+    background: var(--bg-hover);
     color: var(--text);
 }
 
 .tasks-section__tab--active:hover {
-    background: var(--bg-selected);
+    background: var(--bg-hover);
 }
 
 /* ========================================
