@@ -110,7 +110,7 @@
 }
 
 .main-page__card.link-btn-secondary {
-    --card-color: var(--text-dark);
+    --card-color: var(--text) !important;
 }
 
 .main-page__card.link-btn-success {
@@ -165,7 +165,7 @@
 
 .main-page__card-description {
     font-size: 13px;
-    color: var(--text-dark);
+    color: var(--text) !important;
     margin: 0;
     line-height: 1.4;
 }
@@ -175,7 +175,7 @@
    ======================================== */
 .main-page__card-arrow {
     font-size: 18px;
-    color: var(--text-dark);
+    color: var(--text) !important;
     align-self: flex-end;
     margin-top: 12px;
     transition: var(--transition);
@@ -184,7 +184,7 @@
 
 .main-page__card:hover .main-page__card-arrow {
     opacity: 1;
-    color: var(--card-color, var(--text-white));
+    color: var(--text) !important;
     transform: translateX(4px);
 }
 
@@ -200,7 +200,7 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: var(--text-dark);
+    color: var(--text) !important;
     flex-wrap: wrap;
 }
 
@@ -311,7 +311,7 @@ a.main-page__card,
     z-index: 2 !important;
 
     /* Полупрозрачный фон */
-    background: rgba(30, 30, 30, 0.7) !important;
+    background: var(--bg) !important;
 
     /* Размытие фона */
     backdrop-filter: blur(10px) !important;
