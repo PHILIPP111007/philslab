@@ -6,13 +6,13 @@ REACT_DIR = Frontend/react/app/
 create_env:
 	cd $(FASTAPI_DIR) && \
 	python3 -m venv .venv && \
-	source ./.venv/bin/activate && \
+	. ./.venv/bin/activate && \
 	pip install --upgrade pip && \
 	pip install -r requirements.txt
 
 	cd $(DJANGO_DIR) && \
 	python3 -m venv .venv && \
-	source ./.venv/bin/activate && \
+	. ./.venv/bin/activate && \
 	pip install --upgrade pip && \
 	pip install -r requirements.txt
 
