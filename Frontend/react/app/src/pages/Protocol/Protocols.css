@@ -1,0 +1,86 @@
+.protocol-accordion-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.protocol-code {
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--bg-light);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.protocol-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.protocol-accordion-content {
+    padding: 8px 0;
+}
+
+.protocol-description {
+    margin-bottom: 16px;
+    color: var(--text-dark);
+    line-height: 1.5;
+}
+
+.protocol-stages-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+}
+
+.protocol-stage-item {
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.stage-header {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.stage-order {
+    font-weight: 600;
+    color: var(--primary);
+    min-width: 50px;
+}
+
+.stage-name {
+    font-weight: 500;
+}
+
+.stage-description {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: var(--text-dark);
+    opacity: 0.8;
+}
+
+.protocol-meta {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.protocol-meta-item .label {
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.protocol-empty-stages {
+    color: var(--text-muted);
+    font-style: italic;
+}

@@ -30,6 +30,24 @@ test:
 	export TESTING=1 && \
 	pytest -v
 
+
+createsuperuser:
+	@echo "Starting django createsuperuser..."
+	cd $(DJANGO_DIR) && \
+	source ./.venv/bin/activate && \
+	export DEVELOPMENT=1 && \
+	export DEBUG=1 && \
+	python manage.py createsuperuser
+
+
+shell:
+	@echo "Starting django shell..."
+	cd $(DJANGO_DIR) && \
+	source ./.venv/bin/activate && \
+	export DEVELOPMENT=1 && \
+	export DEBUG=1 && \
+	python manage.py shell
+
 django:
 	@echo "Starting django..."
 	cd $(DJANGO_DIR) && \

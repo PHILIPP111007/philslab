@@ -1,6 +1,6 @@
-from typing import Callable
+from typing import Awaitable, Callable
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -11,7 +11,7 @@ from app.constants import (
 )
 from app.database import engine
 from app.models import Token, User
-from app.views import sample, user
+from app.views import batch, protocol, sample, stage, subsample, task, user
 
 app = FastAPI(
     title="PhilsLab",
@@ -28,8 +28,6 @@ app = FastAPI(
     },
     openapi_url="/docs/openapi.json",
 )
-
-app.openapi_version = "3.0.0"
 
 
 #########################################
@@ -53,39 +51,54 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def attach_user_to_request(request: Request, call_next: Callable):
+async def attach_user_to_request(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
     """Middleware to store user in request context"""
 
-    # Извлекаем учетные данные из запроса
-    token = request.headers.get("Authorization")
-
-    # Инициализируем пользователя как None по умолчанию
     request.state.user = None
 
-    # Базовая валидация наличия учетных данных
-    if not (token and " " in token):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
         return await call_next(request)
 
-    # Извлекаем токен из заголовка Authorization (формат: "Bearer <token>")
-    token = token.split(" ", 1)[1]
+    # Безопасное извлечение токена: проверяем префикс и наличие значения
+    try:
+        scheme, token = auth_header.split(" ", 1)
+    except ValueError:
+        return await call_next(request)
+
+    if scheme.lower() != "token" or not token:
+        return await call_next(request)
 
     async with AsyncSession(engine) as session:
         token_obj = await session.exec(select(Token).where(Token.key == token))
         token_obj = token_obj.first()
+
         if not token_obj:
             return await call_next(request)
 
-        user = await session.exec(select(User).where(User.id == token_obj.user_id))
-        user = user.one()
-        if user:
-            request.state.user = User(
-                id=user.id,
-                username=user.username,
-            )
+        # Безопасно: one_or_none вместо one, чтобы не было 500 при отсутствии юзера
+        user_result = await session.exec(
+            select(User).where(User.id == token_obj.user_id)
+        )
+        user = user_result.one_or_none()
 
-    # Продолжаем обработку запроса
+        if user:
+            request.state.user = user
+
     return await call_next(request)
 
 
-app.include_router(user.router, prefix=API_PREFIX)
-app.include_router(sample.router, prefix=API_PREFIX)
+routers = [
+    user.router,
+    sample.router,
+    subsample.router,
+    protocol.router,
+    stage.router,
+    task.router,
+    batch.router,
+]
+
+for router in routers:
+    app.include_router(router, prefix=API_PREFIX)

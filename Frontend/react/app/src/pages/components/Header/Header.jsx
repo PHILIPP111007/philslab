@@ -68,7 +68,16 @@ export default function Header() {
                                         <LinkButton to={`/users/${user.username}/`} variant="secondary">Личный кабинет</LinkButton>
                                         <br />
                                         <br />
+                                        <LinkButton to={`/main_page/${user.username}/`} variant="secondary">Главная страница</LinkButton>
+                                        <br />
+                                        <br />
                                         <LinkButton to={`/samples/${user.username}/`} variant="secondary">Образцы</LinkButton>
+                                        <br />
+                                        <br />
+                                        <LinkButton to={`/subsamples/${user.username}/`} variant="secondary">Суб образцы</LinkButton>
+                                        <br />
+                                        <br />
+                                        <LinkButton to={`/batches/${user.username}/`} variant="secondary">Батчи</LinkButton>
                                         <br />
                                         <br />
                                         <LinkButton to="/hello/" variant="secondary">Страница со стилями</LinkButton>

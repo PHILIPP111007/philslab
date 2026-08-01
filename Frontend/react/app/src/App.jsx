@@ -20,6 +20,7 @@ export default function App() {
         first_name: "",
         last_name: "",
         descr: "",
+        department: "",
     })
 
     useAuth({ username: user.username, setIsAuth: setIsAuth })
