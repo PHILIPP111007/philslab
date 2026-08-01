@@ -26,7 +26,7 @@ update_js_env:
 test:
 	@echo "Starting fastapi tests..."
 	cd $(FASTAPI_DIR) && \
-	source ./.venv/bin/activate && \
+	. ./.venv/bin/activate && \
 	export TESTING=1 && \
 	pytest -v
 
@@ -34,7 +34,7 @@ test:
 createsuperuser:
 	@echo "Starting django createsuperuser..."
 	cd $(DJANGO_DIR) && \
-	source ./.venv/bin/activate && \
+	. ./.venv/bin/activate && \
 	export DEVELOPMENT=1 && \
 	export DEBUG=1 && \
 	python manage.py createsuperuser
@@ -43,7 +43,7 @@ createsuperuser:
 shell:
 	@echo "Starting django shell..."
 	cd $(DJANGO_DIR) && \
-	source ./.venv/bin/activate && \
+	. ./.venv/bin/activate && \
 	export DEVELOPMENT=1 && \
 	export DEBUG=1 && \
 	python manage.py shell
@@ -51,7 +51,7 @@ shell:
 django:
 	@echo "Starting django..."
 	cd $(DJANGO_DIR) && \
-	source ./.venv/bin/activate && \
+	. ./.venv/bin/activate && \
 	export DEVELOPMENT=1 && \
 	export DEBUG=1 && \
 	python manage.py makemigrations && \
@@ -61,7 +61,7 @@ django:
 fastapi:
 	@echo "Starting fastapi..."
 	cd $(FASTAPI_DIR) && \
-	source ./.venv/bin/activate && \
+	. ./.venv/bin/activate && \
 	export DEVELOPMENT=1 && \
 	export TESTING=0 && \
 	python run.py
