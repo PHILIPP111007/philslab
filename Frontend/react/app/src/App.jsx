@@ -33,7 +33,11 @@ export default function App() {
                         <div className="App">
                             <Toaster />
                             <Suspense fallback={<SuspenseLoading />}>
-                                {/* <Suspense fallback={<ViewTransition><SuspenseLoading /></ViewTransition>}> */}
+                                {/* 
+                                    <Suspense fallback={<ViewTransition><SuspenseLoading /></ViewTransition>}>
+
+                                    https://react.dev/reference/react/ViewTransition
+                                */}
                                 <Routes>
                                     {PrivateRoutes.map((route) =>
                                         <Route
