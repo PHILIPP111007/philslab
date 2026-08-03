@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import Fetch from "../../API/Fetch"
 import { AuthContext, UserContext } from "../../data/context.js"
 import { HttpMethod, CacheKeys, APIVersion } from "../../data/enums.js"
-import getToken from "../../modules/getToken.js"
+import { getToken, setToken } from "../../modules/token.js"
 import { notify_success } from "../../modules/notify.js"
 
 export default function Login() {
@@ -70,7 +70,7 @@ export default function Login() {
         var data = await Fetch({ api_version: APIVersion.V1, action: "token/login/", method: HttpMethod.POST, body: formData, token: "" })
 
         if (data && !data.detail && data.auth_token) {
-            localStorage.setItem(CacheKeys.TOKEN, data.auth_token)
+            setToken(data.auth_token)
             setIsAuth(true)
 
             setUser({ ...user, password: formData.password })

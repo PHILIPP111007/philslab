@@ -3,7 +3,8 @@ import { useState, useRef, useEffect, use } from 'react'
 import { useNavigate } from "react-router-dom"
 import Fetch from "../../../API/Fetch.js"
 import { UserContext, AuthContext } from "../../../data/context.js"
-import { HttpMethod, CacheKeys, APIVersion } from "../../../data/enums.js"
+import { HttpMethod, APIVersion } from "../../../data/enums.js"
+import { deleteToken } from "../../../modules/token.js"
 import { ThemeToggle } from '../Theme/ThemeToggle'
 import LinkButton from '../LinkButton/LinkButton'
 
@@ -17,7 +18,7 @@ export default function Header() {
     async function logout() {
         await Fetch({ api_version: APIVersion.V1, action: "token/logout/", method: HttpMethod.POST })
         setIsAuth(false)
-        localStorage.removeItem(CacheKeys.TOKEN)
+        deleteToken()
         setUser({
             id: 0,
             username: "",
