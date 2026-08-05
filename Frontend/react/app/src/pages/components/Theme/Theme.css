@@ -6,12 +6,16 @@
 :root,
 [data-theme="dark"] {
     /* Основные цвета */
-    --bg: #1e1e1e;
+    --bg: rgb(30, 30, 30);
     --bg-light: #252526;
     --bg-hover: #2a2d2e;
     --bg-selected: #094771;
     --bg-active: #37373d;
     --bg-input: #1e1e1e;
+
+    --bg-r: 30;
+    --bg-g: 30;
+    --bg-b: 30;
 
     /* Границы */
     --border: #3c3c3c;
@@ -68,12 +72,16 @@
 /* СВЕТЛАЯ ТЕМА */
 [data-theme="light"] {
     /* Основные цвета */
-    --bg: #ffffff;
+    --bg: rgb(255, 255, 255);
     --bg-light: #f3f3f3;
     --bg-hover: #e8e8e8;
     --bg-selected: #cce4ff;
     --bg-active: #d0d0d0;
     --bg-input: #ffffff;
+
+    --bg-r: 255;
+    --bg-g: 255;
+    --bg-b: 255;
 
     /* Границы */
     --border: #d0d0d0;

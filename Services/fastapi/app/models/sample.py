@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.models.batch_sample_link import BatchSampleLink
+
 if TYPE_CHECKING:
     from .user import User
 
@@ -28,8 +30,6 @@ class Sample(SQLModel, table=True):
     sample_index: Optional[str] = Field(default=None, max_length=50)
 
     # Дополнительные поля
-    name: Optional[str] = Field(default=None, max_length=255)
-    some_number: Optional[int] = Field(default=None)
     qc_1: Optional[float] = Field(default=None)
     qc_2: Optional[float] = Field(default=None)
     descr: Optional[str] = Field(default=None, max_length=5000)
@@ -48,10 +48,11 @@ class Sample(SQLModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "[Sample.user_id]"},
     )
 
-    # Подобразцы
-    subsamples: List["Subsample"] = Relationship(back_populates="sample")
-
-    # # Связь с Task (многие ко многим)
+    # BatchSubsample (обратная связь)
+    batches: List["Batch"] = Relationship(
+        back_populates="samples",
+        link_model=BatchSampleLink,
+    )
     # tasks: List["Task"] = Relationship(
     #     back_populates="samples", link_model=TaskSampleLink
     # )

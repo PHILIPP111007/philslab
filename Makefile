@@ -30,7 +30,6 @@ test:
 	export TESTING=1 && \
 	pytest -v
 
-
 createsuperuser:
 	@echo "Starting django createsuperuser..."
 	cd $(DJANGO_DIR) && \
@@ -38,7 +37,6 @@ createsuperuser:
 	export DEVELOPMENT=1 && \
 	export DEBUG=1 && \
 	python manage.py createsuperuser
-
 
 shell:
 	@echo "Starting django shell..."

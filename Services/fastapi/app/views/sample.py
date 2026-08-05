@@ -101,8 +101,6 @@ async def create_sample(
         uin2=sample_data.uin2,
         project_code=sample_data.project_code,
         sample_index=sample_data.sample_index,
-        name=sample_data.name,
-        some_number=sample_data.some_number,
         qc_1=sample_data.qc_1,
         qc_2=sample_data.qc_2,
         descr=sample_data.descr,
@@ -176,9 +174,7 @@ async def export_samples(
     # Глобальный поиск
     if search:
         statement = statement.where(
-            (Sample.sample_code.contains(search))
-            | (Sample.name.contains(search))
-            | (Sample.descr.contains(search))
+            (Sample.sample_code.contains(search)) | (Sample.descr.contains(search))
             # Можно добавить другие поля при необходимости
         )
 
@@ -188,7 +184,7 @@ async def export_samples(
             continue
         column = getattr(Sample, field)
         # Для числовых полей – точное совпадение
-        if field in ("some_number", "qc_1", "qc_2", "sample_id", "user_id"):
+        if field in ("qc_1", "qc_2", "sample_id", "user_id"):
             try:
                 if "." in value:
                     num_val = float(value)
@@ -220,7 +216,6 @@ async def export_samples(
         result.append(
             {
                 "id": s.id,
-                "name": s.name,
                 "sample_code": s.sample_code,
                 "sample_group_code": s.sample_group_code,
                 "zlims_code": s.zlims_code,
@@ -228,7 +223,6 @@ async def export_samples(
                 "uin2": s.uin2,
                 "project_code": s.project_code,
                 "sample_index": s.sample_index,
-                "some_number": s.some_number,
                 "qc_1": s.qc_1,
                 "qc_2": s.qc_2,
                 "descr": s.descr,

@@ -63,8 +63,8 @@ export default function Batches() {
             editType: 'text',
         },
         {
-            accessorKey: 'subsample_count',  // ✅ новое поле
-            header: 'Подобразцов',
+            accessorKey: 'sample_count',  // ✅ новое поле
+            header: 'Образцов',
             size: 130,
             enableEditing: false,
             enableSorting: true,
@@ -239,8 +239,8 @@ export default function Batches() {
     }, [])
 
     // ---------- ПОДСЧЁТ СТАТИСТИКИ ----------
-    const totalSubsamples = batches.reduce((sum, b) => sum + (b.subsample_count || 0), 0)
-    const batchesWithSubsamples = batches.filter(b => (b.subsample_count || 0) > 0).length
+    const totalSamples = batches.reduce((sum, b) => sum + (b.subsample_count || 0), 0)
+    const batchesWithSamples = batches.filter(b => (b.subsample_count || 0) > 0).length
 
     // ---------- РЕНДЕР ----------
     return (
@@ -257,13 +257,13 @@ export default function Batches() {
                     <StatCard
                         icon="📋"
                         label="Всего подобразцов"
-                        value={totalSubsamples}
+                        value={totalSamples}
                         color="var(--green)"
                     />
                     <StatCard
                         icon="✅"
                         label="Батчей с подобразцами"
-                        value={batchesWithSubsamples}
+                        value={batchesWithSamples}
                         color="var(--orange)"
                     />
                 </div>

@@ -11,7 +11,7 @@ from app.constants import (
 )
 from app.database import engine
 from app.models import Token, User
-from app.views import batch, protocol, sample, stage, subsample, task, user
+from app.views import batch, protocol, sample, stage, task, user
 
 app = FastAPI(
     title="PhilsLab",
@@ -93,7 +93,6 @@ async def attach_user_to_request(
 routers = [
     user.router,
     sample.router,
-    subsample.router,
     protocol.router,
     stage.router,
     task.router,

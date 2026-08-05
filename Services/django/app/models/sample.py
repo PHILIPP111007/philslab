@@ -69,17 +69,6 @@ class Sample(models.Model):
     )
 
     # Дополнительные поля
-    name = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="Внутреннее название",
-    )
-    some_number = models.IntegerField(
-        blank=True,
-        null=True,
-        verbose_name="Дополнительный числовой идентификатор",
-    )
     qc_1 = models.FloatField(
         blank=True,
         null=True,
@@ -114,74 +103,3 @@ class Sample(models.Model):
 
     def __str__(self):
         return f"{self.sample_code} [ {self.zlims_code} ]"
-
-
-class Subsample(models.Model):
-    """
-    Подобразец (повторное выделение / копия) — относится к конкретному Sample.
-    """
-
-    sample = models.ForeignKey(
-        "app.Sample",
-        on_delete=models.CASCADE,
-        related_name="subsamples",
-        verbose_name="Родительский образец",
-    )
-
-    # Основные идентификаторы
-    sample_code = models.CharField(
-        max_length=255,
-        verbose_name="Sample_ID",
-        help_text="Уникальный идентификатор образца (например, 172R, 2256B, 5335BS_1, 5105)",
-        null=True,
-        blank=True,
-    )
-
-    # Связь с пользователем (кто создал подобразец)
-    user = models.ForeignKey(
-        "app.User",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name="Ответственный пользователь",
-    )
-
-    # Дополнительные поля (аналогичны Sample)
-    name = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="Внутреннее название",
-    )
-    some_number = models.IntegerField(
-        blank=True,
-        null=True,
-        verbose_name="Дополнительный числовой идентификатор",
-    )
-    qc_1 = models.FloatField(
-        blank=True,
-        null=True,
-        verbose_name="QC параметр 1",
-    )
-    qc_2 = models.FloatField(
-        blank=True,
-        null=True,
-        verbose_name="QC параметр 2",
-    )
-    descr = models.TextField(
-        max_length=5000,
-        blank=True,
-        null=True,
-        verbose_name="Описание",
-    )
-    timestamp = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Дата создания записи",
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="Дата обновления",
-    )
-
-    def __str__(self):
-        return f"{self.sample_code} (of {self.sample.sample_code})"

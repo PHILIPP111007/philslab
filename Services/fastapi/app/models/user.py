@@ -29,9 +29,6 @@ class User(SQLModel, table=True):
     # Образцы
     samples: List["Sample"] = Relationship(back_populates="user")
 
-    # Подобразцы
-    subsamples: List["Subsample"] = Relationship(back_populates="user")
-
     # Батчи
     batches: List["Batch"] = Relationship(back_populates="user")
 

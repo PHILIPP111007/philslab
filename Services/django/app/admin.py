@@ -7,7 +7,6 @@ from app.models import (
     QueryHistory,
     Sample,
     Stage,
-    Subsample,
     Task,
     TaskStage,
     User,
@@ -55,14 +54,12 @@ class StageAdmin(admin.ModelAdmin):
 @admin.register(Sample)
 class SampleAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
         "user",
         "zlims_code",
-        "some_number",
         "timestamp",
     )
     list_filter = ("user", "timestamp")
-    search_fields = ("name", "zlims_code", "descr", "user__username")
+    search_fields = ("zlims_code", "descr", "user__username")
     ordering = ("-timestamp",)
     readonly_fields = ("timestamp",)
 
@@ -160,11 +157,6 @@ class TaskAdmin(admin.ModelAdmin):
     ordering = ("-priority", "-created_at")
     inlines = [HistoryInline]
     actions = ["mark_as_completed", "mark_as_incomplete", "archive_tasks"]
-
-
-@admin.register(Subsample)
-class SubsampleAdmin(admin.ModelAdmin):
-    pass
 
 
 @admin.register(Batch)

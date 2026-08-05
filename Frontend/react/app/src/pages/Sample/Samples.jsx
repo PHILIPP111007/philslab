@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, use } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
-import { UserContext } from "../../data/context"
 import { notify_error } from '../../modules/notify'
 import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
@@ -11,13 +10,11 @@ import Header from '../components/Header/Header'
 import StatCard from '../components/StatCard/StatCard'
 
 export default function Samples() {
-    var { user, setUser } = use(UserContext)
     var params = useParams()
     const [samples, setSamples] = useState([])
     const [lazyParams, setLazyParams] = useState(null)
     const [totalRows, setTotalRows] = useState(0);
     const [loading, setLoading] = useState(true)
-
 
     useEffect(() => {
         rememberPage(`samples/${params.username}`)
@@ -30,13 +27,6 @@ export default function Samples() {
             size: 70,
             enableEditing: false,
             enableSorting: true,
-        },
-        {
-            accessorKey: 'name',
-            header: 'Название',
-            size: 120,
-            editType: 'text',
-            required: true,
         },
         {
             accessorKey: 'sample_code',
@@ -81,29 +71,16 @@ export default function Samples() {
             editType: 'text',
         },
         {
-            accessorKey: 'some_number',
-            header: 'Число',
-            size: 80,
-            editType: 'number',
-            conditionalFormatting: (value, row, column) => {
-                if (value > 100) {
-                    return { backgroundColor: '#ffcccc', color: '#900' }
-                }
-                return {}
-            },
-            aggregation: 'sum',
-        },
-        {
             accessorKey: 'qc_1',
             header: 'QC 1',
             size: 80,
-            editType: 'number',
+            editType: 'text',
         },
         {
             accessorKey: 'qc_2',
             header: 'QC 2',
             size: 80,
-            editType: 'number',
+            editType: 'text',
         },
         {
             accessorKey: 'descr',
@@ -128,33 +105,6 @@ export default function Samples() {
                 return new Date(val).toLocaleString('ru-RU')
             },
         },
-        {
-            id: 'days_ago',
-            header: 'Дней назад',
-            size: 100,
-            enableEditing: false,
-            accessorFn: (row) => {
-                if (!row.timestamp) return '—'
-                const created = new Date(row.timestamp)
-                const now = new Date()
-                const diff = Math.floor((now - created) / (1000 * 60 * 60 * 24))
-                return diff
-            },
-            cell: ({ getValue }) => {
-                const days = getValue()
-                if (days === '—') return '—'
-                return `${days} дн.`
-            },
-        },
-        {
-            id: 'full_info',
-            header: 'ZLIMS + Число',
-            size: 200,
-            enableEditing: false,
-            accessorFn: (row) => {
-                return `${row.zlims_code || ''}_${row.some_number || 0}`
-            },
-        }
     ]
 
 
@@ -207,8 +157,6 @@ export default function Samples() {
                 uin2: newItem.uin2 || '',
                 project_code: newItem.project_code || '',
                 sample_index: newItem.sample_index || '',
-                name: newItem.name,
-                some_number: newItem.some_number || null,
                 qc_1: newItem.qc_1 || null,
                 qc_2: newItem.qc_2 || null,
                 descr: newItem.descr || '',
@@ -236,8 +184,6 @@ export default function Samples() {
                 uin2: updatedItem.uin2,
                 project_code: updatedItem.project_code,
                 sample_index: updatedItem.sample_index,
-                name: updatedItem.name,
-                some_number: updatedItem.some_number,
                 qc_1: updatedItem.qc_1,
                 qc_2: updatedItem.qc_2,
                 descr: updatedItem.descr,
@@ -283,8 +229,6 @@ export default function Samples() {
                     uin2: updatedItem.uin2,
                     project_code: updatedItem.project_code,
                     sample_index: updatedItem.sample_index,
-                    name: updatedItem.name,
-                    some_number: updatedItem.some_number,
                     qc_1: updatedItem.qc_1,
                     qc_2: updatedItem.qc_2,
                     descr: updatedItem.descr,
@@ -314,8 +258,6 @@ export default function Samples() {
                     uin2: newItem.uin2 || '',
                     project_code: newItem.project_code || '',
                     sample_index: newItem.sample_index || '',
-                    name: newItem.name,
-                    some_number: newItem.some_number || null,
                     qc_1: newItem.qc_1 || null,
                     qc_2: newItem.qc_2 || null,
                     descr: newItem.descr || '',

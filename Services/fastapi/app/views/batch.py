@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
 from app.database import SessionDep
-from app.models import Batch, BatchSubsampleLink, Subsample, Task, TaskBatchLink
+from app.models import Batch, BatchSampleLink, Sample, Task, TaskBatchLink
 from app.request_body import BatchCreate, BatchUpdate
 
 router = APIRouter(tags=["batch"])
@@ -16,8 +16,8 @@ router = APIRouter(tags=["batch"])
 # ------------------------------------------------------------
 # Безопасная сериализация – связи передаются явно
 # ------------------------------------------------------------
-def serialize_batch(batch: Batch, subsamples: list = None, tasks: list = None) -> dict:
-    subs = subsamples if subsamples is not None else []
+def serialize_batch(batch: Batch, samples: list = None, tasks: list = None) -> dict:
+    subs = samples if samples is not None else []
     tsk = tasks if tasks is not None else []
 
     return {
@@ -28,8 +28,8 @@ def serialize_batch(batch: Batch, subsamples: list = None, tasks: list = None) -
         "timestamp": batch.timestamp.isoformat() if batch.timestamp else None,
         "updated_at": batch.updated_at.isoformat() if batch.updated_at else None,
         "user_id": batch.user_id,
-        "subsample_count": len(subs),
-        "subsamples": [
+        "sample_count": len(subs),
+        "samples": [
             {
                 "id": s.id,
                 "sample_code": s.sample_code,
@@ -59,12 +59,12 @@ def serialize_batch(batch: Batch, subsamples: list = None, tasks: list = None) -
 # Явная загрузка связей (не зависит от состояния объекта Batch)
 # ------------------------------------------------------------
 async def _load_batch_relations(session, batch_id):
-    """Загружает subsamples и tasks для заданного batch_id."""
-    subsamples = (
+    """Загружает samples и tasks для заданного batch_id."""
+    samples = (
         await session.exec(
-            select(Subsample)
-            .join(BatchSubsampleLink)
-            .where(BatchSubsampleLink.batch_id == batch_id)
+            select(Sample)
+            .join(BatchSampleLink)
+            .where(BatchSampleLink.batch_id == batch_id)
         )
     ).all()
 
@@ -74,7 +74,7 @@ async def _load_batch_relations(session, batch_id):
         )
     ).all()
 
-    return subsamples, tasks
+    return samples, tasks
 
 
 # ============================================================
@@ -98,7 +98,7 @@ async def get_batches(
     # Для списка без коммита можно использовать selectinload
 
     statement = select(Batch).options(
-        selectinload(Batch.subsamples), selectinload(Batch.tasks)
+        selectinload(Batch.samples), selectinload(Batch.tasks)
     )
 
     if search:
@@ -123,9 +123,7 @@ async def get_batches(
     statement = statement.offset(offset).limit(page_size)
     batches = (await session.exec(statement)).all()
 
-    result = [
-        serialize_batch(b, subsamples=b.subsamples, tasks=b.tasks) for b in batches
-    ]
+    result = [serialize_batch(b, samples=b.samples, tasks=b.tasks) for b in batches]
     return {
         "ok": True,
         "data": result,
@@ -143,14 +141,14 @@ async def get_batch(session: SessionDep, request: Request, batch_id: int):
     batch = await session.get(
         Batch,
         batch_id,
-        options=[selectinload(Batch.subsamples), selectinload(Batch.tasks)],
+        options=[selectinload(Batch.samples), selectinload(Batch.tasks)],
     )
     if not batch:
         return {"ok": False, "error": "Batch not found."}
 
     return {
         "ok": True,
-        "data": serialize_batch(batch, subsamples=batch.subsamples, tasks=batch.tasks),
+        "data": serialize_batch(batch, samples=batch.samples, tasks=batch.tasks),
     }
 
 
@@ -171,7 +169,7 @@ async def create_batch(session: SessionDep, request: Request, batch_data: BatchC
     # Загружаем свежий объект без связей и отдельно связи
     batch_obj = await session.get(Batch, batch.id)
     subs, tsk = await _load_batch_relations(session, batch.id)
-    return {"ok": True, "data": serialize_batch(batch_obj, subsamples=subs, tasks=tsk)}
+    return {"ok": True, "data": serialize_batch(batch_obj, samples=subs, tasks=tsk)}
 
 
 @router.put("/batch/{batch_id}/")
@@ -195,7 +193,7 @@ async def put_batch(
 
     batch_obj = await session.get(Batch, batch_id)
     subs, tsk = await _load_batch_relations(session, batch_id)
-    return {"ok": True, "data": serialize_batch(batch_obj, subsamples=subs, tasks=tsk)}
+    return {"ok": True, "data": serialize_batch(batch_obj, samples=subs, tasks=tsk)}
 
 
 @router.delete("/batch/{batch_id}/")
@@ -215,47 +213,47 @@ async def delete_batch(session: SessionDep, request: Request, batch_id: int):
 # --- Управление подобразцами ---
 
 
-@router.post("/batch/{batch_id}/subsample/{subsample_id}/")
-async def add_subsample_to_batch(
-    session: SessionDep, request: Request, batch_id: int, subsample_id: int
+@router.post("/batch/{batch_id}/sample/{sample_id}/")
+async def add_sample_to_batch(
+    session: SessionDep, request: Request, batch_id: int, sample_id: int
 ):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
     batch = await session.get(Batch, batch_id)
-    subsample = await session.get(Subsample, subsample_id)
-    if not batch or not subsample:
-        return {"ok": False, "error": "Batch or subsample not found."}
+    sample = await session.get(Sample, sample_id)
+    if not batch or not sample:
+        return {"ok": False, "error": "Batch or sample not found."}
 
     existing = await session.exec(
-        select(BatchSubsampleLink).where(
-            BatchSubsampleLink.batch_id == batch_id,
-            BatchSubsampleLink.subsample_id == subsample_id,
+        select(BatchSampleLink).where(
+            BatchSampleLink.batch_id == batch_id,
+            BatchSampleLink.sample_id == sample_id,
         )
     )
     if existing.first():
         return {"ok": False, "error": "Subsample already in batch."}
 
-    link = BatchSubsampleLink(batch_id=batch_id, subsample_id=subsample_id)
+    link = BatchSampleLink(batch_id=batch_id, sample_id=sample_id)
     session.add(link)
     await session.commit()
 
     batch_obj = await session.get(Batch, batch_id)
     subs, tsk = await _load_batch_relations(session, batch_id)
-    return {"ok": True, "data": serialize_batch(batch_obj, subsamples=subs, tasks=tsk)}
+    return {"ok": True, "data": serialize_batch(batch_obj, samples=subs, tasks=tsk)}
 
 
-@router.delete("/batch/{batch_id}/subsample/{subsample_id}/")
-async def remove_subsample_from_batch(
-    session: SessionDep, request: Request, batch_id: int, subsample_id: int
+@router.delete("/batch/{batch_id}/sample/{sample_id}/")
+async def remove_sample_from_batch(
+    session: SessionDep, request: Request, batch_id: int, sample_id: int
 ):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
     link = await session.exec(
-        select(BatchSubsampleLink).where(
-            BatchSubsampleLink.batch_id == batch_id,
-            BatchSubsampleLink.subsample_id == subsample_id,
+        select(BatchSampleLink).where(
+            BatchSampleLink.batch_id == batch_id,
+            BatchSampleLink.sample_id == sample_id,
         )
     )
     item = link.first()
@@ -267,11 +265,11 @@ async def remove_subsample_from_batch(
 
     batch_obj = await session.get(Batch, batch_id)
     subs, tsk = await _load_batch_relations(session, batch_id)
-    return {"ok": True, "data": serialize_batch(batch_obj, subsamples=subs, tasks=tsk)}
+    return {"ok": True, "data": serialize_batch(batch_obj, samples=subs, tasks=tsk)}
 
 
-@router.get("/batch/{batch_id}/subsamples/")
-async def get_batch_subsamples(session: SessionDep, request: Request, batch_id: int):
+@router.get("/batch/{batch_id}/samples/")
+async def get_batch_samples(session: SessionDep, request: Request, batch_id: int):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
@@ -279,12 +277,10 @@ async def get_batch_subsamples(session: SessionDep, request: Request, batch_id: 
     if not batch:
         return {"ok": False, "error": "Batch not found."}
 
-    subsamples = await session.exec(
-        select(Subsample)
-        .join(BatchSubsampleLink)
-        .where(BatchSubsampleLink.batch_id == batch_id)
+    samples = await session.exec(
+        select(Sample).join(BatchSampleLink).where(BatchSampleLink.batch_id == batch_id)
     )
-    return {"ok": True, "data": subsamples.all()}
+    return {"ok": True, "data": samples.all()}
 
 
 # --- Управление задачами ---
@@ -317,7 +313,7 @@ async def add_task_to_batch(
 
     batch_obj = await session.get(Batch, batch_id)
     subs, tsk = await _load_batch_relations(session, batch_id)
-    return {"ok": True, "data": serialize_batch(batch_obj, subsamples=subs, tasks=tsk)}
+    return {"ok": True, "data": serialize_batch(batch_obj, samples=subs, tasks=tsk)}
 
 
 @router.delete("/batch/{batch_id}/task/{task_id}/")
@@ -342,4 +338,4 @@ async def remove_task_from_batch(
 
     batch_obj = await session.get(Batch, batch_id)
     subs, tsk = await _load_batch_relations(session, batch_id)
-    return {"ok": True, "data": serialize_batch(batch_obj, subsamples=subs, tasks=tsk)}
+    return {"ok": True, "data": serialize_batch(batch_obj, samples=subs, tasks=tsk)}

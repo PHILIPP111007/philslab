@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .batch_subsample_link import BatchSubsampleLink
+from .batch_sample_link import BatchSampleLink
 from .task_batch_link import TaskBatchLink
 
 if TYPE_CHECKING:
-    from .subsample import Subsample
+    from .subsample import Sample
     from .task import Task
     from .user import User
 
@@ -37,9 +37,9 @@ class Batch(SQLModel, table=True):
     )
 
     # ✅ ManyToMany связь с Subsample
-    subsamples: List["Subsample"] = Relationship(
+    samples: List["Sample"] = Relationship(
         back_populates="batches",
-        link_model=BatchSubsampleLink,
+        link_model=BatchSampleLink,
     )
 
     # Связь с задачами (остаётся)
@@ -51,4 +51,4 @@ class Batch(SQLModel, table=True):
     @property
     def subsample_count(self) -> int:
         """Количество подобразцов в батче."""
-        return len(self.subsamples)
+        return len(self.samples)
