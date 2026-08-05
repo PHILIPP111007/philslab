@@ -1,32 +1,41 @@
-FROM python:3.13.14-slim
+# ----------------- СТАДИЯ СБОРКИ (builder) -----------------
+FROM python:3.13.14-slim AS builder
 
-# Обновляем список пакетов и устанавливаем только необходимые системные зависимости
-# (если они нужны — оставьте только то, что действительно требуется)
+# Устанавливаем системные пакеты, необходимые для компиляции (если они нужны)
+# Например, для psycopg2 нужен gcc и libpq-dev
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # пример: gcc, libpq-dev, ... (добавьте по необходимости)
+    gcc \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Создаём группу и непривилегированного пользователя с фиксированными UID/GID
+WORKDIR /build
+
+# Копируем только requirements.txt (чтобы закэшировать слой зависимостей)
+COPY ./Services/fastapi/requirements.txt .
+
+# Устанавливаем зависимости в отдельную директорию /install
+# --no-cache-dir отключает кэш pip
+# --prefix указывает, куда устанавливать пакеты
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# ----------------- ФИНАЛЬНЫЙ ОБРАЗ -----------------
+FROM python:3.13.14-slim
+
+# Создаём непривилегированного пользователя
 RUN addgroup --system --gid 1001 appgroup && \
     adduser --system --uid 1001 --gid 1001 appuser
 
 WORKDIR /app
 
-# Копируем только файл с зависимостями для кэширования слоя
-COPY ./Services/fastapi/requirements.txt .
+# Копируем установленные пакеты из стадии сборки
+COPY --from=builder --chown=appuser:appgroup /install /usr/local
 
-# Обновляем pip и устанавливаем зависимости без сохранения кэша
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Копируем остальной код (pyproject.toml и содержимое Services/fastapi)
-COPY ./Services/fastapi/ .
-
-# Назначаем владельца всех файлов в /app созданному пользователю
-RUN chown -R appuser:appgroup /app
+# Копируем код приложения
+COPY --chown=appuser:appgroup ./Services/fastapi/ .
 
 # Переключаемся на непривилегированного пользователя
 USER appuser
 
-# Отключаем буферизацию вывода (безопасность + логирование)
+# Отключаем буферизацию вывода
 ENV PYTHONUNBUFFERED=1
