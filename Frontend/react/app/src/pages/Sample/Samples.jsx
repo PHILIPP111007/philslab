@@ -244,7 +244,6 @@ export default function Samples() {
                 }
             }
         } else if (meta?.operation === 'add' && meta.data) {
-            // Обработка добавления через инлайн-редактирование
             const newItem = meta.data
             const data = await Fetch({
                 api_version: APIVersion.V2,
@@ -270,7 +269,60 @@ export default function Samples() {
                 notify_error(data?.error || 'Ошибка добавления')
             }
         }
-    }
+        // ⬇️ НОВЫЙ БЛОК ДЛЯ МАССОВОГО ОБНОВЛЕНИЯ
+        else if (meta?.operation === 'batchEdit' && meta.updates) {
+            // Группируем обновления по ID записи (на случай, если менялись несколько колонок)
+            const updatedIds = new Set(meta.updates.map(u => u.id));
+            const promises = [];
+
+            for (const id of updatedIds) {
+                // Находим обновлённую запись в newData
+                const record = newData.find(item => item.id === id);
+                if (!record) continue;
+
+                // Отправляем полный объект записи на сервер
+                promises.push(
+                    Fetch({
+                        api_version: APIVersion.V2,
+                        action: `sample/${id}/`,
+                        method: HttpMethod.PUT,
+                        body: {
+                            sample_code: record.sample_code,
+                            sample_group_code: record.sample_group_code,
+                            zlims_code: record.zlims_code,
+                            uin1: record.uin1,
+                            uin2: record.uin2,
+                            project_code: record.project_code,
+                            sample_index: record.sample_index,
+                            qc_1: record.qc_1,
+                            qc_2: record.qc_2,
+                            descr: record.descr,
+                            material_type: record.material_type,
+                        },
+                    })
+                );
+            }
+
+            try {
+                const results = await Promise.all(promises);
+                const allOk = results.every(res => res?.ok);
+                if (allOk) {
+                    // Все сохранено успешно – обновляем локальное состояние
+                    setSamples(newData);
+                } else {
+                    // Если хотя бы один запрос вернул ошибку
+                    const errorRes = results.find(res => !res?.ok);
+                    throw new Error(errorRes?.error || 'Ошибка массового обновления');
+                }
+            } catch (error) {
+                notify_error(error.message || 'Ошибка массового обновления');
+                // Перезагружаем данные с сервера, чтобы восстановить корректное состояние
+                if (lazyParams) {
+                    await fetchSamples(lazyParams);
+                }
+            }
+        }
+    };
 
     const handleExportAll = async ({ sorting, globalFilter, columnFilters }) => {
         const query = new URLSearchParams();
@@ -346,6 +398,7 @@ export default function Samples() {
                             enableAddButton
                             enableExport
                             enableInlineEdit
+                            enableCellSelection={true}
                             enableEmptyRow={true}
                             onAddSuccess={handleAddSample}
                             onEditSuccess={handleEditSample}

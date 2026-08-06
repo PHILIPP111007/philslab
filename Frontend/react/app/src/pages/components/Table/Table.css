@@ -1272,3 +1272,8 @@ select.modal-input {
     background: var(--border);
     margin: 4px 0;
 }
+
+.cell-selected {
+    outline: 2px solid #1e90ff;
+    outline-offset: -2px;
+}

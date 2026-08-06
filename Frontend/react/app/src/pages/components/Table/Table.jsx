@@ -13,8 +13,9 @@ import ExcelJS from 'exceljs'
 import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback, memo } from 'react'
 import { notify_error } from '../../../modules/notify'
 
-
-// Вспомогательная функция для отображения агрегаций в футере
+// ============================================
+// АГРЕГАЦИИ (без изменений)
+// ============================================
 function renderAggregation(column, table) {
     const aggFn = column.columnDef.aggregation
     if (!aggFn) return null
@@ -53,9 +54,8 @@ const numberContainsFilter = (row, columnId, filterValue) => {
 }
 
 // ============================================
-// INLINE EDITABLE CELL (без изменений)
+// INLINE EDITABLE CELL (с добавлением Ctrl+Enter)
 // ============================================
-
 const EditableCell = memo(function EditableCell({ getValue, row, column, table, onCellEdit, validate, onStartEdit, onEndEdit }) {
     const initialValue = getValue()
     const [value, setValue] = useState(initialValue)
@@ -67,6 +67,8 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
 
     const columnDef = column.columnDef
     const isEditable = columnDef.editable !== false
+
+    const { applyValueToSelectedCells } = table.options.meta || {}
 
     const conditionalStyle = useMemo(() => {
         if (typeof columnDef.conditionalFormatting === 'function') {
@@ -103,7 +105,7 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
         setTimeout(() => { isSavingRef.current = false }, 100)
     }, [value, initialValue, validate, row, column, onCellEdit, onEndEdit])
 
-    const { updateData, requestCellFocusAfterPageChange } = table.options.meta
+    const { requestCellFocusAfterPageChange } = table.options.meta
 
     const moveToCellBelow = useCallback(() => {
         const currentTd = cellRef.current?.closest('td')
@@ -117,7 +119,6 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
             let nextRow = rows[currentRowIdx + 1]
 
             if (!nextRow) {
-                // Если следующей строки нет, пытаемся перейти на следующую страницу
                 if (table.getCanNextPage?.()) {
                     const currentCellIdx = Array.from(currentTr.querySelectorAll('td')).indexOf(currentTd)
                     requestCellFocusAfterPageChange?.(currentCellIdx)
@@ -139,6 +140,17 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
     }, [table, requestCellFocusAfterPageChange])
 
     const handleKeyDown = (e) => {
+        // Ctrl+Enter – массовое применение ко всем выделенным ячейкам
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault()
+            if (applyValueToSelectedCells) {
+                applyValueToSelectedCells(value)
+                setIsEditing(false)
+                onEndEdit?.()
+            }
+            return
+        }
+
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); moveToCellBelow(); return }
         if (e.key === 'Escape') { e.preventDefault(); setValue(initialValue); setIsEditing(false); setError(null); onEndEdit?.(); return }
         if (e.key === 'Tab') {
@@ -182,9 +194,8 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
     )
 })
 
-
 // ============================================
-// МОДАЛЬНЫЕ ОКНА
+// МОДАЛЬНЫЕ ОКНА (без изменений)
 // ============================================
 function EditModal({ user, isOpen, onClose, onSave, columns }) {
     const [formData, setFormData] = useState({})
@@ -429,30 +440,46 @@ function AddModal({ isOpen, onClose, onSave, columns }) {
     )
 }
 
-
-const TableRow = ({ row, handleRowContextMenu }) => {
-    const isTempRow = row.original.id < 0;
+// ============================================
+// КОМПОНЕНТ СТРОКИ (с выделением ячеек)
+// ============================================
+const TableRow = ({ row, rowIndex, handleRowContextMenu, onCellClick, isCellSelected, enableCellSelection }) => {
+    const isTempRow = row.original.id < 0
     return (
         <tr
             className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${isTempRow ? 'table-row--empty' : ''}`}
             onContextMenu={(e) => handleRowContextMenu(e, row.original)}
         >
-            {row.getVisibleCells().map(cell => {
-                const sticky = cell.column.columnDef.sticky;
+            {row.getVisibleCells().map((cell, colIndex) => {
+                const sticky = cell.column.columnDef.sticky
                 const stickyStyle = sticky === 'left'
                     ? { position: 'sticky', left: 0, zIndex: 1, background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)' }
-                    : {};
+                    : {}
+
+                const isSelected = enableCellSelection && isCellSelected(rowIndex, colIndex)
+
                 return (
-                    <td key={cell.id} className={`table-cell ${sticky === 'left' ? 'sticky-left' : ''}`}
-                        style={{ width: cell.column.getSize(), ...stickyStyle }}>
+                    <td
+                        key={cell.id}
+                        className={`table-cell ${sticky === 'left' ? 'sticky-left' : ''} ${isSelected ? 'cell-selected' : ''}`}
+                        style={{ width: cell.column.getSize(), ...stickyStyle }}
+                        data-row-index={rowIndex}
+                        data-col-index={colIndex}
+                        onClick={(e) => {
+                            if (enableCellSelection && cell.column.columnDef.enableEditing !== false) {
+                                // Игнорируем клик по редактируемой ячейке (если внутри инпут)
+                                if (e.target.closest('input, select, textarea')) return
+                                onCellClick(rowIndex, colIndex, e)
+                            }
+                        }}
+                    >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
-                );
+                )
             })}
         </tr>
-    );
-};
-
+    )
+}
 
 // ============================================
 // ОСНОВНОЙ КОМПОНЕНТ ТАБЛИЦЫ
@@ -473,6 +500,8 @@ export default function Table({
     enableActionsColumn = true,
     enableInlineEdit = true,
     enableEmptyRow = true,
+    // НОВЫЙ ПРОП — включает выделение ячеек
+    enableCellSelection = false,
     onDataChange,
     onEditSuccess,
     onDeleteSuccess,
@@ -528,8 +557,6 @@ export default function Table({
     const [columnOrder, setColumnOrder] = useState([])
     const [pageIndex, setPageIndex] = useState(0)
     const [pageSize, setPageSize] = useState(initialPageSize)
-
-    // Добавлено: состояние для изменения ширины колонок
     const [columnSizing, setColumnSizing] = useState({})
 
     const [editModalOpen, setEditModalOpen] = useState(false)
@@ -538,53 +565,50 @@ export default function Table({
     const [selectedItem, setSelectedItem] = useState(null)
     const [editingCellId, setEditingCellId] = useState(null)
     const [focusRequest, setFocusRequest] = useState(null)
-    // Внутри компонента Table, после всех useState
-    const [tableKey, setTableKey] = useState(0);
-    const isInitialMount = useRef(true);
+    const [tableKey, setTableKey] = useState(0)
+    const isInitialMount = useRef(true)
 
+    // НОВЫЕ СОСТОЯНИЯ ДЛЯ ВЫДЕЛЕНИЯ ЯЧЕЕК
+    const [selectedCells, setSelectedCells] = useState(new Set())
+    const [lastSelectedCell, setLastSelectedCell] = useState(null)
+
+    // ---------- эффекты ----------
     useEffect(() => {
         if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
+            isInitialMount.current = false
+            return
         }
-        setColumnSizing({});
-        setTableKey(prev => prev + 1);
-    }, [columnVisibility]);
-    // При изменении columnVisibility сбрасываем sizing и увеличиваем ключ
+        setColumnSizing({})
+        setTableKey(prev => prev + 1)
+    }, [columnVisibility])
+
     useEffect(() => {
-        setColumnSizing({});
-        setTableKey(prev => prev + 1);
-    }, [columnVisibility]);
+        setColumnSizing({})
+        setTableKey(prev => prev + 1)
+    }, [columnVisibility])
+
+    useEffect(() => {
+        if (lazy) {
+            setData(enableEmptyRow ? ensureEmptyRow(initialData) : initialData)
+        }
+    }, [initialData, lazy, enableEmptyRow, ensureEmptyRow])
+
+    // Сброс выделения при смене страницы/фильтров
+    useEffect(() => {
+        setSelectedCells(new Set())
+        setLastSelectedCell(null)
+    }, [pageIndex, pageSize, globalFilter, columnFilters])
 
     const requestCellFocusAfterPageChange = useCallback((columnIndex) => {
         setFocusRequest({ columnIndex })
     }, [])
 
     useEffect(() => {
-        if (lazy) {
-            setData(enableEmptyRow ? ensureEmptyRow(initialData) : initialData);
-        }
-    }, [initialData, lazy, enableEmptyRow, ensureEmptyRow]);
-
-
-
-    // Состояние контекстного меню
-    const [contextMenu, setContextMenu] = useState({
-        visible: false,
-        x: 0,
-        y: 0,
-        row: null,
-    })
-    const contextMenuRef = useRef(null)
-
-    // Эффект, который срабатывает при изменении pageIndex и пытается сфокусировать нужную ячейку
-    useEffect(() => {
         if (!focusRequest) return
         const timer = setTimeout(() => {
             const tbody = document.querySelector('.table-wrapper tbody')
             if (!tbody) return
             const rows = Array.from(tbody.querySelectorAll('tr'))
-            // Берём первую строку (можно уточнить: не пустую)
             const firstRow = rows[0]
             if (!firstRow) return
             const cells = Array.from(firstRow.querySelectorAll('td'))
@@ -596,12 +620,19 @@ export default function Table({
                 }
             }
             setFocusRequest(null)
-        }, 100) // задержка для завершения перерисовки
+        }, 100)
         return () => clearTimeout(timer)
     }, [focusRequest, pageIndex])
 
+    // Контекстное меню
+    const [contextMenu, setContextMenu] = useState({
+        visible: false,
+        x: 0,
+        y: 0,
+        row: null,
+    })
+    const contextMenuRef = useRef(null)
 
-    // Закрытие меню при клике вне или по Escape
     useEffect(() => {
         if (!contextMenu.visible) return
 
@@ -624,16 +655,16 @@ export default function Table({
         }
     }, [contextMenu.visible])
 
-    // Эффект для уведомления родителя в lazy-режиме
+    // Lazy-загрузка
     useEffect(() => {
-        if (!lazy) return;
+        if (!lazy) return
         onLazyLoad?.({
             pageIndex,
             pageSize,
             sorting,
             globalFilter,
             columnFilters,
-        });
+        })
     }, [lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad])
 
     // ---------- обработчики данных (без изменений) ----------
@@ -705,12 +736,56 @@ export default function Table({
         }
     }, [data, enableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange])
 
-    // --- Контекстное меню ---
+    // ---------- ФУНКЦИИ ВЫДЕЛЕНИЯ ЯЧЕЕК ----------
+    const isCellSelected = useCallback((rowIndex, colIndex) => {
+        return selectedCells.has(`${rowIndex}-${colIndex}`)
+    }, [selectedCells])
+
+    const toggleCellSelection = useCallback((rowIndex, colIndex, event) => {
+        if (!enableCellSelection) return
+
+        const key = `${rowIndex}-${colIndex}`
+
+        // Ctrl+клик – переключение
+        if (event.ctrlKey || event.metaKey) {
+            setSelectedCells(prev => {
+                const newSet = new Set(prev)
+                if (newSet.has(key)) newSet.delete(key)
+                else newSet.add(key)
+                return newSet
+            })
+            setLastSelectedCell({ rowIndex, colIndex })
+            return
+        }
+
+        // Shift+клик – диапазон
+        if (event.shiftKey && lastSelectedCell) {
+            const { rowIndex: lastRow, colIndex: lastCol } = lastSelectedCell
+            const minRow = Math.min(rowIndex, lastRow)
+            const maxRow = Math.max(rowIndex, lastRow)
+            const minCol = Math.min(colIndex, lastCol)
+            const maxCol = Math.max(colIndex, lastCol)
+
+            const newSet = new Set()
+            for (let r = minRow; r <= maxRow; r++) {
+                for (let c = minCol; c <= maxCol; c++) {
+                    newSet.add(`${r}-${c}`)
+                }
+            }
+            setSelectedCells(newSet)
+            setLastSelectedCell({ rowIndex, colIndex })
+            return
+        }
+
+        // Обычный клик – только одна ячейка
+        setSelectedCells(new Set([key]))
+        setLastSelectedCell({ rowIndex, colIndex })
+    }, [enableCellSelection, lastSelectedCell])
+
+    // ---------- КОНТЕКСТНОЕ МЕНЮ ----------
     const handleRowContextMenu = useCallback((e, rowData) => {
         e.preventDefault()
-        // Для пустой строки не показываем меню
         if (rowData.id < 0) return
-
         setContextMenu({
             visible: true,
             x: e.clientX,
@@ -733,7 +808,6 @@ export default function Table({
 
     const handleContextCopy = useCallback(() => {
         const row = contextMenu.row
-        // Собираем текст из всех полей строки, кроме id (если нужно)
         const text = Object.entries(row)
             .filter(([key]) => key !== 'id')
             .map(([key, val]) => `${key}: ${val}`)
@@ -744,12 +818,12 @@ export default function Table({
 
     const handleContextDuplicate = useCallback(() => {
         const row = { ...contextMenu.row }
-        delete row.id // будет присвоен новый ID в handleAdd
-        handleAdd(row) // используем существующую функцию добавления
+        delete row.id
+        handleAdd(row)
         setContextMenu(prev => ({ ...prev, visible: false }))
     }, [contextMenu.row, handleAdd])
 
-    // ---------- колонки ----------
+    // ---------- КОЛОНКИ ----------
     const selectionColumn = useMemo(() => enableSelection ? [{
         id: 'select',
         header: ({ table }) => <input type="checkbox" checked={table.getIsAllRowsSelected()} onChange={table.getToggleAllRowsSelectedHandler()} />,
@@ -760,8 +834,7 @@ export default function Table({
     }] : [], [enableSelection])
 
     const actionsColumn = useMemo(() => {
-        if (!enableActionsColumn) return [];
-
+        if (!enableActionsColumn) return []
         return [{
             id: 'actions',
             header: 'Действия',
@@ -792,10 +865,7 @@ export default function Table({
                 )
             }
 
-            // Фильтр по умолчанию textFilter, если не указан другой
             if (!processedCol.filterFn) {
-                // Можно оставить определение числового фильтра через мета-информацию колонки,
-                // но без привязки к данным. Например:
                 processedCol.filterFn = processedCol.editType === 'number' ? numberContainsFilter : textFilter
             }
 
@@ -803,10 +873,9 @@ export default function Table({
         })
 
         return [...selectionColumn, ...processedColumns, ...actionsColumn]
-    }, [userColumns, enableInlineEdit, selectionColumn, actionsColumn, handleCellEdit, validateCell]) // data удалена
+    }, [userColumns, enableInlineEdit, selectionColumn, actionsColumn, handleCellEdit, validateCell])
 
-
-    // ---------- таблица ----------
+    // ---------- ТАБЛИЦА ----------
     const table = useReactTable({
         data,
         columns,
@@ -819,7 +888,7 @@ export default function Table({
             columnVisibility,
             columnOrder,
             pagination: { pageIndex, pageSize },
-            columnSizing,   // <-- для resize
+            columnSizing,
         },
         onSortingChange: setSorting,
         onGlobalFilterChange: setGlobalFilter,
@@ -831,11 +900,11 @@ export default function Table({
         onPaginationChange: (updater) => {
             const newState = typeof updater === 'function'
                 ? updater({ pageIndex, pageSize })
-                : updater;
-            setPageIndex(newState.pageIndex);
-            if (newState.pageSize !== pageSize) setPageSize(newState.pageSize);
+                : updater
+            setPageIndex(newState.pageIndex)
+            if (newState.pageSize !== pageSize) setPageSize(newState.pageSize)
         },
-        onColumnSizingChange: setColumnSizing,   // <-- для resize
+        onColumnSizingChange: setColumnSizing,
         manualPagination: lazy,
         manualSorting: lazy,
         manualFiltering: lazy,
@@ -843,7 +912,6 @@ export default function Table({
         enableColumnResizing: true,
         columnResizeMode: 'onChange',
         getCoreRowModel: getCoreRowModel(),
-        // Клиентские модели только когда не lazy
         ...(lazy
             ? {}
             : {
@@ -855,6 +923,7 @@ export default function Table({
         getGroupedRowModel: getGroupedRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
         filterFns: { text: textFilter, numberContains: numberContainsFilter },
+        // meta теперь будет включать applyValueToSelectedCells
         meta: { updateData, requestCellFocusAfterPageChange },
         enableSorting,
         enableColumnFilters: enableFiltering,
@@ -864,122 +933,162 @@ export default function Table({
         getRowId: useCallback(row => String(row.id), []),
     })
 
-    // ---------- экспорт ----------
-    // ---------- экспорт ----------
+    // ---------- МАССОВОЕ ПРИМЕНЕНИЕ ЗНАЧЕНИЯ К ВЫДЕЛЕННЫМ ЯЧЕЙКАМ ----------
+    // Определяем ПОСЛЕ создания table, чтобы использовать table.getRowModel и т.д.
+    const applyValueToSelectedCells = useCallback((value) => {
+        if (selectedCells.size === 0) return
+
+        const rows = table.getRowModel().rows
+        const allColumns = table.getAllColumns().filter(col => col.getIsVisible())
+
+        const updates = []
+        const newData = [...data]
+
+        selectedCells.forEach(key => {
+            const [rowIndexStr, colIndexStr] = key.split('-')
+            const rowIndex = parseInt(rowIndexStr, 10)
+            const colIndex = parseInt(colIndexStr, 10)
+            const row = rows[rowIndex]
+            if (!row) return
+            const originalRow = row.original
+            if (originalRow.id < 0) return // пропускаем временную строку
+            const column = allColumns[colIndex]
+            if (!column) return
+            const columnId = column.id
+            const dataIndex = newData.findIndex(item => item.id === originalRow.id)
+            if (dataIndex === -1) return
+
+            newData[dataIndex] = { ...newData[dataIndex], [columnId]: value }
+            updates.push({ id: originalRow.id, columnId, value })
+        })
+
+        setData(newData)
+
+        if (onDataChange) {
+            onDataChange(newData.filter(i => i.id > 0), {
+                operation: 'batchEdit',
+                updates,
+            })
+        }
+    }, [selectedCells, data, table, onDataChange])
+
+    // Обновляем meta таблицы, чтобы передать applyValueToSelectedCells в EditableCell
+    // Делаем это через useEffect, чтобы не пересоздавать таблицу
+    useEffect(() => {
+        if (table && table.options.meta) {
+            table.options.meta.applyValueToSelectedCells = applyValueToSelectedCells
+        }
+    }, [table, applyValueToSelectedCells])
+
+    // ---------- ЭКСПОРТ ----------
     const getExportData = useCallback(async (selectedOnly = false) => {
-        // 1. Только выбранные строки (локально)
         if (selectedOnly) {
             return table.getSelectedRowModel().rows
                 .map(r => r.original)
-                .filter(item => item.id > 0);
+                .filter(item => item.id > 0)
         }
 
-        // 2. Если есть onExportAll, запрашиваем все данные с сервера
         if (onExportAll) {
             try {
                 const allData = await onExportAll({
                     sorting,
                     globalFilter,
                     columnFilters,
-                });
-                return allData.filter(item => item.id > 0);
+                })
+                return allData.filter(item => item.id > 0)
             } catch (error) {
-                console.error('Export all error:', error);
-                notify_error('Ошибка загрузки данных для экспорта');
-                return [];
+                console.error('Export all error:', error)
+                notify_error('Ошибка загрузки данных для экспорта')
+                return []
             }
         }
 
-        // 3. Локальный экспорт всех отфильтрованных записей (без пагинации)
         return table.getPrePaginationRowModel().rows
             .map(r => r.original)
-            .filter(item => item.id > 0);
-    }, [table, onExportAll, sorting, globalFilter, columnFilters]);
+            .filter(item => item.id > 0)
+    }, [table, onExportAll, sorting, globalFilter, columnFilters])
 
     const exportToExcel = useCallback(async (selectedOnly = false) => {
-        const exportData = await getExportData(selectedOnly);
+        const exportData = await getExportData(selectedOnly)
         if (exportData.length === 0) {
-            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта');
-            return;
+            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
+            return
         }
         try {
-            const workbook = new ExcelJS.Workbook();
+            const workbook = new ExcelJS.Workbook()
             const worksheet = workbook.addWorksheet('Данные', {
                 properties: { tabColor: { argb: selectedOnly ? 'FF4CAF50' : 'FF2196F3' } }
-            });
-            const exportColumns = userColumns.filter(col => col.accessorKey);
-            const headerRow = worksheet.addRow(exportColumns.map(col => col.header || col.accessorKey));
+            })
+            const exportColumns = userColumns.filter(col => col.accessorKey)
+            const headerRow = worksheet.addRow(exportColumns.map(col => col.header || col.accessorKey))
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: selectedOnly ? 'FF4CAF50' : 'FF2196F3' } };
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-            });
-            headerRow.height = 25;
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: selectedOnly ? 'FF4CAF50' : 'FF2196F3' } }
+                cell.alignment = { vertical: 'middle', horizontal: 'center' }
+                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+            })
+            headerRow.height = 25
             exportData.forEach((item, index) => {
-                const rowData = exportColumns.map(col => item[col.accessorKey] ?? '');
-                const dataRow = worksheet.addRow(rowData);
+                const rowData = exportColumns.map(col => item[col.accessorKey] ?? '')
+                const dataRow = worksheet.addRow(rowData)
                 if (index % 2 === 0) {
-                    dataRow.eachCell(cell => cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } });
+                    dataRow.eachCell(cell => cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } })
                 }
                 dataRow.eachCell((cell, colNumber) => {
-                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-                    cell.alignment = { horizontal: typeof rowData[colNumber - 1] === 'number' ? 'right' : 'left' };
-                });
-            });
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+                    cell.alignment = { horizontal: typeof rowData[colNumber - 1] === 'number' ? 'right' : 'left' }
+                })
+            })
             worksheet.columns = exportColumns.map(col => ({
                 width: Math.min(Math.max(
                     (col.header || col.accessorKey).length,
                     ...exportData.map(item => String(item[col.accessorKey] ?? '').length)
                 ) + 4, 50)
-            }));
+            }))
             worksheet.autoFilter = {
                 from: { row: 1, column: 1 },
                 to: { row: exportData.length + 1, column: exportColumns.length }
-            };
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-            link.click();
-            URL.revokeObjectURL(link.href);
+            }
+            const buffer = await workbook.xlsx.writeBuffer()
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+            const link = document.createElement('a')
+            link.href = URL.createObjectURL(blob)
+            link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.xlsx`
+            link.click()
+            URL.revokeObjectURL(link.href)
         } catch (error) {
-            console.error('Export error:', error);
-            notify_error('Ошибка экспорта в Excel');
+            console.error('Export error:', error)
+            notify_error('Ошибка экспорта в Excel')
         }
-    }, [getExportData, userColumns]);
-
+    }, [getExportData, userColumns])
 
     const exportToCSV = useCallback(async (selectedOnly = false) => {
-        const exportData = await getExportData(selectedOnly);
+        const exportData = await getExportData(selectedOnly)
         if (exportData.length === 0) {
-            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта');
-            return;
+            notify_error(selectedOnly ? 'Выберите строки для экспорта' : 'Нет данных для экспорта')
+            return
         }
-        const exportColumns = userColumns.filter(col => col.accessorKey);
-        const headers = exportColumns.map(col => col.header || col.accessorKey).join(';');
+        const exportColumns = userColumns.filter(col => col.accessorKey)
+        const headers = exportColumns.map(col => col.header || col.accessorKey).join(';')
         const rows = exportData.map(item =>
             exportColumns.map(col => {
-                let value = item[col.accessorKey] ?? '';
+                let value = item[col.accessorKey] ?? ''
                 if (typeof value === 'string' && (value.includes(';') || value.includes('"'))) {
-                    value = `"${value.replace(/"/g, '""')}"`;
+                    value = `"${value.replace(/"/g, '""')}"`
                 }
-                return value;
+                return value
             }).join(';')
-        );
-        const csvContent = '\uFEFF' + [headers, ...rows].join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.csv`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-    }, [getExportData, userColumns]);
+        )
+        const csvContent = '\uFEFF' + [headers, ...rows].join('\n')
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        link.download = `export${selectedOnly ? '_selected' : ''}_${new Date().toISOString().slice(0, 10)}.csv`
+        link.click()
+        URL.revokeObjectURL(link.href)
+    }, [getExportData, userColumns])
 
-
-
-    // ---------- рендер ----------
+    // ---------- РЕНДЕР ----------
     return (
         <div className="table-container">
             <EditModal user={selectedItem} isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} onSave={handleEdit} columns={userColumns} />
@@ -995,6 +1104,9 @@ export default function Table({
                         </select>
                     )}
                     {enableFiltering && <span className="table-filter-info">Показано: <strong>{table.getRowModel().rows.length}</strong> из {data.filter(item => item.id > 0).length}</span>}
+                    {enableCellSelection && selectedCells.size > 0 && (
+                        <span className="table-selection-info">Выделено ячеек: {selectedCells.size}</span>
+                    )}
                 </div>
                 <div className="table-toolbar-right">
                     {enableAddButton && <button onClick={() => setAddModalOpen(true)} className="table-button-add">➕ Добавить</button>}
@@ -1011,6 +1123,35 @@ export default function Table({
                         </div>
                     )}
                     {enableFiltering && <button onClick={() => { setColumnFilters([]); setGlobalFilter('') }} className="table-button">✕ Сбросить</button>}
+                    {enableCellSelection && selectedCells.size > 0 && (
+                        <>
+                            <input
+                                type="text"
+                                placeholder="Значение для выделенных"
+                                className="table-batch-input"
+                                id="batch-value-input"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        applyValueToSelectedCells(e.currentTarget.value)
+                                        e.currentTarget.value = ''
+                                    }
+                                }}
+                            />
+                            <button
+                                onClick={() => {
+                                    const input = document.getElementById('batch-value-input')
+                                    if (input) {
+                                        applyValueToSelectedCells(input.value)
+                                        input.value = ''
+                                    }
+                                }}
+                                className="table-button"
+                                disabled={selectedCells.size === 0}
+                            >
+                                Применить к выделенным
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -1070,12 +1211,19 @@ export default function Table({
                         {table.getRowModel().rows.length === 0 ? (
                             <tr><td colSpan={columns.length} className="table-empty">😕 Нет данных</td></tr>
                         ) : (
-                            table.getRowModel().rows.map(row => (
-                                <TableRow key={row.id} row={row} handleRowContextMenu={handleRowContextMenu} />
+                            table.getRowModel().rows.map((row, rowIndex) => (
+                                <TableRow
+                                    key={row.id}
+                                    row={row}
+                                    rowIndex={rowIndex}
+                                    handleRowContextMenu={handleRowContextMenu}
+                                    onCellClick={toggleCellSelection}
+                                    isCellSelected={isCellSelected}
+                                    enableCellSelection={enableCellSelection}
+                                />
                             ))
                         )}
                     </tbody>
-                    {/* Футер с агрегациями */}
                     <tfoot>
                         {table.getFooterGroups().map(footerGroup => (
                             <tr key={footerGroup.id}>
@@ -1097,7 +1245,6 @@ export default function Table({
                         ))}
                     </tfoot>
                 </table>
-                {/* Контекстное меню */}
                 {contextMenu.visible && (
                     <div
                         ref={contextMenuRef}
