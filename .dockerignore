@@ -1,6 +1,46 @@
+# VCS
 .git/
-.DS_Store
+.gitignore
+.gitattributes
+
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
 venv/
 .venv/
+env/
+.env*
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Node (если есть фронт)
 node_modules/
+
+# Логи и временные файлы
+*.log
+*.tmp
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Документация
+README.md
+docs/
+
+# Статика (если собирается отдельно и не должна копироваться)
+# static/
