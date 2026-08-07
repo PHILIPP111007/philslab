@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useContext } from 'react'
+import { useState, useEffect, useCallback, useContext, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
 import { UserContext } from "../../data/context"
 import { notify_error } from '../../modules/notify'
 import rememberPage from "../../modules/rememberPage"
+import { useDepartments } from '../../hooks/useDepartments'
 import { HttpMethod, APIVersion } from '../../data/enums'
 import Spinner from "../components/Spinner/Spinner"
 import Table from "../components/Table/Table"
@@ -18,6 +19,8 @@ export default function Batches() {
     const [lazyParams, setLazyParams] = useState(null)
     const [totalRows, setTotalRows] = useState(0)
     const [loading, setLoading] = useState(true)
+    const { departments, loading: deptLoading } = useDepartments()
+
 
     useEffect(() => {
         rememberPage(`batches/${params.username}`)
@@ -54,7 +57,26 @@ export default function Batches() {
             accessorKey: 'department',
             header: 'Отдел',
             size: 140,
-            editType: 'text',
+            editType: 'select',
+            // 👇 Если Table ожидает массив строк – передаём departments
+            editOptions: departments,
+            // Если Table ожидает массив { label, value } – используем map
+            // editOptions: departments.map(dept => ({ label: dept, value: dept })),
+            // Добавим пустой вариант для сброса
+            // editOptions: [{ label: 'Не выбран', value: '' }, ...departments.map(dept => ({ label: dept, value: dept }))],
+            editComponent: ({ value, onChange }) => (
+                <select
+                    value={value || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="table-edit-select"
+                    style={{ width: '100%', padding: '4px 8px' }}
+                >
+                    <option value="">Не выбран</option>
+                    {departments.map(dept => (
+                        <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                </select>
+            ),
         },
         {
             accessorKey: 'descr',
@@ -63,7 +85,7 @@ export default function Batches() {
             editType: 'text',
         },
         {
-            accessorKey: 'sample_count',  // ✅ новое поле
+            accessorKey: 'sample_count',
             header: 'Образцов',
             size: 130,
             enableEditing: false,
@@ -239,8 +261,8 @@ export default function Batches() {
     }, [])
 
     // ---------- ПОДСЧЁТ СТАТИСТИКИ ----------
-    const totalSamples = batches.reduce((sum, b) => sum + (b.subsample_count || 0), 0)
-    const batchesWithSamples = batches.filter(b => (b.subsample_count || 0) > 0).length
+    const totalSamples = batches.reduce((sum, b) => sum + (b.sample_count || 0), 0)
+    const batchesWithSamples = batches.filter(b => (b.sample_count || 0) > 0).length
 
     // ---------- РЕНДЕР ----------
     return (
@@ -256,20 +278,20 @@ export default function Batches() {
                     />
                     <StatCard
                         icon="📋"
-                        label="Всего подобразцов"
+                        label="Всего образцов"
                         value={totalSamples}
                         color="var(--green)"
                     />
                     <StatCard
                         icon="✅"
-                        label="Батчей с подобразцами"
+                        label="Батчей с образцами"
                         value={batchesWithSamples}
                         color="var(--orange)"
                     />
                 </div>
                 <section className="section">
                     <h2 className="section__title">📦 Батчи</h2>
-                    {loading ? (
+                    {loading && deptLoading ? (
                         <Spinner />
                     ) : (
                         <Table

@@ -4,6 +4,7 @@ import { UserContext } from '../../../data/context.js'
 import Fetch from '../../../API/Fetch'
 import { HttpMethod, APIVersion } from '../../../data/enums'
 import { notify_error, notify_success } from '../../../modules/notify'
+import { useDepartments } from '../../../hooks/useDepartments';
 import Accordion from '../../components/Accordion/Accordion'
 import Button from '../../components/Button/Button'
 import Badge from '../../components/Badge/Badge'
@@ -55,6 +56,8 @@ export default function TasksSection({ departmentName }) {
         { value: 'priority', label: '⭐ Приоритет' },
         { value: 'deadline', label: '⏰ Срок' },
     ]
+    const { departments } = useDepartments();
+
 
     // Загрузка задач
     const loadAssignedTasks = async () => {
@@ -749,13 +752,16 @@ export default function TasksSection({ departmentName }) {
                             </div>
                             <div className="tasks-modal__form-group">
                                 <label>🏢 Отдел</label>
-                                <input
-                                    type="text"
-                                    value={formData.department}
+                                <select
+                                    value={formData.department || ''}
                                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                     className="tasks-modal__input"
-                                    placeholder="Например: Разработка, HR, Маркетинг..."
-                                />
+                                >
+                                    <option value="">Не выбран</option>
+                                    {departments.map(dept => (
+                                        <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="tasks-modal__form-group">
                                 <label>Исполнитель</label>

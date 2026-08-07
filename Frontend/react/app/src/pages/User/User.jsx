@@ -7,6 +7,7 @@ import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
 import { UserContext } from "../../data/context.js"
 import { useSetUser } from "../../hooks/useAuth.js"
+import { useDepartments } from '../../hooks/useDepartments';
 import Button from "../components/Button/Button"
 import TasksSection from '../components/TasksSection/TasksSection'
 
@@ -17,6 +18,7 @@ export default function User() {
     const [isEditing, setIsEditing] = useState(false)
     const [editData, setEditData] = useState({})
     const [loading, setLoading] = useState(false)
+    const { departments, loading: deptLoading } = useDepartments();
 
     useSetUser({ username: params.username, setUser: setUser, setUserLocal: setUserLocal })
 
@@ -160,15 +162,18 @@ export default function User() {
                                     />
                                 </div>
                                 <div className="user-modal__form-group">
-                                    <label>Отдел</label> {/* ✅ добавлено */}
-                                    <input
-                                        type="text"
+                                    <label>Отдел</label>
+                                    <select
                                         name="department"
                                         value={editData.department || ''}
                                         onChange={handleChange}
                                         className="user-modal__input"
-                                        placeholder="Например: Разработка, HR, Маркетинг..."
-                                    />
+                                    >
+                                        <option value="">Не указан</option>
+                                        {departments.map(dept => (
+                                            <option key={dept} value={dept}>{dept}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="user-modal__form-group">
                                     <label>О себе</label>

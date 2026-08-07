@@ -3,8 +3,8 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.database import SessionDep
-from app.models import Protocol
-from app.request_body import ProtocolCreate, ProtocolUpdate
+from app.models import Protocol, Stage
+from app.request_body import ProtocolCreate, ProtocolUpdate, StageCreate
 
 router = APIRouter(tags=["protocol"])
 
@@ -131,3 +131,41 @@ async def delete_protocol(session: SessionDep, request: Request, protocol_id: in
     await session.delete(protocol)
     await session.commit()
     return {"ok": True}
+
+
+# Новые эндпоинты для этапов:
+@router.get("/protocol/{protocol_id}/stages/")
+async def get_protocol_stages(session: SessionDep, request: Request, protocol_id: int):
+    if not request.state.user:
+        return {"ok": False, "error": "Can not authenticate."}
+    protocol = await session.get(Protocol, protocol_id)
+    if not protocol:
+        return {"ok": False, "error": "Protocol not found."}
+    stages = await session.exec(
+        select(Stage).where(Stage.protocol_id == protocol_id).order_by(Stage.order)
+    )
+    return {"ok": True, "data": [s.dict() for s in stages]}
+
+
+@router.post("/protocol/{protocol_id}/stage/")
+async def create_protocol_stage(
+    session: SessionDep,
+    request: Request,
+    protocol_id: int,
+    stage_data: StageCreate,
+):
+    if not request.state.user:
+        return {"ok": False, "error": "Can not authenticate."}
+    protocol = await session.get(Protocol, protocol_id)
+    if not protocol:
+        return {"ok": False, "error": "Protocol not found."}
+    stage = Stage(
+        name=stage_data.name,
+        description=stage_data.description or "",
+        order=stage_data.order or 0,
+        protocol_id=protocol_id,
+    )
+    session.add(stage)
+    await session.commit()
+    await session.refresh(stage)
+    return {"ok": True, "data": stage.dict()}

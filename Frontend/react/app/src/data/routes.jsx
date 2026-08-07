@@ -8,6 +8,7 @@ var Batch = lazy(() => import("../pages/Batch/Batch.jsx"))
 var Department = lazy(() => import("../pages/Department/Department.jsx"))
 var Protocols = lazy(() => import("../pages/Protocol/Protocols.jsx"))
 var MainPage = lazy(() => import("../pages/MainPage/MainPage.jsx"))
+var AdminPage = lazy(() => import("../pages/AdminPage/AdminPage.jsx"))
 
 export var PublicRoutes = [
     {
@@ -60,5 +61,10 @@ export var PrivateRoutes = [
         path: "/main_page/:username/",
         name: "MainPage",
         element: <MainPage />
+    },
+    {
+        path: "/admin_page/:username/",
+        name: "AdminPage",
+        element: <AdminPage />
     },
 ]

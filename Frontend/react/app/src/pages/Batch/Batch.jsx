@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
 import { UserContext } from "../../data/context"
+import { useDepartments } from '../../hooks/useDepartments';
 import { notify_error, notify_success } from '../../modules/notify'
 import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
@@ -55,6 +56,7 @@ export default function Batch() {
     const [showAddTaskModal, setShowAddTaskModal] = useState(false)
     const [availableTasks, setAvailableTasks] = useState([])
     const [selectedTaskId, setSelectedTaskId] = useState('')
+    const { departments } = useDepartments();
 
     useEffect(() => {
         rememberPage(`batch/${batchId}`)
@@ -471,7 +473,7 @@ export default function Batch() {
                                     📦 ID: {batch.id}
                                 </Badge>
                                 <Badge variant="secondary">
-                                    📋 {batch.sample_count || 0} подобразцов
+                                    📋 {batch.sample_count || 0} образцов
                                 </Badge>
                             </div>
                             <div className="batch-detail__actions">
@@ -485,7 +487,7 @@ export default function Batch() {
                                         setShowAddSampleModal(true)
                                     }}
                                 >
-                                    ➕ Добавить подобразец
+                                    ➕ Добавить образец
                                 </Button>
                                 <Button
                                     variant="danger"
@@ -536,14 +538,14 @@ export default function Batch() {
                     <div className="batch-detail__samples">
                         <div className="batch-detail__samples-header">
                             <h2 className="batch-detail__samples-title">
-                                📋 Подобразцы в батче ({batch.sample_count || 0})
+                                📋 Образцы в батче ({batch.sample_count || 0})
                             </h2>
                         </div>
 
                         {samples.length === 0 ? (
                             <div className="batch-detail__empty">
                                 <span className="batch-detail__empty-icon">📭</span>
-                                <p>В этом батче пока нет подобразцов</p>
+                                <p>В этом батче пока нет образцов</p>
                                 <Button
                                     variant="primary"
                                     onClick={() => {
@@ -551,7 +553,7 @@ export default function Batch() {
                                         setShowAddSampleModal(true)
                                     }}
                                 >
-                                    ➕ Добавить подобразец
+                                    ➕ Добавить образец
                                 </Button>
                             </div>
                         ) : (
@@ -566,7 +568,7 @@ export default function Batch() {
                                 enableColumnVisibility={false}
                                 enableAddButton={false}
                                 enableExport={true}
-                                enableInlineEdit={false}
+                                enableInlineEdit={true}
                                 enableEmptyRow={false}
                                 enableActionsColumn={false}
                             />
@@ -579,15 +581,6 @@ export default function Batch() {
                             <h2 className="batch-detail__samples-title">
                                 📋 Связанные задачи ({tasks.length})
                             </h2>
-                            <Button
-                                variant="success"
-                                onClick={() => {
-                                    loadAvailableTasks()
-                                    setShowAddTaskModal(true)
-                                }}
-                            >
-                                ➕ Добавить задачу
-                            </Button>
                         </div>
 
                         {tasks.length === 0 ? (
@@ -686,13 +679,16 @@ export default function Batch() {
                             </div>
                             <div className="modal-form-group">
                                 <label>Отдел</label>
-                                <input
-                                    type="text"
-                                    value={editFormData.department}
+                                <select
+                                    value={editFormData.department || ''}
                                     onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
                                     className="modal-input"
-                                    placeholder="Введите отдел"
-                                />
+                                >
+                                    <option value="">Не выбран</option>
+                                    {departments.map(dept => (
+                                        <option key={dept} value={dept}>{dept}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="modal-form-group">
                                 <label>Описание</label>
@@ -717,11 +713,11 @@ export default function Batch() {
                 </div>
             )}
 
-            {/* Модальное окно редактирования подобразца */}
+            {/* Модальное окно редактирования образца */}
             {showEditSampleModal && editingSample && (
                 <div className="modal-overlay" onClick={() => setShowEditSampleModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="modal-title">✏️ Редактирование подобразца #{editingSample.id}</h2>
+                        <h2 className="modal-title">✏️ Редактирование образца #{editingSample.id}</h2>
                         <form onSubmit={(e) => {
                             e.preventDefault()
                             handleSaveSampleEdit()
@@ -809,11 +805,11 @@ export default function Batch() {
             {showAddSampleModal && (
                 <div className="modal-overlay" onClick={() => setShowAddSampleModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="modal-title">➕ Добавление подобразца в батч</h2>
+                        <h2 className="modal-title">➕ Добавление образца в батч</h2>
                         <div className="modal-form-group">
-                            <label>Выберите подобразец</label>
+                            <label>Выберите образец</label>
                             {availableSamples.length === 0 ? (
-                                <p className="modal-empty">Нет доступных подобразцов</p>
+                                <p className="modal-empty">Нет доступных образцов</p>
                             ) : (
                                 <select
                                     value={selectedSampleId}

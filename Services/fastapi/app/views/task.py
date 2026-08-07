@@ -69,7 +69,7 @@ async def get_tasks(
         selectinload(Task.protocol).selectinload(Protocol.stages),
         selectinload(Task.task_stages),
         selectinload(Task.batches).selectinload(
-            Batch.subsamples
+            Batch.samples
         ),  # ← загружаем subsamples у батчей
         selectinload(Task.history).selectinload(QueryHistory.user),
     )
@@ -146,10 +146,10 @@ async def get_tasks(
                 for stage in task.protocol.stages
             ]
 
-        all_subsamples = []
+        all_samples = []
         for batch in task.batches:
-            all_subsamples.extend(batch.subsamples or [])
-        unique_samples = list({s.id: s for s in all_subsamples}.values())
+            all_samples.extend(batch.samples or [])
+        unique_samples = list({s.id: s for s in all_samples}.values())
 
         task_dict = {
             "id": task.id,

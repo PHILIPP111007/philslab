@@ -50,6 +50,13 @@ export default function MainPage() {
             to: '/warehouse/',
             variant: 'secondary',
         },
+        {
+            id: 'admin_page',
+            title: '📦 Панель администрирования',
+            description: 'Панель администрирования',
+            to: `/admin_page/${params.username}/`,
+            variant: 'secondary',
+        },
     ]
 
     return (

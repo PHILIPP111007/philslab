@@ -33,8 +33,6 @@ def serialize_batch(batch: Batch, samples: list = None, tasks: list = None) -> d
             {
                 "id": s.id,
                 "sample_code": s.sample_code,
-                "name": s.name,
-                "some_number": s.some_number,
                 "qc_1": s.qc_1,
                 "qc_2": s.qc_2,
                 "descr": s.descr,
@@ -232,7 +230,7 @@ async def add_sample_to_batch(
         )
     )
     if existing.first():
-        return {"ok": False, "error": "Subsample already in batch."}
+        return {"ok": False, "error": "Sample already in batch."}
 
     link = BatchSampleLink(batch_id=batch_id, sample_id=sample_id)
     session.add(link)
@@ -258,7 +256,7 @@ async def remove_sample_from_batch(
     )
     item = link.first()
     if not item:
-        return {"ok": False, "error": "Subsample not found in batch."}
+        return {"ok": False, "error": "Sample not found in batch."}
 
     await session.delete(item)
     await session.commit()
