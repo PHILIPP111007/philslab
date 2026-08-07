@@ -193,7 +193,6 @@ async def get_tasks(
             "samples": [
                 {
                     "id": s.id,
-                    "name": s.name,
                     "sample_code": s.sample_code,
                 }
                 for s in unique_samples
