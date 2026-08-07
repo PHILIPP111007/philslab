@@ -21,9 +21,8 @@ graph TB
 
     subgraph "Образцы"
         Sample[Sample]
-        Subsample[Subsample]
         Batch[Batch]
-        BatchSubsampleLink[BatchSubsampleLink]
+        BatchSampleLink[BatchSampleLink]
     end
 
     subgraph "История"
@@ -34,7 +33,6 @@ graph TB
     User -->|создает| Task
     User -->|создает| Batch
     User -->|создает| Sample
-    User -->|создает| Subsample
     User -->|создает| QueryHistory
     
     Protocol -->|содержит| Stage
@@ -45,11 +43,9 @@ graph TB
     TaskBatchLink -->|связан с| Batch
     Task -->|имеет историю| QueryHistory
     
-    Sample -->|имеет| Subsample
-    
-    Batch -->|содержит| Subsample
-    Batch -->|связан с| BatchSubsampleLink
-    BatchSubsampleLink -->|связывает с| Subsample
+    Batch -->|содержит| Sample
+    Batch -->|связан с| BatchSampleLink
+    BatchSampleLink -->|связывает с| Sample
     
     Batch -->|связан с| TaskBatchLink
     Batch -->|создан| User
@@ -61,8 +57,7 @@ graph TB
     style TaskStage fill:#FF9800,stroke:#E65100,color:#fff
     style TaskBatchLink fill:#FF9800,stroke:#E65100,color:#fff
     style Sample fill:#9C27B0,stroke:#4A148C,color:#fff
-    style Subsample fill:#9C27B0,stroke:#4A148C,color:#fff
     style Batch fill:#9C27B0,stroke:#4A148C,color:#fff
-    style BatchSubsampleLink fill:#9C27B0,stroke:#4A148C,color:#fff
+    style BatchSampleLink fill:#9C27B0,stroke:#4A148C,color:#fff
     style QueryHistory fill:#607D8B,stroke:#263238,color:#fff
 ```
