@@ -9,6 +9,7 @@ var Department = lazy(() => import("../pages/Department/Department.jsx"))
 var Protocols = lazy(() => import("../pages/Protocol/Protocols.jsx"))
 var MainPage = lazy(() => import("../pages/MainPage/MainPage.jsx"))
 var AdminPage = lazy(() => import("../pages/AdminPage/AdminPage.jsx"))
+var Task = lazy(() => import("../pages/Task/Task.jsx"))
 
 export var PublicRoutes = [
     {
@@ -66,5 +67,10 @@ export var PrivateRoutes = [
         path: "/admin_page/:username/",
         name: "AdminPage",
         element: <AdminPage />
+    },
+    {
+        path: "/task/:id/",
+        name: "Task",
+        element: <Task />
     },
 ]

@@ -466,8 +466,8 @@ const TableRow = ({ row, rowIndex, handleRowContextMenu, onCellClick, isCellSele
                         data-row-index={rowIndex}
                         data-col-index={colIndex}
                         onClick={(e) => {
-                            if (enableCellSelection && cell.column.columnDef.enableEditing !== false) {
-                                // Игнорируем клик по редактируемой ячейке (если внутри инпут)
+                            if (enableCellSelection) {
+                                // Пропускаем клик по элементам форм
                                 if (e.target.closest('input, select, textarea')) return
                                 onCellClick(rowIndex, colIndex, e)
                             }

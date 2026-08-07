@@ -1,0 +1,331 @@
+.task-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+.task-detail__nav {
+    margin-bottom: 20px;
+}
+
+.task-detail__card {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.task-detail__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.task-detail__title-section {
+    flex: 1;
+}
+
+.task-detail__title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.task-detail__badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.task-detail__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.task-detail__info {
+    margin-bottom: 24px;
+}
+
+.task-detail__info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.task-detail__info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-detail__info-label {
+    font-size: 12px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.task-detail__info-value {
+    font-size: 14px;
+}
+
+.task-detail__description {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border, #e0e0e0);
+}
+
+.task-detail__description p {
+    margin: 8px 0 0 0;
+    white-space: pre-wrap;
+}
+
+.task-detail__progress {
+    margin: 20px 0;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 8px;
+}
+
+.task-detail__progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.task-detail__section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+.task-detail__stages-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-detail__stage-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border, #f0f0f0);
+}
+
+.task-detail__stage-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.task-detail__stage-desc {
+    font-size: 13px;
+    color: var(--text, #888);
+    margin-left: 8px;
+}
+
+.task-detail__batches,
+.task-detail__samples,
+.task-detail__protocol,
+.task-detail__history {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border, #e0e0e0);
+}
+
+.task-detail__batches-list,
+.task-detail__samples-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.task-detail__protocol-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.task-detail__empty {
+    color: var(--text, #888);
+    text-align: center;
+    padding: 12px 0;
+}
+
+/* Модалки (переиспользуем стили из TasksSection) */
+.task-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.task-modal {
+    background: var(--bg, #fff);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.task-modal--steps,
+.task-modal--history,
+.task-modal--protocol {
+    max-width: 700px;
+}
+
+.task-modal__title {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.task-modal__form-group {
+    margin-bottom: 12px;
+}
+
+.task-modal__form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.task-modal__input,
+.task-modal__textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 6px;
+    background: var(--bg, #fff);
+    color: var(--text, #333);
+    font-size: 14px;
+}
+
+.task-modal__input:focus,
+.task-modal__textarea:focus {
+    outline: none;
+    border-color: var(--blue, #007bff);
+}
+
+.task-modal__textarea {
+    resize: vertical;
+}
+
+.task-modal__buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.task-modal__empty {
+    text-align: center;
+    color: var(--text, #888);
+    padding: 12px;
+}
+
+.task-steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-steps-list__item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light, #f0f0f0);
+}
+
+.task-steps-list__checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.task-steps-list__name {
+    flex: 1;
+}
+
+.task-steps-list__desc {
+    display: block;
+    margin-left: 28px;
+    font-size: 13px;
+    color: var(--text, #888);
+}
+
+.task-history-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.task-history-list__item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light, #f0f0f0);
+}
+
+.task-history-list__header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text, #888);
+    margin-bottom: 4px;
+}
+
+.task-history-list__body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.task-history-list__field {
+    font-weight: 500;
+}
+
+.task-history-list__old,
+.task-history-list__new {
+    font-size: 13px;
+    background: var(--bg, #f8f9fa);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.task-history-list__comment {
+    font-style: italic;
+}
+
+.task-protocol-modal__header {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.task-protocol-modal__description {
+    margin: 12px 0;
+}
+
+.task-protocol-modal__meta {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text, #888);
+}

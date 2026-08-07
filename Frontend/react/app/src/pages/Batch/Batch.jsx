@@ -316,13 +316,17 @@ export default function Batch() {
             header: 'ID',
             size: 70,
             enableEditing: false,
+            enableSorting: true,
             cell: ({ getValue, row }) => {
-                const sampleId = row.original.id
-                return (
-                    <LinkButton to={`/sample/${sampleId}`}>
-                        {sampleId}
-                    </LinkButton>
-                )
+                const id = getValue()
+                if (id > 0) {
+                    return (
+                        <LinkButton to={`/sample/${id}/`}>
+                            {id}
+                        </LinkButton>
+                    )
+                }
+                return id
             },
         },
         {
@@ -397,7 +401,7 @@ export default function Batch() {
             header: 'ID',
             size: 70,
             cell: ({ getValue }) => (
-                <LinkButton to={`/task/${getValue()}`}>
+                <LinkButton to={`/task/${getValue()}/`}>
                     {getValue()}
                 </LinkButton>
             ),
@@ -563,14 +567,15 @@ export default function Batch() {
                                 pageSize={10}
                                 enableSelection={false}
                                 enableSorting={true}
-                                enableFiltering={true}
+                                enableFiltering
                                 enablePagination={true}
-                                enableColumnVisibility={false}
+                                enableColumnVisibility={true}
                                 enableAddButton={false}
                                 enableExport={true}
-                                enableInlineEdit={true}
+                                enableInlineEdit={false}
                                 enableEmptyRow={false}
-                                enableActionsColumn={false}
+                                enableActionsColumn={true}
+                                enableCellSelection={true}
                             />
                         )}
                     </div>
