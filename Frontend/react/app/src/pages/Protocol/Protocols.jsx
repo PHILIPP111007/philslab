@@ -65,7 +65,7 @@ export default function Protocols() {
                     <div className="protocol-accordion-title">
                         <span className="protocol-code">{protocol.code}</span>
                         <span className="protocol-name">{protocol.name}</span>
-                        <Badge variant="info">{stages.length} шаг.</Badge>
+                        <Badge variant="info">{stages.length} шага</Badge>
                     </div>
                 ),
                 icon: '📄',
