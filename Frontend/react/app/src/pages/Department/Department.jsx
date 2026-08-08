@@ -71,7 +71,7 @@ export default function Department() {
                     <TasksSection departmentName={departmentName} />
                 </section>
                 <section className="section">
-                    <h2 className="section__title">📦 Батчи</h2>
+                    <h3 className="section__title">📦 Батчи</h3>
                     <Batches department={departmentName} />
                 </section>
             </div>

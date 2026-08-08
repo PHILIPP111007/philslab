@@ -602,7 +602,7 @@ export default function Batch() {
                     <div className="batch-detail__tasks" style={{ marginTop: '2rem' }}>
                         <div className="batch-detail__samples-header">
                             <h2 className="batch-detail__samples-title">📋 Связанные задачи ({tasks.length})</h2>
-                            <Button variant="success" onClick={() => { loadAvailableTasks(); setShowAddTaskModal(true); }}>
+                            <Button variant="primary" onClick={() => { loadAvailableTasks(); setShowAddTaskModal(true); }}>
                                 ➕ Добавить задачу
                             </Button>
                         </div>
@@ -611,9 +611,6 @@ export default function Batch() {
                             <div className="batch-detail__empty">
                                 <span className="batch-detail__empty-icon">📭</span>
                                 <p>Нет связанных задач</p>
-                                <Button variant="primary" onClick={() => { loadAvailableTasks(); setShowAddTaskModal(true); }}>
-                                    ➕ Добавить задачу
-                                </Button>
                             </div>
                         ) : (
                             <Table
