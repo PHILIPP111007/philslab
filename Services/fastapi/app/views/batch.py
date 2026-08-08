@@ -99,6 +99,14 @@ async def get_batches(
         selectinload(Batch.samples), selectinload(Batch.tasks)
     )
 
+    #  ---------- ПРИМЕНЯЕМ ФИЛЬТРЫ ----------
+    for key, value in request.query_params.items():
+        if key.startswith("filter[") and key.endswith("]"):
+            field = key[7:-1]  # извлекаем имя поля
+            if hasattr(Batch, field):
+                column = getattr(Batch, field)
+                statement = statement.where(column == value)
+
     if search:
         statement = statement.where(
             (Batch.name.contains(search))

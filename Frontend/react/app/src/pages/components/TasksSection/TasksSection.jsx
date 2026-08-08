@@ -679,7 +679,7 @@ export default function TasksSection({ departmentName }) {
                         sortedAssigned.length === 0 ? (
                             <div className="tasks-section__empty">
                                 <span className="tasks-section__empty-icon">📭</span>
-                                <p>Вам пока не назначены задачи</p>
+                                <p>Пока не назначены задачи</p>
                             </div>
                         ) : (
                             <Accordion

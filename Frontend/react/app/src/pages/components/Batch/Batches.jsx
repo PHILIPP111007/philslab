@@ -29,7 +29,7 @@ export default function Batches({ department = null }) {
                     const id = getValue()
                     if (id > 0) {
                         return (
-                            <LinkButton to={`/batch/${id}`}>{id}</LinkButton>
+                            <LinkButton to={`/batch/${id}/`}>{id}</LinkButton>
                         )
                     }
                     return id
