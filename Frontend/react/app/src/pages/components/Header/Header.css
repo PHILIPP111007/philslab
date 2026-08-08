@@ -166,6 +166,11 @@
     margin-bottom: 6px;
 }
 
+.sticky-header__setting-group a {
+    display: flex !important;
+    justify-content: center;
+}
+
 /* Тема в попапе */
 .sticky-header__theme-toggle-wrapper {
     display: flex;
