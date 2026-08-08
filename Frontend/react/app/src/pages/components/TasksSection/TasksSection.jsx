@@ -64,7 +64,7 @@ export default function TasksSection({ departmentName }) {
         try {
             let url = `tasks/?assigned_to=${user.id}`;
             if (departmentName) {
-                url = `tasks/?department=${departmentName}`; // или другой эндпоинт
+                url = `tasks/?department=${departmentName}`;
             }
             const data = await Fetch({
                 api_version: APIVersion.V2,
@@ -72,15 +72,17 @@ export default function TasksSection({ departmentName }) {
                 method: HttpMethod.GET,
             });
             if (data?.ok && data?.data) {
-                setAssignedTasks(data.data)
+                // 🆕 Исключаем архивированные задачи
+                const filtered = data.data.filter(task => !task.is_archived);
+                setAssignedTasks(filtered);
             } else {
-                setAssignedTasks([])
+                setAssignedTasks([]);
             }
         } catch (error) {
-            console.error('Ошибка загрузки назначенных задач:', error)
-            setAssignedTasks([])
+            console.error('Ошибка загрузки назначенных задач:', error);
+            setAssignedTasks([]);
         }
-    }
+    };
 
     const loadCreatedTasks = async () => {
         try {
