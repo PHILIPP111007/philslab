@@ -70,7 +70,7 @@ export default function Header() {
                                         <br />
                                         <LinkButton to={`/main_page/${user.username}/`} variant="secondary">Главная страница</LinkButton>
                                         <br />
-                                        <LinkButton to={`/samples/${user.username}/`} variant="secondary">Образцы</LinkButton>
+                                        <LinkButton to={`/samples/${user.username}/`} variant="secondary">Все образцы</LinkButton>
                                         <br />
                                         <LinkButton to={`/batches/${user.username}/`} variant="secondary">Батчи</LinkButton>
                                         <br />
