@@ -53,6 +53,3 @@ class Sample(SQLModel, table=True):
         back_populates="samples",
         link_model=BatchSampleLink,
     )
-    # tasks: List["Task"] = Relationship(
-    #     back_populates="samples", link_model=TaskSampleLink
-    # )

@@ -11,6 +11,7 @@ import Table from "../components/Table/Table"
 import Header from '../components/Header/Header'
 import StatCard from '../components/StatCard/StatCard'
 import Button from '../components/Button/Button'
+import LinkButton from '../components/LinkButton/LinkButton'
 
 export default function Samples() {
     const params = useParams()
@@ -29,7 +30,7 @@ export default function Samples() {
     const { departments, loading: deptLoading } = useDepartments()
 
     useEffect(() => {
-        rememberPage(`samples/${params.username}`)
+        rememberPage(`samples/${params.username}/`)
     }, [params.username])
 
     // ---------- КОЛОНКИ ----------
@@ -40,6 +41,15 @@ export default function Samples() {
             size: 70,
             enableEditing: false,
             enableSorting: true,
+            cell: ({ getValue, row }) => {
+                const id = getValue()
+                if (id > 0) {
+                    return (
+                        <LinkButton to={`/sample/${id}/`}>{id}</LinkButton>
+                    )
+                }
+                return id
+            },
         },
         {
             accessorKey: 'sample_code',

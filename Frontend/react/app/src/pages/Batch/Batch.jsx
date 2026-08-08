@@ -373,9 +373,7 @@ export default function Batch() {
                 const id = getValue()
                 if (id > 0) {
                     return (
-                        <LinkButton to={`/sample/${id}/`}>
-                            {id}
-                        </LinkButton>
+                        <LinkButton to={`/sample/${id}/`}>{id}</LinkButton>
                     )
                 }
                 return id

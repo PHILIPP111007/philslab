@@ -10,6 +10,7 @@ var Protocols = lazy(() => import("../pages/Protocol/Protocols.jsx"))
 var MainPage = lazy(() => import("../pages/MainPage/MainPage.jsx"))
 var AdminPage = lazy(() => import("../pages/AdminPage/AdminPage.jsx"))
 var Task = lazy(() => import("../pages/Task/Task.jsx"))
+var Sample = lazy(() => import("../pages/Sample/Sample.jsx"))
 
 export var PublicRoutes = [
     {
@@ -72,5 +73,10 @@ export var PrivateRoutes = [
         path: "/task/:id/",
         name: "Task",
         element: <Task />
+    },
+    {
+        path: "/sample/:id/",
+        name: "Sample",
+        element: <Sample />
     },
 ]
