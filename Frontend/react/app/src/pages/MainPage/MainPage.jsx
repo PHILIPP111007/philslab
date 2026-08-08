@@ -25,7 +25,7 @@ export default function MainPage() {
         {
             id: 'department',
             title: '🏢 Отдел',
-            description: 'Задачи отдела',
+            description: 'Информация отдела (задачи, батчи)',
             to: `/department/${params.username}/`,
             variant: 'secondary',
         },

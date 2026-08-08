@@ -288,7 +288,6 @@ export default function Batches({ department = null }) {
                     />
                 </div>
                 <section className="section">
-                    <h2 className="section__title">📦 Батчи</h2>
                     {loading && deptLoading ? (
                         <Spinner />
                     ) : (

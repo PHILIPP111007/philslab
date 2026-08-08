@@ -16,8 +16,6 @@ export default function Department() {
     const [departmentName, setDepartmentName] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    Spinner
-
     const targetUsername = params.username || user?.username;
 
     useEffect(() => {
@@ -73,6 +71,7 @@ export default function Department() {
                     <TasksSection departmentName={departmentName} />
                 </section>
                 <section className="section">
+                    <h2 className="section__title">📦 Батчи</h2>
                     <Batches department={departmentName} />
                 </section>
             </div>
