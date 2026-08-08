@@ -72,10 +72,7 @@ export default function Department() {
                 <section className="section">
                     <TasksSection departmentName={departmentName} />
                 </section>
-
-                {/* ➕ Добавляем секцию с батчами отдела */}
                 <section className="section">
-                    <h2 className="section__title">📦 Батчи отдела</h2>
                     <Batches department={departmentName} />
                 </section>
             </div>
