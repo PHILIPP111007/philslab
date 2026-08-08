@@ -220,6 +220,10 @@ body {
     font-size: 12px;
 }
 
+/* ========================================
+   Modals
+   ======================================== */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -299,6 +303,153 @@ body {
 
 .modal--stages {
     max-width: 800px;
+}
+
+/* Modal Overlay — затемнённый фон */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Само модальное окно */
+.modal {
+    background: var(--bg-primary, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 540px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px 28px;
+    box-sizing: border-box;
+    animation: modalFadeIn 0.25s ease-out;
+}
+
+/* Анимация появления */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Заголовок */
+.modal h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+}
+
+/* Подзаголовок / описание */
+.modal p {
+    margin: 0 0 24px 0;
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+/* Группа поля (label + input/select/textarea) */
+.modal__field {
+    margin-bottom: 20px;
+}
+
+.modal__field label {
+    display: block;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    color: var(--text);
+}
+
+.modal__field input,
+.modal__field select,
+.modal__field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color, #d0d7de);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--bg-input, #ffffff);
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.modal__field input:focus,
+.modal__field select:focus,
+.modal__field textarea:focus {
+    outline: none;
+    border-color: var(--blue, #2b6af0);
+    box-shadow: 0 0 0 3px rgba(43, 106, 240, 0.15);
+}
+
+.modal__field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modal__field input:disabled,
+.modal__field select:disabled,
+.modal__field textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Блок с кнопками внизу */
+.modal__actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light, #e9ecf0);
+}
+
+.modal__actions .Button {
+    min-width: 100px;
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 480px) {
+    .modal {
+        padding: 24px 16px;
+        max-width: 100%;
+        border-radius: 12px;
+        margin: 10px;
+    }
+
+    .modal h2 {
+        font-size: 1.3rem;
+    }
+
+    .modal__actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .modal__actions .Button {
+        width: 100%;
+        min-width: unset;
+    }
 }
 
 /* ========================================
