@@ -251,6 +251,10 @@
     animation-delay: 0.25s;
 }
 
+.main-page__card:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
 @keyframes cardSlideUp {
     from {
         opacity: 0;
