@@ -1,17 +1,22 @@
+// Department.js
 import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserContext } from '../../data/context.js';
+import Fetch from '../../API/Fetch';
+import rememberPage from '../../modules/rememberPage';
+import { HttpMethod, APIVersion } from '../../data/enums';
 import Header from '../components/Header/Header';
 import TasksSection from '../components/TasksSection/TasksSection';
-import rememberPage from '../../modules/rememberPage';
-import Fetch from '../../API/Fetch';
-import { HttpMethod, APIVersion } from '../../data/enums';
+import Spinner from '../components/Spinner/Spinner.jsx';
+import Batches from '../components/Batch/Batches';
 
 export default function Department() {
     const { user } = useContext(UserContext);
     const params = useParams();
     const [departmentName, setDepartmentName] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    Spinner
 
     const targetUsername = params.username || user?.username;
 
@@ -33,7 +38,6 @@ export default function Department() {
                     action: `user/${targetUsername}/`,
                 });
                 if (data?.ok) {
-                    // ✅ Берём отдел из local_user или global_user
                     const dept = data.local_user?.department || data.global_user?.department || null;
                     setDepartmentName(dept);
                 } else {
@@ -53,7 +57,7 @@ export default function Department() {
         return (
             <>
                 <Header />
-                <div style={{ padding: '2rem', textAlign: 'center' }}>⏳ Загрузка...</div>
+                <Spinner />
             </>
         );
     }
@@ -63,7 +67,16 @@ export default function Department() {
             <Header />
             <div className="app theme-transition">
                 <section className="section">
+                    <h3>Отдел {departmentName}</h3>
+                </section>
+                <section className="section">
                     <TasksSection departmentName={departmentName} />
+                </section>
+
+                {/* ➕ Добавляем секцию с батчами отдела */}
+                <section className="section">
+                    <h2 className="section__title">📦 Батчи отдела</h2>
+                    <Batches department={departmentName} />
                 </section>
             </div>
         </>

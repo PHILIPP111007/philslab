@@ -3,7 +3,7 @@ var Login = lazy(() => import("../pages/Login/Login.jsx"))
 var User = lazy(() => import("../pages/User/User.jsx"))
 var Hello = lazy(() => import("../pages/Hello/Hello.jsx"))
 var Samples = lazy(() => import("../pages/Sample/Samples.jsx"))
-var Batches = lazy(() => import("../pages/Batch/Batches.jsx"))
+var AllBatches = lazy(() => import("../pages/Batch/AllBatches.jsx"))
 var Batch = lazy(() => import("../pages/Batch/Batch.jsx"))
 var Department = lazy(() => import("../pages/Department/Department.jsx"))
 var Protocols = lazy(() => import("../pages/Protocol/Protocols.jsx"))
@@ -50,8 +50,8 @@ export var PrivateRoutes = [
     },
     {
         path: "/batches/:username/",
-        name: "Batches",
-        element: <Batches />
+        name: "AllBatches",
+        element: <AllBatches />
     },
     {
         path: "/batch/:id/",
