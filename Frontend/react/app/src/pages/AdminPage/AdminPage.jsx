@@ -380,6 +380,7 @@ export default function AdminPage() {
                         enableExport={false}
                         enableInlineEdit={false}
                         enableEmptyRow={true}
+                        enableActionsColumn={false}
                     />
                 </section>
             </div>

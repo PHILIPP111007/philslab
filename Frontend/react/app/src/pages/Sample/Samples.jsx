@@ -100,9 +100,8 @@ export default function Samples() {
             size: 180,
             enableEditing: false,
             cell: ({ getValue }) => {
-                const val = getValue()
-                if (!val) return '—'
-                return new Date(val).toLocaleString('ru-RU')
+                const date = getValue();
+                return date ? new Date(date).toLocaleString('ru-RU') : '—';
             },
         },
     ]

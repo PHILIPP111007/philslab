@@ -61,10 +61,10 @@ async def get_samples(
     offset = (page - 1) * page_size
     statement = statement.offset(offset).limit(page_size)
 
-    results = (await session.exec(statement)).all()
+    data = (await session.exec(statement)).all()
     return {
         "ok": True,
-        "data": results,
+        "data": data,
         "total": total,
         "page": page,
         "page_size": page_size,
