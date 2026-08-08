@@ -857,7 +857,8 @@ export default function Table({
         const processedColumns = userColumns.map(col => {
             const processedCol = { ...col }
 
-            if (enableInlineEdit && col.editable !== false) {
+            const isEditable = col.editable !== undefined ? col.editable : (col.enableEditing !== false);
+            if (enableInlineEdit && isEditable) {
                 processedCol.cell = (props) => (
                     <EditableCell {...props} onCellEdit={handleCellEdit} validate={validateCell}
                         onStartEdit={(rowId, colId) => setEditingCellId(`${rowId}-${colId}`)}

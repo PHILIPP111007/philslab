@@ -52,7 +52,7 @@ export default function MainPage() {
         },
         {
             id: 'admin_page',
-            title: '📦 Панель администрирования',
+            title: '👤 Администрирование',
             description: 'Панель администрирования',
             to: `/admin_page/${params.username}/`,
             variant: 'secondary',
@@ -67,7 +67,7 @@ export default function MainPage() {
                 <div className="main-page__container">
                     {/* Заголовок */}
                     <header className="main-page__header">
-                        <h1 className="main-page__title">Главная панель</h1>
+                        <h1 className="main-page__title">Главная</h1>
                     </header>
 
                     {/* Сетка карточек */}

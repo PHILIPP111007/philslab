@@ -1,10 +1,11 @@
 import './Batch.css'
-import { useState, useEffect, useContext, useCallback } from 'react'
+import { useState, useEffect, useContext, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
 import { UserContext } from "../../data/context"
 import { useDepartments } from '../../hooks/useDepartments';
 import { notify_error, notify_success } from '../../modules/notify'
+import { formatDate } from '../../modules/dateTime'
 import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
 import Spinner from "../components/Spinner/Spinner"
@@ -23,10 +24,9 @@ export default function Batch() {
     const [batch, setBatch] = useState(null)
     const [samples, setSamples] = useState([])
     const [loading, setLoading] = useState(true)
+    const [tasks, setTasks] = useState([])
 
-    const [tasks, setTasks] = useState([]) // ✅ связанные задачи
-
-    // Состояния для редактирования батча
+    // Редактирование батча
     const [showEditModal, setShowEditModal] = useState(false)
     const [editFormData, setEditFormData] = useState({
         name: '',
@@ -34,12 +34,18 @@ export default function Batch() {
         descr: '',
     })
 
-    // Состояния для добавления подобразца
+    // Добавление образцов – новый подход с поиском
     const [showAddSampleModal, setShowAddSampleModal] = useState(false)
-    const [availableSamples, setAvailableSamples] = useState([])
-    const [selectedSampleId, setSelectedSampleId] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
+    const [searchResults, setSearchResults] = useState([])
+    const [searchLoading, setSearchLoading] = useState(false)
+    const [selectedSampleIds, setSelectedSampleIds] = useState(new Set())
+    const [searchTotal, setSearchTotal] = useState(0)
+    const [searchPageSize] = useState(20)
+    const [addLoading, setAddLoading] = useState(false)
+    const searchAbortController = useRef(null)
 
-    // Состояния для редактирования подобразца
+    // Редактирование образца
     const [showEditSampleModal, setShowEditSampleModal] = useState(false)
     const [editingSample, setEditingSample] = useState(null)
     const [sampleEditForm, setSampleEditForm] = useState({
@@ -52,17 +58,18 @@ export default function Batch() {
         material_type: '',
     })
 
-    // ✅ Состояния для добавления задачи в батч
+    // Добавление задачи
     const [showAddTaskModal, setShowAddTaskModal] = useState(false)
     const [availableTasks, setAvailableTasks] = useState([])
     const [selectedTaskId, setSelectedTaskId] = useState('')
+
     const { departments } = useDepartments();
 
     useEffect(() => {
         rememberPage(`batch/${batchId}`)
     }, [batchId])
 
-    // ---------- ЗАГРУЗКА ДАННЫХ ----------
+    // ---------- ЗАГРУЗКА БАТЧА ----------
     const loadBatch = useCallback(async () => {
         setLoading(true)
         const data = await Fetch({
@@ -73,7 +80,7 @@ export default function Batch() {
         if (data?.ok) {
             setBatch(data.data)
             setSamples(data.data.samples || [])
-            setTasks(data.data.tasks || [])  // ✅
+            setTasks(data.data.tasks || [])
         } else {
             notify_error(data?.error || 'Батч не найден')
             navigate('/batches')
@@ -81,23 +88,113 @@ export default function Batch() {
         setLoading(false)
     }, [batchId, navigate])
 
-    const loadAvailableSamples = useCallback(async () => {
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: 'samples/',
-            method: HttpMethod.GET,
-            params: {
-                page_size: 1000,
-            }
-        })
-        if (data?.ok) {
-            const existingIds = new Set(samples.map(s => s.id))
-            const available = (data.data || []).filter(s => !existingIds.has(s.id))
-            setAvailableSamples(available)
-        }
-    }, [samples])
+    useEffect(() => {
+        loadBatch()
+    }, [loadBatch])
 
-    // ✅ Загрузка доступных задач (ещё не привязанных)
+    // ---------- ПОИСК ОБРАЗЦОВ ----------
+    const searchSamples = useCallback(async (query, page = 1) => {
+        if (!query.trim() || query.trim().length < 2) {
+            setSearchResults([])
+            setSearchTotal(0)
+            return
+        }
+
+        // Отменяем предыдущий запрос
+        if (searchAbortController.current) {
+            searchAbortController.current.abort()
+        }
+        const controller = new AbortController()
+        searchAbortController.current = controller
+
+        setSearchLoading(true)
+        try {
+            const existingIds = new Set(samples.map(s => s.id))
+            const params = new URLSearchParams({
+                search: query,
+                page: page,
+                page_size: searchPageSize,
+            })
+            const data = await Fetch({
+                api_version: APIVersion.V2,
+                action: `samples/?${params.toString()}`,
+                method: HttpMethod.GET,
+                // сигнал для отмены – если ваш Fetch поддерживает signal, передайте его
+            })
+            if (data?.ok) {
+                const filtered = data.data.filter(s => !existingIds.has(s.id))
+                setSearchResults(filtered)
+                setSearchTotal(data.total)
+            }
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Search error:', error)
+            }
+        } finally {
+            setSearchLoading(false)
+            searchAbortController.current = null
+        }
+    }, [samples, searchPageSize])
+
+    // Дебаунс для поиска
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            searchSamples(searchQuery, 1)
+        }, 300)
+        return () => clearTimeout(timer)
+    }, [searchQuery, searchSamples])
+
+    // Выбор/снятие выбора образца
+    const toggleSampleSelection = (sampleId) => {
+        setSelectedSampleIds(prev => {
+            const newSet = new Set(prev)
+            if (newSet.has(sampleId)) newSet.delete(sampleId)
+            else newSet.add(sampleId)
+            return newSet
+        })
+    }
+
+    const toggleAllSelection = (checked) => {
+        if (checked) {
+            const allIds = searchResults.map(s => s.id)
+            setSelectedSampleIds(new Set(allIds))
+        } else {
+            setSelectedSampleIds(new Set())
+        }
+    }
+
+    // Массовое добавление выбранных образцов
+    const handleAddSelectedSamples = async () => {
+        if (selectedSampleIds.size === 0) {
+            notify_error('Выберите хотя бы один образец')
+            return
+        }
+        setAddLoading(true)
+        const ids = Array.from(selectedSampleIds)
+        const promises = ids.map(id =>
+            Fetch({
+                api_version: APIVersion.V2,
+                action: `batch/${batchId}/sample/${id}/`,
+                method: HttpMethod.POST,
+            })
+        )
+        const results = await Promise.all(promises)
+        const allOk = results.every(r => r?.ok)
+        if (allOk) {
+            notify_success(`Добавлено ${ids.length} образцов`)
+            await loadBatch()
+            setShowAddSampleModal(false)
+            setSelectedSampleIds(new Set())
+            setSearchQuery('')
+            setSearchResults([])
+        } else {
+            const errors = results.filter(r => !r?.ok).map(r => r?.error).join('; ')
+            notify_error(`Ошибка добавления: ${errors}`)
+        }
+        setAddLoading(false)
+    }
+
+    // ---------- ЗАГРУЗКА ДОСТУПНЫХ ЗАДАЧ ----------
     const loadAvailableTasks = useCallback(async () => {
         const data = await Fetch({
             api_version: APIVersion.V2,
@@ -111,10 +208,6 @@ export default function Batch() {
             setAvailableTasks(available)
         }
     }, [tasks])
-
-    useEffect(() => {
-        loadBatch()
-    }, [loadBatch])
 
     // ---------- РЕДАКТИРОВАНИЕ БАТЧА ----------
     const handleEdit = () => {
@@ -144,7 +237,7 @@ export default function Batch() {
         }
     }
 
-    // ---------- РЕДАКТИРОВАНИЕ ПОДОБРАЗЦА ----------
+    // ---------- РЕДАКТИРОВАНИЕ ОБРАЗЦА ----------
     const handleEditSample = (sample) => {
         setEditingSample(sample)
         setSampleEditForm({
@@ -162,7 +255,6 @@ export default function Batch() {
     const handleSaveSampleEdit = async () => {
         if (!editingSample) return
 
-        // Преобразуем пустые строки в null для числовых полей
         const body = {
             sample_code: sampleEditForm.sample_code || null,
             name: sampleEditForm.name || null,
@@ -186,42 +278,15 @@ export default function Batch() {
             )
             setShowEditSampleModal(false)
             setEditingSample(null)
-            notify_success('Подобразец обновлен!')
+            notify_success('Образец обновлен!')
         } else {
-            notify_error(data?.error || 'Ошибка обновления подобразца')
+            notify_error(data?.error || 'Ошибка обновления образца')
         }
     }
 
-    // ---------- ДОБАВЛЕНИЕ ПОДОБРАЗЦА В БАТЧ ----------
-    const handleAddSample = async () => {
-        if (!selectedSampleId) {
-            notify_error('Выберите подобразец')
-            return
-        }
-
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: `batch/${batchId}/sample/${selectedSampleId}/`,
-            method: HttpMethod.POST,
-        })
-        if (data?.ok) {
-            if (data.data) {
-                setBatch(data.data)
-                setSamples(data.data.samples || [])
-            } else {
-                await loadBatch()
-            }
-            setShowAddSampleModal(false)
-            setSelectedSampleId('')
-            notify_success('Подобразец добавлен в батч!')
-        } else {
-            notify_error(data?.error || 'Ошибка добавления')
-        }
-    }
-
-    // ---------- УДАЛЕНИЕ ПОДОБРАЗЦА ИЗ БАТЧА ----------
+    // ---------- УДАЛЕНИЕ ОБРАЗЦА ИЗ БАТЧА ----------
     const handleRemoveSample = async (sampleId) => {
-        if (!confirm('Удалить подобразец из батча?')) return
+        if (!confirm('Удалить образец из батча?')) return
 
         const data = await Fetch({
             api_version: APIVersion.V2,
@@ -235,13 +300,13 @@ export default function Batch() {
             } else {
                 await loadBatch()
             }
-            notify_success('Подобразец удален из батча!')
+            notify_success('Образец удален из батча!')
         } else {
             notify_error(data?.error || 'Ошибка удаления')
         }
     }
 
-    // ✅ ДОБАВЛЕНИЕ ЗАДАЧИ В БАТЧ
+    // ---------- ЗАДАЧИ ----------
     const handleAddTask = async () => {
         if (!selectedTaskId) {
             notify_error('Выберите задачу')
@@ -263,7 +328,6 @@ export default function Batch() {
         }
     }
 
-    // ✅ УДАЛЕНИЕ ЗАДАЧИ ИЗ БАТЧА
     const handleRemoveTask = async (taskId) => {
         if (!confirm('Удалить задачу из батча?')) return
         const data = await Fetch({
@@ -297,19 +361,7 @@ export default function Batch() {
         }
     }
 
-    // ---------- ФОРМАТИРОВАНИЕ ДАТЫ ----------
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '—'
-        return new Date(dateStr).toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        })
-    }
-
-    // ---------- КОЛОНКИ ДЛЯ ТАБЛИЦЫ ПОДОБРАЗЦОВ ----------
+    // ---------- КОЛОНКИ ----------
     const sampleColumns = [
         {
             accessorKey: 'id',
@@ -364,6 +416,7 @@ export default function Batch() {
             header: 'Создан',
             size: 160,
             enableEditing: false,
+            editable: false,
             cell: ({ getValue }) => formatDate(getValue()),
         },
         {
@@ -394,17 +447,15 @@ export default function Batch() {
         },
     ]
 
-    // ---------- КОЛОНКИ ДЛЯ ТАБЛИЦЫ ЗАДАЧ ----------
     const taskColumns = [
         {
             accessorKey: 'id',
             header: 'ID',
             size: 70,
-            cell: ({ getValue }) => (
-                <LinkButton to={`/task/${getValue()}/`}>
-                    {getValue()}
-                </LinkButton>
-            ),
+            cell: ({ getValue }) => {
+                const id = getValue()
+                return id ? <LinkButton to={`/task/${id}/`}>{id}</LinkButton> : '—'
+            },
         },
         { accessorKey: 'name', header: 'Название', size: 200 },
         { accessorKey: 'department', header: 'Отдел', size: 120 },
@@ -417,7 +468,7 @@ export default function Batch() {
         },
         {
             id: 'actions',
-            header: '',
+            header: 'Действия',
             size: 80,
             enableSorting: false,
             cell: ({ row }) => (
@@ -473,32 +524,15 @@ export default function Batch() {
                         <div className="batch-detail__header">
                             <div className="batch-detail__title-section">
                                 <h1 className="batch-detail__title">{batch.name || 'Батч без названия'}</h1>
-                                <Badge variant="info">
-                                    📦 ID: {batch.id}
-                                </Badge>
-                                <Badge variant="secondary">
-                                    📋 {batch.sample_count || 0} образцов
-                                </Badge>
+                                <Badge variant="info">📦 ID: {batch.id}</Badge>
+                                <Badge variant="secondary">📋 {batch.sample_count || 0} образцов</Badge>
                             </div>
                             <div className="batch-detail__actions">
-                                <Button variant="primary" onClick={handleEdit}>
-                                    ✏️ Редактировать
-                                </Button>
-                                <Button
-                                    variant="success"
-                                    onClick={() => {
-                                        loadAvailableSamples()
-                                        setShowAddSampleModal(true)
-                                    }}
-                                >
+                                <Button variant="primary" onClick={handleEdit}>✏️ Редактировать</Button>
+                                <Button variant="success" onClick={() => setShowAddSampleModal(true)}>
                                     ➕ Добавить образец
                                 </Button>
-                                <Button
-                                    variant="danger"
-                                    onClick={handleDeleteBatch}
-                                >
-                                    🗑️ Удалить
-                                </Button>
+                                <Button variant="danger" onClick={handleDeleteBatch}>🗑️ Удалить</Button>
                             </div>
                         </div>
 
@@ -506,27 +540,19 @@ export default function Batch() {
                             <div className="batch-detail__info-grid">
                                 <div className="batch-detail__info-item">
                                     <span className="batch-detail__info-label">Отдел</span>
-                                    <span className="batch-detail__info-value">
-                                        {batch.department || '—'}
-                                    </span>
+                                    <span className="batch-detail__info-value">{batch.department || '—'}</span>
                                 </div>
                                 <div className="batch-detail__info-item">
                                     <span className="batch-detail__info-label">Создан</span>
-                                    <span className="batch-detail__info-value">
-                                        {formatDate(batch.timestamp)}
-                                    </span>
+                                    <span className="batch-detail__info-value">{formatDate(batch.timestamp)}</span>
                                 </div>
                                 <div className="batch-detail__info-item">
                                     <span className="batch-detail__info-label">Обновлен</span>
-                                    <span className="batch-detail__info-value">
-                                        {formatDate(batch.updated_at)}
-                                    </span>
+                                    <span className="batch-detail__info-value">{formatDate(batch.updated_at)}</span>
                                 </div>
                                 <div className="batch-detail__info-item">
                                     <span className="batch-detail__info-label">Создатель</span>
-                                    <span className="batch-detail__info-value">
-                                        {batch.user_id || '—'}
-                                    </span>
+                                    <span className="batch-detail__info-value">{batch.user_id || '—'}</span>
                                 </div>
                             </div>
                             {batch.descr && (
@@ -538,25 +564,17 @@ export default function Batch() {
                         </div>
                     </div>
 
-                    {/* Таблица подобразцов */}
+                    {/* Таблица образцов */}
                     <div className="batch-detail__samples">
                         <div className="batch-detail__samples-header">
-                            <h2 className="batch-detail__samples-title">
-                                📋 Образцы в батче ({batch.sample_count || 0})
-                            </h2>
+                            <h2 className="batch-detail__samples-title">📋 Образцы в батче ({batch.sample_count || 0})</h2>
                         </div>
 
                         {samples.length === 0 ? (
                             <div className="batch-detail__empty">
                                 <span className="batch-detail__empty-icon">📭</span>
                                 <p>В этом батче пока нет образцов</p>
-                                <Button
-                                    variant="primary"
-                                    onClick={() => {
-                                        loadAvailableSamples()
-                                        setShowAddSampleModal(true)
-                                    }}
-                                >
+                                <Button variant="primary" onClick={() => setShowAddSampleModal(true)}>
                                     ➕ Добавить образец
                                 </Button>
                             </div>
@@ -567,38 +585,33 @@ export default function Batch() {
                                 pageSize={10}
                                 enableSelection={false}
                                 enableSorting={true}
-                                enableFiltering
+                                enableFiltering={true}
                                 enablePagination={true}
                                 enableColumnVisibility={true}
                                 enableAddButton={false}
                                 enableExport={true}
                                 enableInlineEdit={false}
                                 enableEmptyRow={false}
-                                enableActionsColumn={true}
+                                enableActionsColumn={false}
                                 enableCellSelection={true}
                             />
                         )}
                     </div>
 
-                    {/* ✅ Блок связанных задач */}
+                    {/* Блок связанных задач */}
                     <div className="batch-detail__tasks" style={{ marginTop: '2rem' }}>
                         <div className="batch-detail__samples-header">
-                            <h2 className="batch-detail__samples-title">
-                                📋 Связанные задачи ({tasks.length})
-                            </h2>
+                            <h2 className="batch-detail__samples-title">📋 Связанные задачи ({tasks.length})</h2>
+                            <Button variant="success" onClick={() => { loadAvailableTasks(); setShowAddTaskModal(true); }}>
+                                ➕ Добавить задачу
+                            </Button>
                         </div>
 
                         {tasks.length === 0 ? (
                             <div className="batch-detail__empty">
                                 <span className="batch-detail__empty-icon">📭</span>
                                 <p>Нет связанных задач</p>
-                                <Button
-                                    variant="primary"
-                                    onClick={() => {
-                                        loadAvailableTasks()
-                                        setShowAddTaskModal(true)
-                                    }}
-                                >
+                                <Button variant="primary" onClick={() => { loadAvailableTasks(); setShowAddTaskModal(true); }}>
                                     ➕ Добавить задачу
                                 </Button>
                             </div>
@@ -623,7 +636,7 @@ export default function Batch() {
                 </div>
             </div>
 
-            {/* Модальное окно добавления задачи */}
+            {/* Модалка добавления задачи */}
             {showAddTaskModal && (
                 <div className="modal-overlay" onClick={() => setShowAddTaskModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -663,15 +676,12 @@ export default function Batch() {
                 </div>
             )}
 
-            {/* Модальное окно редактирования батча */}
+            {/* Модалка редактирования батча */}
             {showEditModal && (
                 <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <h2 className="modal-title">✏️ Редактирование батча</h2>
-                        <form onSubmit={(e) => {
-                            e.preventDefault()
-                            handleSaveEdit()
-                        }}>
+                        <form onSubmit={(e) => { e.preventDefault(); handleSaveEdit(); }}>
                             <div className="modal-form-group">
                                 <label>Название</label>
                                 <input
@@ -718,15 +728,12 @@ export default function Batch() {
                 </div>
             )}
 
-            {/* Модальное окно редактирования образца */}
+            {/* Модалка редактирования образца */}
             {showEditSampleModal && editingSample && (
                 <div className="modal-overlay" onClick={() => setShowEditSampleModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <h2 className="modal-title">✏️ Редактирование образца #{editingSample.id}</h2>
-                        <form onSubmit={(e) => {
-                            e.preventDefault()
-                            handleSaveSampleEdit()
-                        }}>
+                        <form onSubmit={(e) => { e.preventDefault(); handleSaveSampleEdit(); }}>
                             <div className="modal-form-group">
                                 <label>Sample Code</label>
                                 <input
@@ -806,40 +813,83 @@ export default function Batch() {
                 </div>
             )}
 
-            {/* Модальное окно добавления подобразца */}
+            {/* Новая модалка добавления образцов с поиском */}
             {showAddSampleModal && (
-                <div className="modal-overlay" onClick={() => setShowAddSampleModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="modal-title">➕ Добавление образца в батч</h2>
+                <div className="modal-overlay" onClick={() => {
+                    setShowAddSampleModal(false)
+                    setSelectedSampleIds(new Set())
+                    setSearchQuery('')
+                    setSearchResults([])
+                }}>
+                    <div className="modal modal--add-samples" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-title">➕ Добавление образцов в батч</h2>
                         <div className="modal-form-group">
-                            <label>Выберите образец</label>
-                            {availableSamples.length === 0 ? (
-                                <p className="modal-empty">Нет доступных образцов</p>
-                            ) : (
-                                <select
-                                    value={selectedSampleId}
-                                    onChange={(e) => setSelectedSampleId(e.target.value)}
-                                    className="modal-input"
-                                >
-                                    <option value="">Выберите...</option>
-                                    {availableSamples.map(s => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.sample_code || 'N/A'} — {s.name || 'Без названия'}
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
+                            <label>Поиск образцов (минимум 2 символа)</label>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="modal-input"
+                                placeholder="Введите код или название..."
+                                autoFocus
+                            />
                         </div>
+
+                        {searchLoading && <div className="modal-loading">⏳ Загрузка...</div>}
+
+                        {!searchLoading && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
+                            <p className="modal-empty">Образцы не найдены</p>
+                        )}
+
+                        {searchResults.length > 0 && (
+                            <div className="modal-samples-list">
+                                <div className="modal-samples-list__header">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={searchResults.every(s => selectedSampleIds.has(s.id))}
+                                            onChange={(e) => toggleAllSelection(e.target.checked)}
+                                        />
+                                        Выбрать все
+                                    </label>
+                                    <span>Найдено: {searchTotal}</span>
+                                </div>
+                                <ul className="modal-samples-list__items">
+                                    {searchResults.map(sample => (
+                                        <li key={sample.id} className="modal-samples-list__item">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedSampleIds.has(sample.id)}
+                                                    onChange={() => toggleSampleSelection(sample.id)}
+                                                />
+                                                <span>
+                                                    <strong>{sample.sample_code || 'Без кода'}</strong>
+                                                    {sample.name && ` — ${sample.name}`}
+                                                    {sample.zlims_code && ` (ZLIMS: ${sample.zlims_code})`}
+                                                </span>
+                                            </label>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                         <div className="modal-button-group">
-                            <Button variant="secondary" onClick={() => setShowAddSampleModal(false)}>
+                            <Button variant="secondary" onClick={() => {
+                                setShowAddSampleModal(false)
+                                setSelectedSampleIds(new Set())
+                                setSearchQuery('')
+                                setSearchResults([])
+                            }} disabled={addLoading}>
                                 Отмена
                             </Button>
                             <Button
                                 variant="primary"
-                                onClick={handleAddSample}
-                                disabled={!selectedSampleId || availableSamples.length === 0}
+                                onClick={handleAddSelectedSamples}
+                                disabled={selectedSampleIds.size === 0 || addLoading}
                             >
-                                ➕ Добавить
+                                {addLoading ? '⏳ Добавление...' : `➕ Добавить выбранные (${selectedSampleIds.size})`}
                             </Button>
                         </div>
                     </div>

@@ -4,6 +4,7 @@ import Fetch from '../../API/Fetch'
 import { notify_error } from '../../modules/notify'
 import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
+import { formatDate } from '../../modules/dateTime'
 import Spinner from "../components/Spinner/Spinner"
 import Table from "../components/Table/Table"
 import Header from '../components/Header/Header'
@@ -99,10 +100,7 @@ export default function Samples() {
             header: 'Дата создания',
             size: 180,
             enableEditing: false,
-            cell: ({ getValue }) => {
-                const date = getValue();
-                return date ? new Date(date).toLocaleString('ru-RU') : '—';
-            },
+            cell: ({ getValue }) => formatDate(getValue()),
         },
     ]
 

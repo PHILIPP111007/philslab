@@ -39,11 +39,7 @@ async def get_samples(
 
     # Глобальный поиск
     if search:
-        search_cond = (
-            Sample.zlims_code.contains(search)
-            | Sample.some_number.contains(search)
-            | Sample.descr.contains(search)
-        )
+        search_cond = Sample.zlims_code.contains(search) | Sample.descr.contains(search)
         statement = statement.where(search_cond)
 
     # Сортировка

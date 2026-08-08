@@ -210,6 +210,45 @@
     color: var(--text-dark);
 }
 
+.modal--add-samples {
+    max-width: 700px;
+}
+
+.modal-samples-list__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+}
+
+.modal-samples-list__items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.modal-samples-list__item {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modal-samples-list__item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.modal-loading {
+    text-align: center;
+    color: var(--text-dark);
+    padding: 12px 0;
+}
+
 /* ========================================
    АДАПТИВНОСТЬ
    ======================================== */
