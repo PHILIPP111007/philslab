@@ -505,6 +505,7 @@ export default function Samples() {
                             onDeleteSuccess={handleDeleteSample}
                             onDataChange={handleDataChange}
                             onExportAll={handleExportAll}
+                        // infiniteScroll
                         />
                     )}
                 </section>
