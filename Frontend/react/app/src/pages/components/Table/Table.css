@@ -1277,3 +1277,90 @@ select.modal-input {
     outline: 2px solid #1e90ff;
     outline-offset: -2px;
 }
+
+/* ========================================
+   МАССОВОЕ РЕДАКТИРОВАНИЕ (без переноса)
+   ======================================== */
+.table-batch-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.table-batch-input {
+    width: 160px;
+    min-width: 100px;
+    padding: 6px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: var(--transition);
+    font-family: inherit;
+    min-height: 32px;
+}
+
+.table-batch-input:focus {
+    border-color: var(--blue);
+}
+
+.table-batch-input::placeholder {
+    color: var(--text-dark);
+}
+
+/* На маленьких экранах уменьшаем ширину инпута */
+@media (max-width: 768px) {
+    .table-batch-input {
+        width: 100px;
+        min-width: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-batch-input {
+        width: 80px;
+        min-width: 50px;
+        font-size: 12px;
+    }
+
+    .table-batch-edit .table-button {
+        font-size: 12px;
+        padding: 4px 10px;
+        min-height: 28px;
+    }
+}
+
+/* Индикатор загрузки в бесконечной прокрутке */
+.table-infinite-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--text-dark);
+    gap: 8px;
+}
+
+.table-loading-more {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.table-all-loaded {
+    color: var(--green);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}

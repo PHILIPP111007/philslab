@@ -10,11 +10,11 @@ import {
     flexRender,
 } from '@tanstack/react-table'
 import ExcelJS from 'exceljs'
-import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback, memo } from 'react'
+import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback, memo, forwardRef } from 'react'
 import { notify_error } from '../../../modules/notify'
 
 // ============================================
-// АГРЕГАЦИИ (без изменений)
+// АГРЕГАЦИИ
 // ============================================
 function renderAggregation(column, table) {
     const aggFn = column.columnDef.aggregation
@@ -39,7 +39,7 @@ function renderAggregation(column, table) {
 }
 
 // ============================================
-// ФИЛЬТРЫ (без изменений)
+// ФИЛЬТРЫ
 // ============================================
 const textFilter = (row, columnId, filterValue) => {
     if (!filterValue) return true
@@ -54,7 +54,7 @@ const numberContainsFilter = (row, columnId, filterValue) => {
 }
 
 // ============================================
-// INLINE EDITABLE CELL (с добавлением Ctrl+Enter)
+// INLINE EDITABLE CELL
 // ============================================
 const EditableCell = memo(function EditableCell({ getValue, row, column, table, onCellEdit, validate, onStartEdit, onEndEdit }) {
     const initialValue = getValue()
@@ -105,8 +105,6 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
         setTimeout(() => { isSavingRef.current = false }, 100)
     }, [value, initialValue, validate, row, column, onCellEdit, onEndEdit])
 
-    const { requestCellFocusAfterPageChange } = table.options.meta
-
     const moveToCellBelow = useCallback(() => {
         const currentTd = cellRef.current?.closest('td')
         const currentTr = currentTd?.closest('tr')
@@ -121,7 +119,10 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
             if (!nextRow) {
                 if (table.getCanNextPage?.()) {
                     const currentCellIdx = Array.from(currentTr.querySelectorAll('td')).indexOf(currentTd)
-                    requestCellFocusAfterPageChange?.(currentCellIdx)
+                    const { requestCellFocusAfterPageChange } = table.options.meta || {}
+                    if (requestCellFocusAfterPageChange) {
+                        requestCellFocusAfterPageChange(currentCellIdx)
+                    }
                     table.nextPage()
                 }
                 return
@@ -137,10 +138,9 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
                 editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
             }
         }, 150)
-    }, [table, requestCellFocusAfterPageChange])
+    }, [table])
 
     const handleKeyDown = (e) => {
-        // Ctrl+Enter – массовое применение ко всем выделенным ячейкам
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault()
             if (applyValueToSelectedCells) {
@@ -195,16 +195,14 @@ const EditableCell = memo(function EditableCell({ getValue, row, column, table, 
 })
 
 // ============================================
-// МОДАЛЬНЫЕ ОКНА (без изменений)
+// МОДАЛЬНЫЕ ОКНА
 // ============================================
 function EditModal({ user, isOpen, onClose, onSave, columns }) {
     const [formData, setFormData] = useState({})
     const formRef = useRef(null)
 
     useEffect(() => {
-        if (isOpen && user) {
-            setFormData({ ...user })
-        }
+        if (isOpen && user) setFormData({ ...user })
     }, [isOpen, user])
 
     useEffect(() => {
@@ -232,12 +230,8 @@ function EditModal({ user, isOpen, onClose, onSave, columns }) {
         onClose()
     }
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Escape') onClose()
-    }
-
     return (
-        <div className="modal-overlay" onClick={onClose} onKeyDown={handleKeyDown}>
+        <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()} ref={formRef}>
                 <h2 className="modal-title">Редактирование записи</h2>
                 <form onSubmit={handleSubmit}>
@@ -285,12 +279,8 @@ function EditModal({ user, isOpen, onClose, onSave, columns }) {
                         )
                     })}
                     <div className="modal-button-group">
-                        <button type="button" onClick={onClose} className="modal-button-cancel">
-                            Отмена
-                        </button>
-                        <button type="submit" className="modal-button-save">
-                            💾 Сохранить
-                        </button>
+                        <button type="button" onClick={onClose} className="modal-button-cancel">Отмена</button>
+                        <button type="submit" className="modal-button-save">💾 Сохранить</button>
                     </div>
                 </form>
             </div>
@@ -301,36 +291,16 @@ function EditModal({ user, isOpen, onClose, onSave, columns }) {
 function DeleteModal({ item, isOpen, onClose, onConfirm }) {
     if (!isOpen) return null
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Escape') onClose()
-        if (e.key === 'Enter') {
-            onConfirm(item)
-            onClose()
-        }
-    }
-
     return (
-        <div className="modal-overlay" onClick={onClose} onKeyDown={handleKeyDown}>
+        <div className="modal-overlay" onClick={onClose}>
             <div className="modal modal-small" onClick={(e) => e.stopPropagation()}>
                 <h2 className="modal-title">Подтверждение удаления</h2>
                 <p className="modal-text">
                     Вы уверены, что хотите удалить запись <strong>#{item?.id}</strong>?
                 </p>
                 <div className="modal-button-group modal-button-group-center">
-                    <button type="button" onClick={onClose} className="modal-button-cancel">
-                        Отмена
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            onConfirm(item)
-                            onClose()
-                        }}
-                        className="modal-button-delete"
-                        autoFocus
-                    >
-                        🗑️ Удалить
-                    </button>
+                    <button type="button" onClick={onClose} className="modal-button-cancel">Отмена</button>
+                    <button type="button" onClick={() => { onConfirm(item); onClose() }} className="modal-button-delete" autoFocus>🗑️ Удалить</button>
                 </div>
             </div>
         </div>
@@ -350,7 +320,6 @@ function AddModal({ isOpen, onClose, onSave, columns }) {
                 }
             })
             setFormData(initialData)
-
             setTimeout(() => {
                 formRef.current?.querySelector('input')?.focus()
             }, 100)
@@ -374,12 +343,8 @@ function AddModal({ isOpen, onClose, onSave, columns }) {
         onClose()
     }
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Escape') onClose()
-    }
-
     return (
-        <div className="modal-overlay" onClick={onClose} onKeyDown={handleKeyDown}>
+        <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()} ref={formRef}>
                 <h2 className="modal-title">Добавление новой записи</h2>
                 <form onSubmit={handleSubmit}>
@@ -427,12 +392,8 @@ function AddModal({ isOpen, onClose, onSave, columns }) {
                         )
                     })}
                     <div className="modal-button-group">
-                        <button type="button" onClick={onClose} className="modal-button-cancel">
-                            Отмена
-                        </button>
-                        <button type="submit" className="modal-button-save">
-                            ➕ Добавить
-                        </button>
+                        <button type="button" onClick={onClose} className="modal-button-cancel">Отмена</button>
+                        <button type="submit" className="modal-button-save">➕ Добавить</button>
                     </div>
                 </form>
             </div>
@@ -441,12 +402,13 @@ function AddModal({ isOpen, onClose, onSave, columns }) {
 }
 
 // ============================================
-// КОМПОНЕНТ СТРОКИ (с выделением ячеек)
+// КОМПОНЕНТ СТРОКИ (с поддержкой ref)
 // ============================================
-const TableRow = ({ row, rowIndex, handleRowContextMenu, onCellClick, isCellSelected, enableCellSelection }) => {
+const TableRow = forwardRef(({ row, rowIndex, handleRowContextMenu, onCellClick, isCellSelected, enableCellSelection }, ref) => {
     const isTempRow = row.original.id < 0
     return (
         <tr
+            ref={ref}
             className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${isTempRow ? 'table-row--empty' : ''}`}
             onContextMenu={(e) => handleRowContextMenu(e, row.original)}
         >
@@ -467,7 +429,6 @@ const TableRow = ({ row, rowIndex, handleRowContextMenu, onCellClick, isCellSele
                         data-col-index={colIndex}
                         onClick={(e) => {
                             if (enableCellSelection) {
-                                // Пропускаем клик по элементам форм
                                 if (e.target.closest('input, select, textarea')) return
                                 onCellClick(rowIndex, colIndex, e)
                             }
@@ -479,7 +440,7 @@ const TableRow = ({ row, rowIndex, handleRowContextMenu, onCellClick, isCellSele
             })}
         </tr>
     )
-}
+})
 
 // ============================================
 // ОСНОВНОЙ КОМПОНЕНТ ТАБЛИЦЫ
@@ -500,7 +461,6 @@ export default function Table({
     enableActionsColumn = true,
     enableInlineEdit = true,
     enableEmptyRow = true,
-    // НОВЫЙ ПРОП — включает выделение ячеек
     enableCellSelection = false,
     onDataChange,
     onEditSuccess,
@@ -512,6 +472,7 @@ export default function Table({
     onLazyLoad,
     totalRows = 0,
     onExportAll,
+    infiniteScroll = false,
 }) {
     // ---------- утилиты для пустой строки ----------
     const createEmptyRowData = useCallback((id) => {
@@ -568,9 +529,15 @@ export default function Table({
     const [tableKey, setTableKey] = useState(0)
     const isInitialMount = useRef(true)
 
-    // НОВЫЕ СОСТОЯНИЯ ДЛЯ ВЫДЕЛЕНИЯ ЯЧЕЕК
     const [selectedCells, setSelectedCells] = useState(new Set())
     const [lastSelectedCell, setLastSelectedCell] = useState(null)
+
+    const [isLoadingMore, setIsLoadingMore] = useState(false)
+    const [hasMoreData, setHasMoreData] = useState(true)
+    const observerRef = useRef(null)
+    const lastRowRef = useRef(null)
+
+    const effectiveEnableEmptyRow = infiniteScroll ? false : enableEmptyRow
 
     // ---------- эффекты ----------
     useEffect(() => {
@@ -587,87 +554,101 @@ export default function Table({
         setTableKey(prev => prev + 1)
     }, [columnVisibility])
 
-    useEffect(() => {
-        if (lazy) {
-            setData(enableEmptyRow ? ensureEmptyRow(initialData) : initialData)
-        }
-    }, [initialData, lazy, enableEmptyRow, ensureEmptyRow])
-
     // Сброс выделения при смене страницы/фильтров
     useEffect(() => {
         setSelectedCells(new Set())
         setLastSelectedCell(null)
     }, [pageIndex, pageSize, globalFilter, columnFilters])
 
-    const requestCellFocusAfterPageChange = useCallback((columnIndex) => {
-        setFocusRequest({ columnIndex })
-    }, [])
-
+    // При изменении фильтров или сортировки сбрасываем данные и загружаем первую страницу
     useEffect(() => {
-        if (!focusRequest) return
-        const timer = setTimeout(() => {
-            const tbody = document.querySelector('.table-wrapper tbody')
-            if (!tbody) return
-            const rows = Array.from(tbody.querySelectorAll('tr'))
-            const firstRow = rows[0]
-            if (!firstRow) return
-            const cells = Array.from(firstRow.querySelectorAll('td'))
-            const targetCell = cells[focusRequest.columnIndex]
-            if (targetCell) {
-                const editableDiv = targetCell.querySelector('.editable-cell--editable')
-                if (editableDiv) {
-                    editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+        if (infiniteScroll) {
+            console.log('[Table] 🔄 Фильтры изменились, сброс данных');
+            setData([]);
+            setPageIndex(0);
+            setHasMoreData(true);
+            setIsLoadingMore(false);
+            console.log('[Table] 📤 Вызов onLazyLoad для страницы 0');
+            onLazyLoad?.({ pageIndex: 0, pageSize, sorting, globalFilter, columnFilters });
+        }
+    }, [sorting, globalFilter, columnFilters, infiniteScroll]);
+
+    // Загрузка новых данных при изменении initialData (для infiniteScroll — добавление, для обычного — замена)
+    useEffect(() => {
+        if (!lazy) return;
+        if (infiniteScroll) {
+            console.log('[Table] 📦 Получены новые данные, длина:', initialData.length);
+            setData(prev => {
+                const existingIds = new Set(prev.map(item => item.id));
+                const newItems = initialData.filter(item => !existingIds.has(item.id));
+                const newData = [...prev, ...newItems];
+                console.log('[Table] 📊 После добавления:', newData.length, 'записей');
+                if (totalRows > 0 && newData.length >= totalRows) {
+                    setHasMoreData(false);
+                    console.log('[Table] 🛑 hasMoreData = false (totalRows достигнут)');
+                } else if (totalRows > 0) {
+                    setHasMoreData(true);
+                    console.log('[Table] ✅ hasMoreData = true (ещё есть данные)');
+                } else {
+                    if (initialData.length < pageSize) {
+                        setHasMoreData(false);
+                        console.log('[Table] 🛑 hasMoreData = false (последняя страница)');
+                    } else {
+                        setHasMoreData(true);
+                        console.log('[Table] ✅ hasMoreData = true (есть ещё страницы)');
+                    }
                 }
-            }
-            setFocusRequest(null)
-        }, 100)
-        return () => clearTimeout(timer)
-    }, [focusRequest, pageIndex])
+                return newData;
+            });
+            setIsLoadingMore(false);
+        } else {
+            setData(effectiveEnableEmptyRow ? ensureEmptyRow(initialData) : initialData);
+        }
+    }, [initialData, lazy, infiniteScroll, pageSize, totalRows, effectiveEnableEmptyRow, ensureEmptyRow]);
 
-    // Контекстное меню
-    const [contextMenu, setContextMenu] = useState({
-        visible: false,
-        x: 0,
-        y: 0,
-        row: null,
-    })
-    const contextMenuRef = useRef(null)
+    // Обработчик загрузки следующей страницы
+    const loadMore = useCallback(() => {
+        if (isLoadingMore || !hasMoreData || !lazy) return;
+        const nextPage = pageIndex + 1;
+        console.log('[Table] ⬇️ loadMore вызывает onLazyLoad для страницы', nextPage);
+        setIsLoadingMore(true);
+        // Обновляем pageIndex, чтобы отображать текущую страницу (опционально)
+        setPageIndex(nextPage);
+        // И сразу вызываем загрузку
+        onLazyLoad?.({ pageIndex: nextPage, pageSize, sorting, globalFilter, columnFilters });
+    }, [isLoadingMore, hasMoreData, lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad]);
 
+    // Пересоздаём observer при изменении lastRowRef.current или infiniteScroll
     useEffect(() => {
-        if (!contextMenu.visible) return
+        if (!infiniteScroll || !lastRowRef.current) return
 
-        const handleClickOutside = (e) => {
-            if (contextMenuRef.current && !contextMenuRef.current.contains(e.target)) {
-                setContextMenu(prev => ({ ...prev, visible: false }))
-            }
-        }
-        const handleEscape = (e) => {
-            if (e.key === 'Escape') {
-                setContextMenu(prev => ({ ...prev, visible: false }))
-            }
-        }
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMore()
+                }
+            },
+            { root: null, rootMargin: '0px 0px 200px 0px', threshold: 0.1 }
+        )
 
-        document.addEventListener('mousedown', handleClickOutside)
-        document.addEventListener('keydown', handleEscape)
+        observer.observe(lastRowRef.current)
+        observerRef.current = observer
+
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-            document.removeEventListener('keydown', handleEscape)
+            if (observerRef.current) {
+                observerRef.current.disconnect()
+            }
         }
-    }, [contextMenu.visible])
+    }, [infiniteScroll, lastRowRef.current, loadMore])
 
-    // Lazy-загрузка
+    // Lazy-загрузка при изменении pageIndex (или других параметров)
+    // Lazy-загрузка при изменении параметров (только для обычной пагинации)
     useEffect(() => {
-        if (!lazy) return
-        onLazyLoad?.({
-            pageIndex,
-            pageSize,
-            sorting,
-            globalFilter,
-            columnFilters,
-        })
-    }, [lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad])
+        if (!lazy || infiniteScroll) return; // при infiniteScroll мы вызываем вручную
+        onLazyLoad?.({ pageIndex, pageSize, sorting, globalFilter, columnFilters });
+    }, [lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad, infiniteScroll]);
 
-    // ---------- обработчики данных (без изменений) ----------
+    // ---------- остальные обработчики (без изменений) ----------
     const updateData = useCallback((rowIndex, columnId, value) => {
         setData((old) => old.map((row, index) => index === rowIndex ? { ...row, [columnId]: value } : row))
     }, [])
@@ -688,19 +669,19 @@ export default function Table({
             const totalItems = newData.filter(i => i.id > 0).length
             const maxPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
             if (pageIndex > maxPage) setPageIndex(maxPage)
-            const finalData = ensureEmptyRow(newData)
+            const finalData = effectiveEnableEmptyRow ? ensureEmptyRow(newData) : newData
             onDataChange?.(finalData.filter(i => i.id > 0), { id: item.id, operation: 'delete', data: item })
             onDeleteSuccess?.(item)
             return finalData
         })
-    }, [pageSize, pageIndex, ensureEmptyRow, onDataChange, onDeleteSuccess])
+    }, [pageSize, pageIndex, effectiveEnableEmptyRow, ensureEmptyRow, onDataChange, onDeleteSuccess])
 
     const handleAdd = useCallback((newItem) => {
         setData((old) => {
             const dataWithoutEmpty = old.filter(item => item.id > 0)
             const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
             const itemWithId = { ...newItem, id: maxId + 1 }
-            const finalData = ensureEmptyRow([...dataWithoutEmpty, itemWithId])
+            const finalData = effectiveEnableEmptyRow ? ensureEmptyRow([...dataWithoutEmpty, itemWithId]) : [...dataWithoutEmpty, itemWithId]
             onDataChange?.(finalData.filter(i => i.id > 0), { id: itemWithId.id, operation: 'add', data: itemWithId })
             onAddSuccess?.(itemWithId)
             const totalItems = finalData.filter(i => i.id > 0).length
@@ -708,7 +689,7 @@ export default function Table({
             setPageIndex(lastPage)
             return finalData
         })
-    }, [pageSize, ensureEmptyRow, onDataChange, onAddSuccess])
+    }, [pageSize, effectiveEnableEmptyRow, ensureEmptyRow, onDataChange, onAddSuccess])
 
     const handleCellEdit = useCallback((row, columnId, value) => {
         if (row.id < 0) {
@@ -717,7 +698,7 @@ export default function Table({
                 const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
                 const newRow = { ...row, [columnId]: value, id: maxId + 1 }
                 const filtered = old.filter(item => item.id !== row.id)
-                const finalData = enableEmptyRow ? ensureEmptyRow([...filtered, newRow]) : [...filtered, newRow]
+                const finalData = effectiveEnableEmptyRow ? ensureEmptyRow([...filtered, newRow]) : [...filtered, newRow]
                 onCellEdit?.(newRow, columnId, value)
                 onAddSuccess?.(newRow)
                 onDataChange?.(finalData.filter(i => i.id > 0), { id: newRow.id, operation: 'add', data: newRow })
@@ -734,19 +715,16 @@ export default function Table({
                 })
             }
         }
-    }, [data, enableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange])
+    }, [data, effectiveEnableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange])
 
-    // ---------- ФУНКЦИИ ВЫДЕЛЕНИЯ ЯЧЕЕК ----------
+    // ---------- ФУНКЦИИ ВЫДЕЛЕНИЯ ----------
     const isCellSelected = useCallback((rowIndex, colIndex) => {
         return selectedCells.has(`${rowIndex}-${colIndex}`)
     }, [selectedCells])
 
     const toggleCellSelection = useCallback((rowIndex, colIndex, event) => {
         if (!enableCellSelection) return
-
         const key = `${rowIndex}-${colIndex}`
-
-        // Ctrl+клик – переключение
         if (event.ctrlKey || event.metaKey) {
             setSelectedCells(prev => {
                 const newSet = new Set(prev)
@@ -757,15 +735,12 @@ export default function Table({
             setLastSelectedCell({ rowIndex, colIndex })
             return
         }
-
-        // Shift+клик – диапазон
         if (event.shiftKey && lastSelectedCell) {
             const { rowIndex: lastRow, colIndex: lastCol } = lastSelectedCell
             const minRow = Math.min(rowIndex, lastRow)
             const maxRow = Math.max(rowIndex, lastRow)
             const minCol = Math.min(colIndex, lastCol)
             const maxCol = Math.max(colIndex, lastCol)
-
             const newSet = new Set()
             for (let r = minRow; r <= maxRow; r++) {
                 for (let c = minCol; c <= maxCol; c++) {
@@ -776,8 +751,6 @@ export default function Table({
             setLastSelectedCell({ rowIndex, colIndex })
             return
         }
-
-        // Обычный клик – только одна ячейка
         setSelectedCells(new Set([key]))
         setLastSelectedCell({ rowIndex, colIndex })
     }, [enableCellSelection, lastSelectedCell])
@@ -793,6 +766,32 @@ export default function Table({
             row: rowData,
         })
     }, [])
+
+    const [contextMenu, setContextMenu] = useState({
+        visible: false,
+        x: 0,
+        y: 0,
+        row: null,
+    })
+    const contextMenuRef = useRef(null)
+
+    useEffect(() => {
+        if (!contextMenu.visible) return
+        const handleClickOutside = (e) => {
+            if (contextMenuRef.current && !contextMenuRef.current.contains(e.target)) {
+                setContextMenu(prev => ({ ...prev, visible: false }))
+            }
+        }
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') setContextMenu(prev => ({ ...prev, visible: false }))
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        document.addEventListener('keydown', handleEscape)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            document.removeEventListener('keydown', handleEscape)
+        }
+    }, [contextMenu.visible])
 
     const handleContextEdit = useCallback(() => {
         setSelectedItem(contextMenu.row)
@@ -856,8 +855,7 @@ export default function Table({
     const columns = useMemo(() => {
         const processedColumns = userColumns.map(col => {
             const processedCol = { ...col }
-
-            const isEditable = col.editable !== undefined ? col.editable : (col.enableEditing !== false);
+            const isEditable = col.editable !== undefined ? col.editable : (col.enableEditing !== false)
             if (enableInlineEdit && isEditable) {
                 processedCol.cell = (props) => (
                     <EditableCell {...props} onCellEdit={handleCellEdit} validate={validateCell}
@@ -865,16 +863,17 @@ export default function Table({
                         onEndEdit={() => setEditingCellId(null)} />
                 )
             }
-
             if (!processedCol.filterFn) {
                 processedCol.filterFn = processedCol.editType === 'number' ? numberContainsFilter : textFilter
             }
-
             return processedCol
         })
-
         return [...selectionColumn, ...processedColumns, ...actionsColumn]
     }, [userColumns, enableInlineEdit, selectionColumn, actionsColumn, handleCellEdit, validateCell])
+
+    const requestCellFocusAfterPageChange = useCallback((columnIndex) => {
+        setFocusRequest({ columnIndex })
+    }, [])
 
     // ---------- ТАБЛИЦА ----------
     const table = useReactTable({
@@ -924,7 +923,6 @@ export default function Table({
         getGroupedRowModel: getGroupedRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
         filterFns: { text: textFilter, numberContains: numberContainsFilter },
-        // meta теперь будет включать applyValueToSelectedCells
         meta: { updateData, requestCellFocusAfterPageChange },
         enableSorting,
         enableColumnFilters: enableFiltering,
@@ -934,17 +932,13 @@ export default function Table({
         getRowId: useCallback(row => String(row.id), []),
     })
 
-    // ---------- МАССОВОЕ ПРИМЕНЕНИЕ ЗНАЧЕНИЯ К ВЫДЕЛЕННЫМ ЯЧЕЙКАМ ----------
-    // Определяем ПОСЛЕ создания table, чтобы использовать table.getRowModel и т.д.
+    // ---------- МАССОВОЕ ПРИМЕНЕНИЕ ----------
     const applyValueToSelectedCells = useCallback((value) => {
         if (selectedCells.size === 0) return
-
         const rows = table.getRowModel().rows
         const allColumns = table.getAllColumns().filter(col => col.getIsVisible())
-
         const updates = []
         const newData = [...data]
-
         selectedCells.forEach(key => {
             const [rowIndexStr, colIndexStr] = key.split('-')
             const rowIndex = parseInt(rowIndexStr, 10)
@@ -952,19 +946,16 @@ export default function Table({
             const row = rows[rowIndex]
             if (!row) return
             const originalRow = row.original
-            if (originalRow.id < 0) return // пропускаем временную строку
+            if (originalRow.id < 0) return
             const column = allColumns[colIndex]
             if (!column) return
             const columnId = column.id
             const dataIndex = newData.findIndex(item => item.id === originalRow.id)
             if (dataIndex === -1) return
-
             newData[dataIndex] = { ...newData[dataIndex], [columnId]: value }
             updates.push({ id: originalRow.id, columnId, value })
         })
-
         setData(newData)
-
         if (onDataChange) {
             onDataChange(newData.filter(i => i.id > 0), {
                 operation: 'batchEdit',
@@ -973,8 +964,6 @@ export default function Table({
         }
     }, [selectedCells, data, table, onDataChange])
 
-    // Обновляем meta таблицы, чтобы передать applyValueToSelectedCells в EditableCell
-    // Делаем это через useEffect, чтобы не пересоздавать таблицу
     useEffect(() => {
         if (table && table.options.meta) {
             table.options.meta.applyValueToSelectedCells = applyValueToSelectedCells
@@ -988,14 +977,9 @@ export default function Table({
                 .map(r => r.original)
                 .filter(item => item.id > 0)
         }
-
         if (onExportAll) {
             try {
-                const allData = await onExportAll({
-                    sorting,
-                    globalFilter,
-                    columnFilters,
-                })
+                const allData = await onExportAll({ sorting, globalFilter, columnFilters })
                 return allData.filter(item => item.id > 0)
             } catch (error) {
                 console.error('Export all error:', error)
@@ -1003,7 +987,6 @@ export default function Table({
                 return []
             }
         }
-
         return table.getPrePaginationRowModel().rows
             .map(r => r.original)
             .filter(item => item.id > 0)
@@ -1105,27 +1088,8 @@ export default function Table({
                         </select>
                     )}
                     {enableFiltering && <span className="table-filter-info">Показано: <strong>{table.getRowModel().rows.length}</strong> из {data.filter(item => item.id > 0).length}</span>}
-                    {enableCellSelection && selectedCells.size > 0 && (
-                        <span className="table-selection-info">Выделено ячеек: {selectedCells.size}</span>
-                    )}
-                </div>
-                <div className="table-toolbar-right">
-                    {enableAddButton && <button onClick={() => setAddModalOpen(true)} className="table-button-add">➕ Добавить</button>}
-                    {enableExport && (
-                        <div className="table-export-dropdown">
-                            <button className="table-button">📊 Экспорт ▼</button>
-                            <div className="table-export-dropdown__menu">
-                                <button onClick={() => exportToCSV(false)} className="table-export-dropdown__item">📄 CSV (все)</button>
-                                <button onClick={() => exportToCSV(true)} className="table-export-dropdown__item">✅ CSV (выбранные)</button>
-                                <div className="table-export-dropdown__divider" />
-                                <button onClick={() => exportToExcel(false)} className="table-export-dropdown__item">📊 Excel (все)</button>
-                                <button onClick={() => exportToExcel(true)} className="table-export-dropdown__item">✅ Excel (выбранные)</button>
-                            </div>
-                        </div>
-                    )}
-                    {enableFiltering && <button onClick={() => { setColumnFilters([]); setGlobalFilter('') }} className="table-button">✕ Сбросить</button>}
-                    {enableCellSelection && selectedCells.size > 0 && (
-                        <>
+                    {enableCellSelection && (
+                        <div className="table-batch-edit">
                             <input
                                 type="text"
                                 placeholder="Значение для выделенных"
@@ -1151,8 +1115,24 @@ export default function Table({
                             >
                                 Применить к выделенным
                             </button>
-                        </>
+                        </div>
                     )}
+                </div>
+                <div className="table-toolbar-right">
+                    {enableAddButton && <button onClick={() => setAddModalOpen(true)} className="table-button-add">➕ Добавить</button>}
+                    {enableExport && (
+                        <div className="table-export-dropdown">
+                            <button className="table-button">📊 Экспорт ▼</button>
+                            <div className="table-export-dropdown__menu">
+                                <button onClick={() => exportToCSV(false)} className="table-export-dropdown__item">📄 CSV (все)</button>
+                                <button onClick={() => exportToCSV(true)} className="table-export-dropdown__item">✅ CSV (выбранные)</button>
+                                <div className="table-export-dropdown__divider" />
+                                <button onClick={() => exportToExcel(false)} className="table-export-dropdown__item">📊 Excel (все)</button>
+                                <button onClick={() => exportToExcel(true)} className="table-export-dropdown__item">✅ Excel (выбранные)</button>
+                            </div>
+                        </div>
+                    )}
+                    {enableFiltering && <button onClick={() => { setColumnFilters([]); setGlobalFilter('') }} className="table-button">✕ Сбросить</button>}
                 </div>
             </div>
 
@@ -1210,19 +1190,40 @@ export default function Table({
                     </thead>
                     <tbody>
                         {table.getRowModel().rows.length === 0 ? (
-                            <tr><td colSpan={columns.length} className="table-empty">😕 Нет данных</td></tr>
+                            <tr>
+                                <td colSpan={columns.length} className="table-empty">😕 Нет данных</td>
+                            </tr>
                         ) : (
-                            table.getRowModel().rows.map((row, rowIndex) => (
-                                <TableRow
-                                    key={row.id}
-                                    row={row}
-                                    rowIndex={rowIndex}
-                                    handleRowContextMenu={handleRowContextMenu}
-                                    onCellClick={toggleCellSelection}
-                                    isCellSelected={isCellSelected}
-                                    enableCellSelection={enableCellSelection}
-                                />
-                            ))
+                            <>
+                                {table.getRowModel().rows.map((row, rowIndex) => {
+                                    const isLastRow = rowIndex === table.getRowModel().rows.length - 1
+                                    return (
+                                        <TableRow
+                                            key={row.id}
+                                            ref={infiniteScroll && isLastRow ? lastRowRef : null}
+                                            row={row}
+                                            rowIndex={rowIndex}
+                                            handleRowContextMenu={handleRowContextMenu}
+                                            onCellClick={toggleCellSelection}
+                                            isCellSelected={isCellSelected}
+                                            enableCellSelection={enableCellSelection}
+                                        />
+                                    )
+                                })}
+                                {infiniteScroll && (
+                                    <tr>
+                                        <td colSpan={columns.length} className="table-infinite-loader">
+                                            {isLoadingMore && <span className="table-loading-more">⏳ Загрузка...</span>}
+                                            {!isLoadingMore && !hasMoreData && totalRows > 0 && (
+                                                <span className="table-all-loaded">✅ Все данные загружены</span>
+                                            )}
+                                            {!isLoadingMore && hasMoreData && totalRows > 0 && (
+                                                <span className="table-scroll-hint">⬇️ Прокрутите для загрузки</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )}
+                            </>
                         )}
                     </tbody>
                     <tfoot>
@@ -1257,19 +1258,11 @@ export default function Table({
                             zIndex: 1000,
                         }}
                     >
-                        <button onClick={handleContextEdit} className="context-menu__item">
-                            ✏️ Редактировать
-                        </button>
-                        <button onClick={handleContextDuplicate} className="context-menu__item">
-                            📄 Дублировать (уйдет в конец таблицы)
-                        </button>
-                        <button onClick={handleContextCopy} className="context-menu__item">
-                            📋 Копировать
-                        </button>
+                        <button onClick={handleContextEdit} className="context-menu__item">✏️ Редактировать</button>
+                        <button onClick={handleContextDuplicate} className="context-menu__item">📄 Дублировать (уйдет в конец таблицы)</button>
+                        <button onClick={handleContextCopy} className="context-menu__item">📋 Копировать</button>
                         <div className="context-menu__divider" />
-                        <button onClick={handleContextDelete} className="context-menu__item context-menu__item--danger">
-                            🗑️ Удалить
-                        </button>
+                        <button onClick={handleContextDelete} className="context-menu__item context-menu__item--danger">🗑️ Удалить</button>
                     </div>
                 )}
             </div>
@@ -1281,13 +1274,19 @@ export default function Table({
                         <span className="table-footer-selected">, выбрано: <strong>{table.getSelectedRowModel().rows.length}</strong></span>
                     )}
                 </div>
-                {enablePagination && (
+                {!infiniteScroll && enablePagination && (
                     <div className="table-pagination">
                         <button onClick={() => setPageIndex(0)} disabled={pageIndex === 0} className="table-page-button">⟪</button>
                         <button onClick={() => setPageIndex(p => Math.max(0, p - 1))} disabled={pageIndex === 0} className="table-page-button">⟨</button>
                         <span className="table-page-info">Страница {pageIndex + 1} из {table.getPageCount()}</span>
                         <button onClick={() => setPageIndex(p => Math.min(table.getPageCount() - 1, p + 1))} disabled={pageIndex >= table.getPageCount() - 1} className="table-page-button">⟩</button>
                         <button onClick={() => setPageIndex(table.getPageCount() - 1)} disabled={pageIndex >= table.getPageCount() - 1} className="table-page-button">⟫</button>
+                    </div>
+                )}
+                {infiniteScroll && (
+                    <div className="table-infinite-status">
+                        {isLoadingMore && <span className="table-loading-more">⏳ Загрузка...</span>}
+                        {!hasMoreData && totalRows > 0 && <span className="table-all-loaded">✅ Все данные загружены</span>}
                     </div>
                 )}
             </div>
