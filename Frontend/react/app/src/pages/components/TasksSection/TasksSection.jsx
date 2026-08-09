@@ -5,6 +5,7 @@ import Fetch from '../../../API/Fetch'
 import { HttpMethod, APIVersion } from '../../../data/enums'
 import { notify_error, notify_success } from '../../../modules/notify'
 import { useDepartments } from '../../../hooks/useDepartments';
+import Spinner from "../../components/Spinner/Spinner"
 import Accordion from '../../components/Accordion/Accordion'
 import Button from '../../components/Button/Button'
 import Badge from '../../components/Badge/Badge'
@@ -672,7 +673,7 @@ export default function TasksSection({ departmentName }) {
 
             {/* Контент вкладок */}
             {loading ? (
-                <div className="tasks-section__loading">⏳ Загрузка задач...</div>
+                <Spinner />
             ) : (
                 <>
                     {activeTab === 'assigned' && (

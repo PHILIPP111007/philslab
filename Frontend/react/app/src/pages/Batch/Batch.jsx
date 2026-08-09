@@ -830,7 +830,7 @@ export default function Batch() {
                             />
                         </div>
 
-                        {searchLoading && <div className="modal-loading">⏳ Загрузка...</div>}
+                        {searchLoading && <Spinner />}
 
                         {!searchLoading && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
                             <p className="modal-empty">Образцы не найдены</p>
