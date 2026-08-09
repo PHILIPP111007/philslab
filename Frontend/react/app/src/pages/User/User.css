@@ -80,7 +80,7 @@
     justify-content: center;
     font-size: 28px;
     font-weight: 600;
-    color: var(--text);
+    color: var(--text-white);
     background: var(--blue);
 }
 
