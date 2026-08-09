@@ -8,6 +8,14 @@ import Spinner from '../Spinner/Spinner';
 export default function CompletedTasksChart({ department }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [themeColor, setThemeColor] = useState('#3794ff'); // fallback
+
+    // Получаем цвет из CSS-переменной
+    useEffect(() => {
+        const computedStyle = getComputedStyle(document.documentElement);
+        const blue = computedStyle.getPropertyValue('--blue').trim();
+        if (blue) setThemeColor(blue);
+    }, []);
 
     useEffect(() => {
         if (!department) {
@@ -43,7 +51,6 @@ export default function CompletedTasksChart({ department }) {
     const dates = data.map(item => item.date);
     const counts = data.map(item => item.count);
 
-    // Форматируем даты для отображения на оси (ДД.ММ.ГГГГ)
     const dateLabels = dates.map(d => {
         const parts = d.split('-');
         return `${parts[2]}.${parts[1]}.${parts[0]}`;
@@ -58,32 +65,33 @@ export default function CompletedTasksChart({ department }) {
                     type: 'scatter',
                     mode: 'lines+markers',
                     fill: 'tozeroy',
-                    fillcolor: 'rgba(66, 133, 244, 0.2)',
+                    fillcolor: `${themeColor}33`, // полупрозрачный (прозрачность 20%)
                     marker: {
-                        color: 'var(--blue)',
+                        color: themeColor,
                         size: 10,
-                        line: { color: 'var(--blue)', width: 2 }
+                        line: { color: themeColor, width: 2 }
                     },
                     line: {
-                        color: 'var(--blue)',
+                        color: themeColor,
                         width: 2.5,
                         shape: 'linear'
                     },
                     name: 'Завершённые задачи',
                     hovertemplate: '%{text}: %{y} задач<extra></extra>',
-                    text: dateLabels, // для отображения в тултипе
+                    text: dateLabels,
                 },
             ]}
             layout={{
                 xaxis: {
                     title: 'Дата',
-                    type: 'category',           // 👈 категориальная ось – только те даты, что есть в данных
-                    categoryorder: 'array',     // сохраняем порядок из данных
-                    categoryarray: dates,       // порядок дат
+                    type: 'category',
+                    categoryorder: 'array',
+                    categoryarray: dates,
                     tickangle: -45,
                     gridcolor: 'var(--border)',
                     zeroline: false,
-                    tickfont: { size: 11 },
+                    tickfont: { color: 'var(--text)' },
+                    titlefont: { color: 'var(--text)' },
                 },
                 yaxis: {
                     title: 'Количество задач',
@@ -92,6 +100,8 @@ export default function CompletedTasksChart({ department }) {
                     gridcolor: 'var(--border)',
                     zeroline: true,
                     zerolinecolor: 'var(--border)',
+                    tickfont: { color: 'var(--text)' },
+                    titlefont: { color: 'var(--text)' },
                 },
                 paper_bgcolor: 'transparent',
                 plot_bgcolor: 'transparent',
@@ -99,7 +109,7 @@ export default function CompletedTasksChart({ department }) {
                 margin: { l: 60, r: 30, t: 60, b: 80 },
                 hovermode: 'x',
                 showlegend: true,
-                legend: { orientation: 'h', y: 1.05 },
+                legend: { orientation: 'h', y: 1.05, font: { color: 'var(--text)' } },
             }}
             config={{ responsive: true, displayModeBar: true }}
             style={{ width: '100%', height: '450px' }}
