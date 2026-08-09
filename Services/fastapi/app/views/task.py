@@ -1,5 +1,5 @@
 # views/task.py
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
@@ -857,3 +857,38 @@ async def get_archived_tasks(
         )
 
     return {"ok": True, "data": result}
+
+
+@router.get("/tasks/completed_stats/")
+async def get_completed_stats(
+    session: SessionDep,
+    request: Request,
+    department: str = Query(...),
+    days: int = Query(30, ge=1, le=365),
+):
+    if not request.state.user:
+        return {"ok": False, "error": "Can not authenticate."}
+
+    # Получаем дату начала периода
+    start_date = datetime.now() - timedelta(days=days)
+    start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Запрос: группировка по дням (по дате завершения completed_at)
+    query = (
+        select(
+            func.date(Task.completed_at).label("date"),
+            func.count().label("count"),
+        )
+        .where(
+            Task.department == department,
+            Task.is_completed == True,
+            Task.completed_at >= start_date,
+        )
+        .group_by(func.date(Task.completed_at))
+        .order_by(func.date(Task.completed_at))
+    )
+    results = (await session.exec(query)).all()
+
+    # Преобразуем в список словарей
+    data = [{"date": r.date, "count": r.count} for r in results]
+    return {"ok": True, "data": data}

@@ -9,6 +9,7 @@ import Header from '../components/Header/Header';
 import TasksSection from '../components/TasksSection/TasksSection';
 import Spinner from '../components/Spinner/Spinner.jsx';
 import Batches from '../components/Batch/Batches';
+import CompletedTasksChart from '../components/CompletedTasksChart/CompletedTasksChart'
 
 export default function Department() {
     const { user } = useContext(UserContext);
@@ -67,9 +68,17 @@ export default function Department() {
                 <section className="section">
                     <h3>Отдел {departmentName}</h3>
                 </section>
+                <br />
+                {/* 👇 НОВАЯ СЕКЦИЯ С ГРАФИКОМ */}
+                <section className="section">
+                    <h3 className="section__title">📊 Статистика завершённых задач</h3>
+                    <CompletedTasksChart department={departmentName} />
+                </section>
+                <br />
                 <section className="section">
                     <TasksSection departmentName={departmentName} />
                 </section>
+                <br />
                 <section className="section">
                     <h3 className="section__title">📦 Батчи</h3>
                     <Batches department={departmentName} />
