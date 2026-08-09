@@ -43,6 +43,12 @@ export default function CompletedTasksChart({ department }) {
     const dates = data.map(item => item.date);
     const counts = data.map(item => item.count);
 
+    // Форматируем даты для отображения на оси (ДД.ММ.ГГГГ)
+    const dateLabels = dates.map(d => {
+        const parts = d.split('-');
+        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    });
+
     return (
         <Plot
             data={[
@@ -51,8 +57,8 @@ export default function CompletedTasksChart({ department }) {
                     y: counts,
                     type: 'scatter',
                     mode: 'lines+markers',
-                    fill: 'tozeroy',                    // 👈 заливка от линии до оси X
-                    fillcolor: 'rgba(66, 133, 244, 0.2)', // полупрозрачный синий
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(66, 133, 244, 0.2)',
                     marker: {
                         color: 'var(--blue)',
                         size: 10,
@@ -61,20 +67,23 @@ export default function CompletedTasksChart({ department }) {
                     line: {
                         color: 'var(--blue)',
                         width: 2.5,
-                        shape: 'linear' // можно 'spline' для плавной линии
+                        shape: 'linear'
                     },
                     name: 'Завершённые задачи',
-                    hovertemplate: '%{x}: %{y} задач<extra></extra>',
+                    hovertemplate: '%{text}: %{y} задач<extra></extra>',
+                    text: dateLabels, // для отображения в тултипе
                 },
             ]}
             layout={{
                 xaxis: {
                     title: 'Дата',
-                    type: 'date',
-                    tickformat: '%d.%m.%Y',
+                    type: 'category',           // 👈 категориальная ось – только те даты, что есть в данных
+                    categoryorder: 'array',     // сохраняем порядок из данных
+                    categoryarray: dates,       // порядок дат
                     tickangle: -45,
                     gridcolor: 'var(--border)',
                     zeroline: false,
+                    tickfont: { size: 11 },
                 },
                 yaxis: {
                     title: 'Количество задач',

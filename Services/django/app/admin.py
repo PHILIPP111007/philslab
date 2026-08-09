@@ -153,7 +153,6 @@ class TaskAdmin(admin.ModelAdmin):
         "created_by__username",
         "assigned_to__username",
     )
-    readonly_fields = ("created_at", "updated_at", "completed_at")
     ordering = ("-priority", "-created_at")
     inlines = [HistoryInline]
     actions = ["mark_as_completed", "mark_as_incomplete", "archive_tasks"]
