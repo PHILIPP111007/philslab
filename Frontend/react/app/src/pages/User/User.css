@@ -80,7 +80,7 @@
     justify-content: center;
     font-size: 28px;
     font-weight: 600;
-    color: var(--text-white);
+    color: var(--text);
     background: var(--blue);
 }
 
@@ -249,7 +249,7 @@
 .user-card-main-page__status-btn--active {
     border-color: var(--blue);
     background: var(--bg-selected);
-    color: var(--text-white);
+    color: var(--text);
 }
 
 /* ========================================
@@ -309,7 +309,7 @@
     margin: 0 0 20px 0;
     font-size: 20px;
     font-weight: 400;
-    color: var(--text-white);
+    color: var(--text);
 }
 
 .user-modal__form-group {
@@ -385,7 +385,7 @@
 
 .user-modal__btn--save {
     background: var(--blue);
-    color: var(--text-white);
+    color: var(--text);
 }
 
 .user-modal__btn--save:hover {

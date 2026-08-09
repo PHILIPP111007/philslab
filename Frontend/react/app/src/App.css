@@ -428,6 +428,33 @@ body {
     min-width: 100px;
 }
 
+/* ========================================
+   СЕКЦИЯ-КАРТОЧКА С ЗАЛИВКОЙ
+   ======================================== */
+.section-filled {
+    background: var(--bg-card, rgba(255, 255, 255, 0.04));
+    padding: 20px 24px;
+    border-radius: var(--radius-md, 12px);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: var(--transition);
+}
+
+/* Для тёмной темы можно добавить более светлый фон */
+@media (prefers-color-scheme: dark) {
+    .section-filled {
+        background: var(--bg-card-dark, rgba(255, 255, 255, 0.06));
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .section-filled {
+        padding: 16px;
+        border-radius: 8px;
+    }
+}
+
 /* Адаптивность для маленьких экранов */
 @media (max-width: 480px) {
     .modal {

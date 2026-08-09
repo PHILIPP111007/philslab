@@ -58,7 +58,7 @@
 .sticky-header__settings-btn--active {
     border-color: var(--blue);
     background: var(--bg-selected);
-    color: var(--text-white);
+    color: var(--text);
 }
 
 .sticky-header__settings-icon {
