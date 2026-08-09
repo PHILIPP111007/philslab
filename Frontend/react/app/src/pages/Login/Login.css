@@ -69,13 +69,13 @@
 .login-title {
     font-size: 24px;
     font-weight: 500;
-    color: var(--text-white);
+    color: var(--text);
     margin: 0 0 8px 0;
 }
 
 .login-subtitle {
     font-size: 14px;
-    color: var(--text-dark);
+    color: var(--text);
     margin: 0;
 }
 

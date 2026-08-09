@@ -51,6 +51,8 @@ export default function CompletedTasksChart({ department }) {
                     y: counts,
                     type: 'scatter',
                     mode: 'lines+markers',
+                    fill: 'tozeroy',                    // 👈 заливка от линии до оси X
+                    fillcolor: 'rgba(66, 133, 244, 0.2)', // полупрозрачный синий
                     marker: {
                         color: 'var(--blue)',
                         size: 10,
@@ -69,7 +71,7 @@ export default function CompletedTasksChart({ department }) {
                 xaxis: {
                     title: 'Дата',
                     type: 'date',
-                    tickformat: '%d.%m.%Y',   // день.месяц.год
+                    tickformat: '%d.%m.%Y',
                     tickangle: -45,
                     gridcolor: 'var(--border)',
                     zeroline: false,
