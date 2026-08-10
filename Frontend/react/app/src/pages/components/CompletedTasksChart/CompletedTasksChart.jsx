@@ -5,7 +5,7 @@ import { HttpMethod, APIVersion } from '../../../data/enums';
 import { notify_error } from '../../../modules/notify';
 import Spinner from '../Spinner/Spinner';
 
-export default function CompletedTasksChart({ department }) {
+export default function CompletedTasksChart({ department = "__ALL__" }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [themeColor, setThemeColor] = useState('#3794ff'); // fallback

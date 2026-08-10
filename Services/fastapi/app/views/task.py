@@ -874,19 +874,26 @@ async def get_completed_stats(
     start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
 
     # Запрос: группировка по дням (по дате завершения completed_at)
-    query = (
-        select(
-            func.date(Task.completed_at).label("date"),
-            func.count().label("count"),
+
+    query = select(
+        func.date(Task.completed_at).label("date"),
+        func.count().label("count"),
+    )
+    if department == "__ALL__":
+        query = query.where(
+            Task.is_completed == True,
+            Task.completed_at >= start_date,
         )
-        .where(
+    else:
+        query = query.where(
             Task.department == department,
             Task.is_completed == True,
             Task.completed_at >= start_date,
         )
-        .group_by(func.date(Task.completed_at))
-        .order_by(func.date(Task.completed_at))
+    query = query.group_by(func.date(Task.completed_at)).order_by(
+        func.date(Task.completed_at)
     )
+
     results = (await session.exec(query)).all()
 
     # Преобразуем в список словарей

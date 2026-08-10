@@ -33,7 +33,7 @@ export default function MainPage() {
             id: 'statistics',
             title: '📊 Статистика',
             description: 'Аналитика и отчеты по деятельности',
-            to: '/statistics/',
+            to: `/statistics/${params.username}/`,
             variant: 'secondary',
         },
         {

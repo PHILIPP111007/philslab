@@ -11,6 +11,7 @@ var MainPage = lazy(() => import("../pages/MainPage/MainPage.jsx"))
 var AdminPage = lazy(() => import("../pages/AdminPage/AdminPage.jsx"))
 var Task = lazy(() => import("../pages/Task/Task.jsx"))
 var Sample = lazy(() => import("../pages/Sample/Sample.jsx"))
+var Statistics = lazy(() => import("../pages/Statistics/Statistics.jsx"))
 
 export var PublicRoutes = [
     {
@@ -78,5 +79,10 @@ export var PrivateRoutes = [
         path: "/sample/:id/",
         name: "Sample",
         element: <Sample />
+    },
+    {
+        path: "/statistics/:username/",
+        name: "Statistics",
+        element: <Statistics />
     },
 ]
