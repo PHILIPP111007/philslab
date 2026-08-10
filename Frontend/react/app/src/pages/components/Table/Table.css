@@ -1115,7 +1115,7 @@ select.modal-input {
 
 .table-export-dropdown__menu {
     position: absolute;
-    top: calc(100% + 4px);
+    top: 100%;
     right: 0;
     min-width: 200px;
     background: var(--bg-light);
