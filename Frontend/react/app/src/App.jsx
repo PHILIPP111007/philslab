@@ -6,13 +6,14 @@ import { Toaster } from "react-hot-toast"
 import { AuthContext, UserContext } from "./data/context.js"
 import { PrivateRoutes, PublicRoutes } from "./data/routes.jsx"
 import { useAuth } from "./hooks/useAuth.js"
+import ProtectedRoute from './modules/protectedRoute.jsx'
 import { ThemeProvider } from './pages/components/Theme/ThemeContext'
 import ErrorPage from "./pages/ErrorPage/ErrorPage.jsx"
 import SuspenseLoading from "./pages/components/SuspenseLoading/SuspenseLoading.jsx"
 
 export default function App() {
 
-    var [isAuth, setIsAuth] = useState(false)
+    var [isAuth, setIsAuth] = useState(true)
     var [user, setUser] = useState({
         id: 0,
         username: "",
@@ -44,7 +45,7 @@ export default function App() {
                                             key={route.path}
                                             path={route.path}
                                             errorElement={<ErrorPage />}
-                                            element={isAuth ? route.element : <Navigate replace to="/login/" />}
+                                            element={<ProtectedRoute>{route.element}</ProtectedRoute>}
                                             exact
                                         />
                                     )}
