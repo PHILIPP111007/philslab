@@ -2,6 +2,7 @@ import './Batch.css'
 import { useState, useEffect, useContext, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
+import { buildSamplePayload } from '../../API/payloads'
 import { UserContext } from "../../data/context"
 import { useDepartments } from '../../hooks/useDepartments';
 import { notify_error, notify_success } from '../../modules/notify'
@@ -50,8 +51,12 @@ export default function Batch() {
     const [editingSample, setEditingSample] = useState(null)
     const [sampleEditForm, setSampleEditForm] = useState({
         sample_code: '',
-        name: '',
-        some_number: '',
+        sample_group_code: '',
+        zlims_code: '',
+        uin1: '',
+        uin2: '',
+        project_code: '',
+        sample_index: '',
         qc_1: '',
         qc_2: '',
         descr: '',
@@ -119,7 +124,7 @@ export default function Batch() {
                 api_version: APIVersion.V2,
                 action: `samples/?${params.toString()}`,
                 method: HttpMethod.GET,
-                // сигнал для отмены – если ваш Fetch поддерживает signal, передайте его
+                signal: controller.signal,
             })
             if (data?.ok) {
                 const filtered = data.data.filter(s => !existingIds.has(s.id))
@@ -200,7 +205,7 @@ export default function Batch() {
             api_version: APIVersion.V2,
             action: 'tasks/',
             method: HttpMethod.GET,
-            params: { page_size: 1000 }
+            params: { page_size: 100 }
         })
         if (data?.ok) {
             const existingIds = new Set(tasks.map(t => t.id))
@@ -242,8 +247,12 @@ export default function Batch() {
         setEditingSample(sample)
         setSampleEditForm({
             sample_code: sample.sample_code || '',
-            name: sample.name || '',
-            some_number: sample.some_number ?? '',
+            sample_group_code: sample.sample_group_code || '',
+            zlims_code: sample.zlims_code || '',
+            uin1: sample.uin1 || '',
+            uin2: sample.uin2 || '',
+            project_code: sample.project_code || '',
+            sample_index: sample.sample_index || '',
             qc_1: sample.qc_1 ?? '',
             qc_2: sample.qc_2 ?? '',
             descr: sample.descr || '',
@@ -255,15 +264,7 @@ export default function Batch() {
     const handleSaveSampleEdit = async () => {
         if (!editingSample) return
 
-        const body = {
-            sample_code: sampleEditForm.sample_code || null,
-            name: sampleEditForm.name || null,
-            some_number: sampleEditForm.some_number === '' ? null : Number(sampleEditForm.some_number),
-            qc_1: sampleEditForm.qc_1 === '' ? null : Number(sampleEditForm.qc_1),
-            qc_2: sampleEditForm.qc_2 === '' ? null : Number(sampleEditForm.qc_2),
-            descr: sampleEditForm.descr || null,
-            material_type: sampleEditForm.material_type || null,
-        }
+        const body = buildSamplePayload(sampleEditForm)
 
         const data = await Fetch({
             api_version: APIVersion.V2,
@@ -386,14 +387,14 @@ export default function Batch() {
             enableEditing: false,
         },
         {
-            accessorKey: 'name',
-            header: 'Название',
+            accessorKey: 'sample_group_code',
+            header: 'Код группы',
             size: 150,
             enableEditing: false,
         },
         {
-            accessorKey: 'some_number',
-            header: 'Номер',
+            accessorKey: 'zlims_code',
+            header: 'ZLIMS код',
             size: 80,
             enableEditing: false,
         },
@@ -407,6 +408,12 @@ export default function Batch() {
             accessorKey: 'qc_2',
             header: 'QC 2',
             size: 70,
+            enableEditing: false,
+        },
+        {
+            accessorKey: 'material_type',
+            header: 'Тип материала',
+            size: 130,
             enableEditing: false,
         },
         {
@@ -738,25 +745,24 @@ export default function Batch() {
                                     className="modal-input"
                                 />
                             </div>
-                            <div className="modal-form-group">
-                                <label>Название</label>
-                                <input
-                                    type="text"
-                                    value={sampleEditForm.name}
-                                    onChange={(e) => setSampleEditForm({ ...sampleEditForm, name: e.target.value })}
-                                    className="modal-input"
-                                />
-                            </div>
-                            <div className="modal-form-group">
-                                <label>Номер</label>
-                                <input
-                                    type="number"
-                                    value={sampleEditForm.some_number}
-                                    onChange={(e) => setSampleEditForm({ ...sampleEditForm, some_number: e.target.value })}
-                                    className="modal-input"
-                                    step="any"
-                                />
-                            </div>
+                            {[
+                                ['sample_group_code', 'Код группы'],
+                                ['zlims_code', 'ZLIMS код'],
+                                ['uin1', 'UIN 1'],
+                                ['uin2', 'UIN 2'],
+                                ['project_code', 'Код проекта'],
+                                ['sample_index', 'Индекс'],
+                            ].map(([field, label]) => (
+                                <div className="modal-form-group" key={field}>
+                                    <label>{label}</label>
+                                    <input
+                                        type="text"
+                                        value={sampleEditForm[field]}
+                                        onChange={(e) => setSampleEditForm({ ...sampleEditForm, [field]: e.target.value })}
+                                        className="modal-input"
+                                    />
+                                </div>
+                            ))}
                             <div className="modal-form-group">
                                 <label>QC 1</label>
                                 <input
@@ -860,7 +866,6 @@ export default function Batch() {
                                                 />
                                                 <span>
                                                     <strong>{sample.sample_code || 'Без кода'}</strong>
-                                                    {sample.name && ` — ${sample.name}`}
                                                     {sample.zlims_code && ` (ZLIMS: ${sample.zlims_code})`}
                                                 </span>
                                             </label>

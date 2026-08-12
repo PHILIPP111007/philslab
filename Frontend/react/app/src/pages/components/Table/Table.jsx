@@ -656,8 +656,11 @@ export default function Table({
     const handleEdit = useCallback((updatedItem) => {
         setData((old) => {
             const newData = old.map((item) => item.id === updatedItem.id ? updatedItem : item)
-            onDataChange?.(newData.filter(i => i.id > 0), { id: updatedItem.id, operation: 'edit', data: updatedItem })
-            onEditSuccess?.(updatedItem)
+            if (onDataChange) {
+                onDataChange(newData.filter(i => i.id > 0), { id: updatedItem.id, operation: 'edit', data: updatedItem })
+            } else {
+                onEditSuccess?.(updatedItem)
+            }
             return newData
         })
     }, [onDataChange, onEditSuccess])
@@ -670,8 +673,11 @@ export default function Table({
             const maxPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
             if (pageIndex > maxPage) setPageIndex(maxPage)
             const finalData = effectiveEnableEmptyRow ? ensureEmptyRow(newData) : newData
-            onDataChange?.(finalData.filter(i => i.id > 0), { id: item.id, operation: 'delete', data: item })
-            onDeleteSuccess?.(item)
+            if (onDataChange) {
+                onDataChange(finalData.filter(i => i.id > 0), { id: item.id, operation: 'delete', data: item })
+            } else {
+                onDeleteSuccess?.(item)
+            }
             return finalData
         })
     }, [pageSize, pageIndex, effectiveEnableEmptyRow, ensureEmptyRow, onDataChange, onDeleteSuccess])
@@ -682,8 +688,11 @@ export default function Table({
             const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
             const itemWithId = { ...newItem, id: maxId + 1 }
             const finalData = effectiveEnableEmptyRow ? ensureEmptyRow([...dataWithoutEmpty, itemWithId]) : [...dataWithoutEmpty, itemWithId]
-            onDataChange?.(finalData.filter(i => i.id > 0), { id: itemWithId.id, operation: 'add', data: itemWithId })
-            onAddSuccess?.(itemWithId)
+            if (onDataChange) {
+                onDataChange(finalData.filter(i => i.id > 0), { id: itemWithId.id, operation: 'add', data: itemWithId })
+            } else {
+                onAddSuccess?.(itemWithId)
+            }
             const totalItems = finalData.filter(i => i.id > 0).length
             const lastPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
             setPageIndex(lastPage)
@@ -700,22 +709,38 @@ export default function Table({
                 const filtered = old.filter(item => item.id !== row.id)
                 const finalData = effectiveEnableEmptyRow ? ensureEmptyRow([...filtered, newRow]) : [...filtered, newRow]
                 onCellEdit?.(newRow, columnId, value)
-                onAddSuccess?.(newRow)
-                onDataChange?.(finalData.filter(i => i.id > 0), { id: newRow.id, operation: 'add', data: newRow })
+                if (onDataChange) {
+                    onDataChange(finalData.filter(i => i.id > 0), { id: newRow.id, operation: 'add', data: newRow })
+                } else {
+                    onAddSuccess?.(newRow)
+                }
                 return finalData
             })
         } else {
-            const rowIndex = data.findIndex(item => item.id === row.id)
-            if (rowIndex !== -1) {
+            if (data.some(item => item.id === row.id)) {
                 setData((old) => {
-                    const newData = old.map((item, index) => index === rowIndex ? { ...item, [columnId]: value } : item)
-                    onCellEdit?.(row, columnId, value)
-                    onDataChange?.(newData.filter(i => i.id > 0), { id: row.id, operation: 'edit', data: { ...row, [columnId]: value }, column: columnId, value })
+                    const currentRow = old.find(item => item.id === row.id)
+                    if (!currentRow) return old
+
+                    const updatedItem = { ...currentRow, [columnId]: value }
+                    const newData = old.map(item => item.id === row.id ? updatedItem : item)
+                    onCellEdit?.(updatedItem, columnId, value)
+                    if (onDataChange) {
+                        onDataChange(newData.filter(i => i.id > 0), {
+                            id: row.id,
+                            operation: 'edit',
+                            data: updatedItem,
+                            column: columnId,
+                            value,
+                        })
+                    } else {
+                        onEditSuccess?.(updatedItem)
+                    }
                     return newData
                 })
             }
         }
-    }, [data, effectiveEnableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange])
+    }, [data, effectiveEnableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange, onEditSuccess])
 
     // ---------- ФУНКЦИИ ВЫДЕЛЕНИЯ ----------
     const isCellSelected = useCallback((rowIndex, colIndex) => {

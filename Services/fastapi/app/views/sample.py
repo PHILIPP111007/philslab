@@ -129,19 +129,6 @@ async def get_samples(
     }
 
 
-@router.get("/sample/{sample_id}/")
-async def get_sample(session: SessionDep, request: Request, sample_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
-    query = await session.exec(select(Sample).where(Sample.id == sample_id))
-    sample = query.first()
-    if not sample:
-        return {"ok": False, "error": "Not found sample."}
-
-    return {"ok": True, "data": sample}
-
-
 @router.post("/sample/")
 async def create_sample(
     session: SessionDep,

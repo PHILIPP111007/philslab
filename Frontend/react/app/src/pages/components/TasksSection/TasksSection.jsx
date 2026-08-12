@@ -31,7 +31,6 @@ export default function TasksSection({ departmentName }) {
         assigned_to: '',
         deadline: '',
         priority: 'medium',
-        samples: [],
         protocol: '',
         department: '',
     })
@@ -185,7 +184,6 @@ export default function TasksSection({ departmentName }) {
             priority: formData.priority,
             assigned_to_id: formData.assigned_to ? parseInt(formData.assigned_to) : null,
             protocol_id: formData.protocol ? parseInt(formData.protocol) : null,
-            sample_ids: formData.samples || [],
             department: formData.department || '',
         }
 
@@ -203,7 +201,6 @@ export default function TasksSection({ departmentName }) {
                 assigned_to: '',
                 deadline: '',
                 priority: 'medium',
-                samples: [],
                 protocol: '',
                 department: '',
             })

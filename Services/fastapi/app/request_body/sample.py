@@ -1,6 +1,10 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+
+def empty_number_to_none(value):
+    return None if value == "" else value
 
 
 class SampleCreate(BaseModel):
@@ -18,6 +22,10 @@ class SampleCreate(BaseModel):
     descr: Optional[str] = None
     material_type: Optional[str] = None
 
+    _normalize_qc_values = field_validator("qc_1", "qc_2", mode="before")(
+        empty_number_to_none
+    )
+
 
 class SampleUpdate(BaseModel):
     """Схема для обновления образца."""
@@ -33,3 +41,7 @@ class SampleUpdate(BaseModel):
     qc_2: Optional[float] = None
     descr: Optional[str] = None
     material_type: Optional[str] = None
+
+    _normalize_qc_values = field_validator("qc_1", "qc_2", mode="before")(
+        empty_number_to_none
+    )

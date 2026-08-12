@@ -2,6 +2,7 @@ import './Sample.css'
 import { useState, useEffect, useCallback, useContext } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
+import { buildSamplePayload } from '../../API/payloads'
 import { UserContext } from '../../data/context'
 import { HttpMethod, APIVersion } from '../../data/enums'
 import { notify_error, notify_success } from '../../modules/notify'
@@ -89,19 +90,7 @@ export default function Sample() {
 
     const handleSaveEdit = async () => {
         setSaving(true)
-        const body = {
-            sample_code: editForm.sample_code || null,
-            sample_group_code: editForm.sample_group_code || null,
-            zlims_code: editForm.zlims_code || null,
-            uin1: editForm.uin1 || null,
-            uin2: editForm.uin2 || null,
-            project_code: editForm.project_code || null,
-            sample_index: editForm.sample_index || null,
-            qc_1: editForm.qc_1 === '' ? null : Number(editForm.qc_1),
-            qc_2: editForm.qc_2 === '' ? null : Number(editForm.qc_2),
-            descr: editForm.descr || null,
-            material_type: editForm.material_type || null,
-        }
+        const body = buildSamplePayload(editForm)
         const data = await Fetch({
             api_version: APIVersion.V2,
             action: `sample/${sampleId}/`,

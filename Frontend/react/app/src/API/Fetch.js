@@ -3,7 +3,7 @@ import { DEVELOPMENT, PROD_FETCH_URL, DEVELOPMENT_DJANGO_FETCH_URL, DEVELOPMENT_
 import { getToken } from "../modules/token.js"
 import { notify_error } from "../modules/notify.js"
 
-export default async function Fetch({ api_version, action, method, body, token, is_uploading_file }) {
+export default async function Fetch({ api_version, action, method, body, token, is_uploading_file, params, signal }) {
 
     // External token gives by auth() func
 
@@ -13,6 +13,22 @@ export default async function Fetch({ api_version, action, method, body, token, 
 
     var url
     var data
+
+    if (params) {
+        const query = new URLSearchParams()
+        Object.entries(params).forEach(([key, value]) => {
+            if (value === undefined || value === null) return
+            if (Array.isArray(value)) {
+                value.forEach(item => query.append(key, item))
+            } else {
+                query.set(key, value)
+            }
+        })
+        const queryString = query.toString()
+        if (queryString) {
+            action = `${action}${action.includes('?') ? '&' : '?'}${queryString}`
+        }
+    }
 
     if (DEVELOPMENT == "1") {
         if (api_version === APIVersion.V1) {
@@ -36,6 +52,7 @@ export default async function Fetch({ api_version, action, method, body, token, 
             },
             mode: "cors",
             credentials: credentials,
+            signal: signal,
         })
             .then((response) => response.json())
             .then((data) => {
@@ -80,6 +97,7 @@ export default async function Fetch({ api_version, action, method, body, token, 
             mode: "cors",
             body: body,
             credentials: credentials,
+            signal: signal,
         })
             .then((response) => response.json())
             .then((data) => {

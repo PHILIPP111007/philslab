@@ -33,9 +33,16 @@ def serialize_batch(batch: Batch, samples: list = None, tasks: list = None) -> d
             {
                 "id": s.id,
                 "sample_code": s.sample_code,
+                "sample_group_code": s.sample_group_code,
+                "zlims_code": s.zlims_code,
+                "uin1": s.uin1,
+                "uin2": s.uin2,
+                "project_code": s.project_code,
+                "sample_index": s.sample_index,
                 "qc_1": s.qc_1,
                 "qc_2": s.qc_2,
                 "descr": s.descr,
+                "material_type": s.material_type,
                 "timestamp": s.timestamp.isoformat() if s.timestamp else None,
             }
             for s in subs

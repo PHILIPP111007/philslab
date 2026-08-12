@@ -433,7 +433,7 @@ export default function Task() {
                                 <div className="task-detail__samples-list">
                                     {task.samples.map(sample => (
                                         <LinkButton key={sample.id} to={`/sample/${sample.id}`}>
-                                            {sample.name || sample.sample_code || `Образец #${sample.id}`}
+                                            {sample.sample_code || `Образец #${sample.id}`}
                                         </LinkButton>
                                     ))}
                                 </div>

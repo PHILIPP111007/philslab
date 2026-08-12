@@ -164,64 +164,24 @@ export default function Batches({ department = null }) {
     }, [department])
 
     // ---------- ОБРАБОТЧИКИ CRUD (с учётом department) ----------
-    const handleAddBatch = async (newItem) => {
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: 'batch/',
-            method: HttpMethod.POST,
-            body: {
-                name: newItem.name || 'Новый батч',
-                department: department || newItem.department || '',   // 🔽 используем пропс
-                descr: newItem.descr || '',
-            },
-        })
-        if (data?.ok) {
-            if (lazyParams) {
-                fetchBatches(lazyParams)
-            } else {
-                loadBatches()
-            }
-        } else {
-            notify_error(data?.error || 'Ошибка добавления')
-        }
-    }
-
-    const handleEditBatch = async (updatedItem) => {
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: `batch/${updatedItem.id}/`,
-            method: HttpMethod.PUT,
-            body: {
-                name: updatedItem.name,
-                department: department || updatedItem.department || '',   // 🔽 используем пропс
-                descr: updatedItem.descr || '',
-            },
-        })
-        if (data?.ok) {
-            setBatches(prev =>
-                prev.map(s => (s.id === updatedItem.id ? { ...s, ...updatedItem } : s))
-            )
-        } else {
-            notify_error(data?.error || 'Ошибка сохранения')
-        }
-    }
-
-    const handleDeleteBatch = async (item) => {
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: `batch/${item.id}/`,
-            method: HttpMethod.DELETE,
-        })
-        if (data?.ok) {
-            setBatches(prev => prev.filter(s => s.id !== item.id))
-            setTotalRows(prev => prev - 1)
-        } else {
-            notify_error(data?.error || 'Ошибка удаления')
-        }
-    }
-
     const handleDataChange = async (newData, meta) => {
-        if (meta?.operation === 'edit' && meta.data) {
+        const refresh = () => lazyParams ? fetchBatches(lazyParams) : loadBatches()
+
+        if (meta?.operation === 'add' && meta.data) {
+            const newItem = meta.data
+            const data = await Fetch({
+                api_version: APIVersion.V2,
+                action: 'batch/',
+                method: HttpMethod.POST,
+                body: {
+                    name: newItem.name || 'Новый батч',
+                    department: department || newItem.department || '',
+                    descr: newItem.descr || '',
+                },
+            })
+            if (data?.ok) await refresh()
+            else notify_error(data?.error || 'Ошибка добавления')
+        } else if (meta?.operation === 'edit' && meta.data) {
             const updatedItem = meta.data
             const data = await Fetch({
                 api_version: APIVersion.V2,
@@ -229,15 +189,28 @@ export default function Batches({ department = null }) {
                 method: HttpMethod.PUT,
                 body: {
                     name: updatedItem.name,
-                    department: department || updatedItem.department || '',   // 🔽 используем пропс
+                    department: department || updatedItem.department || '',
                     descr: updatedItem.descr || '',
                 },
             })
             if (data?.ok) {
-                setBatches(newData)
+                await refresh()
             } else {
                 notify_error(data?.error || 'Ошибка сохранения')
-                await loadBatches()
+                await refresh()
+            }
+        } else if (meta?.operation === 'delete' && meta.data) {
+            const data = await Fetch({
+                api_version: APIVersion.V2,
+                action: `batch/${meta.data.id}/`,
+                method: HttpMethod.DELETE,
+            })
+            if (data?.ok) {
+                setTotalRows(prev => Math.max(0, prev - 1))
+                await refresh()
+            } else {
+                notify_error(data?.error || 'Ошибка удаления')
+                await refresh()
             }
         } else {
             setBatches(newData)
@@ -307,9 +280,6 @@ export default function Batches({ department = null }) {
                             enableExport
                             enableInlineEdit={false}
                             enableEmptyRow={true}
-                            onAddSuccess={handleAddBatch}
-                            onEditSuccess={handleEditBatch}
-                            onDeleteSuccess={handleDeleteBatch}
                             onDataChange={handleDataChange}
                         />
                     )}

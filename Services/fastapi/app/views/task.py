@@ -11,7 +11,6 @@ from app.models import (
     Batch,
     Protocol,
     QueryHistory,
-    Sample,
     Task,
     TaskStage,
 )
@@ -416,16 +415,6 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
                 )
                 session.add(task_stage)
             await session.commit()
-
-    # Добавляем образцы
-    if task_data.sample_ids:
-        samples = (
-            await session.exec(
-                select(Sample).where(Sample.id.in_(task_data.sample_ids))
-            )
-        ).all()
-        task.samples = samples
-        await session.commit()
 
     # История
     history = QueryHistory(

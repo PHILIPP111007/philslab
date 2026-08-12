@@ -37,7 +37,10 @@ export default function Department() {
                     action: `user/${targetUsername}/`,
                 });
                 if (data?.ok) {
-                    const dept = data.local_user?.department || data.global_user?.department || null;
+                    const dept = data.local_user?.department
+                        || data.global_user?.department
+                        || data.data?.department
+                        || null;
                     setDepartmentName(dept);
                 } else {
                     setDepartmentName(null);

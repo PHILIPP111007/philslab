@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
-from sqlmodel import select
+from sqlmodel import func, select
 
 from app.database import SessionDep
 from app.models import Protocol, Stage
@@ -23,6 +23,7 @@ async def get_protocols(
     statement = select(Protocol).options(
         selectinload(Protocol.stages), selectinload(Protocol.created_by)
     )
+    total = (await session.exec(select(func.count()).select_from(Protocol))).one()
     offset = (page - 1) * page_size
     statement = statement.offset(offset).limit(page_size)
     protocols = (await session.exec(statement)).all()
@@ -57,7 +58,13 @@ async def get_protocols(
                 ],
             }
         )
-    return {"ok": True, "data": result}
+    return {
+        "ok": True,
+        "data": result,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
 @router.get("/protocol/{protocol_id}/")

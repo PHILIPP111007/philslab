@@ -13,7 +13,6 @@ class TaskCreate(BaseModel):
     priority: Priority = Priority.medium
     assigned_to_id: Optional[int] = None
     protocol_id: Optional[int] = None
-    sample_ids: Optional[List[int]] = []
     department: Optional[str] = ""  # ✅ Добавлено
     batch_ids: Optional[List[int]] = []  # ✅ Добавляем
 

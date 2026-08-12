@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
+import { buildSamplePayload } from '../../API/payloads'
 import { notify_error, notify_success } from '../../modules/notify'
 import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
@@ -56,66 +57,77 @@ export default function Samples() {
             header: 'Код образца',
             size: 120,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'sample_group_code',
             header: 'Код группы',
             size: 120,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'zlims_code',
             header: 'ZLIMS код',
             size: 100,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'uin1',
             header: 'UIN 1',
             size: 100,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'uin2',
             header: 'UIN 2',
             size: 100,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'project_code',
             header: 'Код проекта',
             size: 100,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'sample_index',
             header: 'Индекс',
             size: 80,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'qc_1',
             header: 'QC 1',
             size: 80,
-            editType: 'text',
+            editType: 'number',
+            required: false,
         },
         {
             accessorKey: 'qc_2',
             header: 'QC 2',
             size: 80,
-            editType: 'text',
+            editType: 'number',
+            required: false,
         },
         {
             accessorKey: 'descr',
             header: 'Описание',
             size: 200,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'material_type',
             header: 'Тип материала',
             size: 120,
             editType: 'text',
+            required: false,
         },
         {
             accessorKey: 'timestamp',
@@ -184,77 +196,6 @@ export default function Samples() {
     }, [lazyParams])
 
     // ---------- ОБРАБОТЧИКИ CRUD ----------
-    const handleAddSample = async (newItem) => {
-        if (!newItem.name) {
-            notify_error("Необходимо указать название")
-            return
-        }
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: 'sample/',
-            method: HttpMethod.POST,
-            body: {
-                sample_code: newItem.sample_code || '',
-                sample_group_code: newItem.sample_group_code || '',
-                zlims_code: newItem.zlims_code || '',
-                uin1: newItem.uin1 || '',
-                uin2: newItem.uin2 || '',
-                project_code: newItem.project_code || '',
-                sample_index: newItem.sample_index || '',
-                qc_1: newItem.qc_1 || null,
-                qc_2: newItem.qc_2 || null,
-                descr: newItem.descr || '',
-                material_type: newItem.material_type || '',
-            },
-        })
-        if (data?.ok && lazyParams) {
-            fetchSamples(lazyParams);
-        } else {
-            notify_error(data?.error || "Ошибка добавления")
-        }
-    }
-
-    const handleEditSample = async (updatedItem) => {
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: `sample/${updatedItem.id}/`,
-            method: HttpMethod.PUT,
-            body: {
-                sample_code: updatedItem.sample_code,
-                sample_group_code: updatedItem.sample_group_code,
-                zlims_code: updatedItem.zlims_code,
-                uin1: updatedItem.uin1,
-                uin2: updatedItem.uin2,
-                project_code: updatedItem.project_code,
-                sample_index: updatedItem.sample_index,
-                qc_1: updatedItem.qc_1,
-                qc_2: updatedItem.qc_2,
-                descr: updatedItem.descr,
-                material_type: updatedItem.material_type,
-            },
-        })
-        if (data?.ok) {
-            setSamples(prev =>
-                prev.map(s => (s.id === updatedItem.id ? { ...s, ...updatedItem } : s))
-            )
-        } else {
-            notify_error(data?.error || 'Ошибка сохранения')
-        }
-    }
-
-    const handleDeleteSample = async (item) => {
-        const data = await Fetch({
-            api_version: APIVersion.V2,
-            action: `sample/${item.id}/`,
-            method: HttpMethod.DELETE,
-        })
-        if (data?.ok) {
-            setSamples(prev => prev.filter(s => s.id !== item.id))
-        } else {
-            notify_error(data?.error || 'Ошибка удаления')
-        }
-    }
-
     const handleDataChange = async (newData, meta) => {
         if (meta?.operation === 'edit' && meta.data) {
             const updatedItem = meta.data
@@ -262,22 +203,11 @@ export default function Samples() {
                 api_version: APIVersion.V2,
                 action: `sample/${updatedItem.id}/`,
                 method: HttpMethod.PUT,
-                body: {
-                    sample_code: updatedItem.sample_code,
-                    sample_group_code: updatedItem.sample_group_code,
-                    zlims_code: updatedItem.zlims_code,
-                    uin1: updatedItem.uin1,
-                    uin2: updatedItem.uin2,
-                    project_code: updatedItem.project_code,
-                    sample_index: updatedItem.sample_index,
-                    qc_1: updatedItem.qc_1,
-                    qc_2: updatedItem.qc_2,
-                    descr: updatedItem.descr,
-                    material_type: updatedItem.material_type,
-                },
+                body: buildSamplePayload(updatedItem),
             })
             if (data?.ok) {
-                setSamples(newData)
+                const saved = data.data || updatedItem
+                setSamples(prev => prev.map(item => item.id === saved.id ? { ...item, ...saved } : item))
             } else {
                 notify_error(data?.error || 'Ошибка сохранения')
                 if (lazyParams) {
@@ -290,24 +220,25 @@ export default function Samples() {
                 api_version: APIVersion.V2,
                 action: 'sample/',
                 method: HttpMethod.POST,
-                body: {
-                    sample_code: newItem.sample_code || '',
-                    sample_group_code: newItem.sample_group_code || '',
-                    zlims_code: newItem.zlims_code || '',
-                    uin1: newItem.uin1 || '',
-                    uin2: newItem.uin2 || '',
-                    project_code: newItem.project_code || '',
-                    sample_index: newItem.sample_index || '',
-                    qc_1: newItem.qc_1 || null,
-                    qc_2: newItem.qc_2 || null,
-                    descr: newItem.descr || '',
-                    material_type: newItem.material_type || '',
-                },
+                body: buildSamplePayload(newItem),
             })
-            if (data?.ok && lazyParams) {
-                await fetchSamples(lazyParams)
+            if (data?.ok) {
+                if (lazyParams) await fetchSamples(lazyParams)
             } else {
                 notify_error(data?.error || 'Ошибка добавления')
+            }
+        } else if (meta?.operation === 'delete' && meta.data) {
+            const data = await Fetch({
+                api_version: APIVersion.V2,
+                action: `sample/${meta.data.id}/`,
+                method: HttpMethod.DELETE,
+            })
+            if (data?.ok) {
+                setSamples(prev => prev.filter(item => item.id !== meta.data.id))
+                setTotalRows(prev => Math.max(0, prev - 1))
+            } else {
+                notify_error(data?.error || 'Ошибка удаления')
+                if (lazyParams) await fetchSamples(lazyParams)
             }
         } else if (meta?.operation === 'batchEdit' && meta.updates) {
             const updatedIds = new Set(meta.updates.map(u => u.id));
@@ -320,19 +251,7 @@ export default function Samples() {
                         api_version: APIVersion.V2,
                         action: `sample/${id}/`,
                         method: HttpMethod.PUT,
-                        body: {
-                            sample_code: record.sample_code,
-                            sample_group_code: record.sample_group_code,
-                            zlims_code: record.zlims_code,
-                            uin1: record.uin1,
-                            uin2: record.uin2,
-                            project_code: record.project_code,
-                            sample_index: record.sample_index,
-                            qc_1: record.qc_1,
-                            qc_2: record.qc_2,
-                            descr: record.descr,
-                            material_type: record.material_type,
-                        },
+                        body: buildSamplePayload(record),
                     })
                 );
             }
@@ -500,9 +419,6 @@ export default function Samples() {
                             enableInlineEdit
                             enableCellSelection={true}
                             enableEmptyRow={true}
-                            onAddSuccess={handleAddSample}
-                            onEditSuccess={handleEditSample}
-                            onDeleteSuccess={handleDeleteSample}
                             onDataChange={handleDataChange}
                             onExportAll={handleExportAll}
                         // infiniteScroll
