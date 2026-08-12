@@ -444,6 +444,13 @@ export default function TasksSection({ departmentName }) {
                         {task.protocol && (
                             <Badge variant="info">{task.protocol.code}</Badge>
                         )}
+                        <div style={{ flex: 1, maxWidth: '200px' }}>
+                            <ProgressBar
+                                variant={progress === 100 ? 'success' : 'primary'}
+                                progress={progress}
+                                showLabel={false}
+                            />
+                        </div>
                     </div>
                 ),
                 icon: task.is_archived ? '📦' : '📋',
@@ -522,9 +529,6 @@ export default function TasksSection({ departmentName }) {
                                     showLabel={false}
                                 />
                             </div>
-                            <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--text-dark)' }}>
-                                {progress}%
-                            </span>
                         </div>
 
                         <div className="tasks-accordion__actions">
