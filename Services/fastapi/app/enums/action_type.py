@@ -1,15 +1,4 @@
-__all__ = ["Priority", "ActionType"]
-
 from enum import Enum
-
-
-class Priority(str, Enum):
-    """Приоритет задачи"""
-
-    critical = "critical"
-    high = "high"
-    medium = "medium"
-    low = "low"
 
 
 class ActionType(str, Enum):

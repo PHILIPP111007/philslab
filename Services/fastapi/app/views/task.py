@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
 from app.database import SessionDep
+from app.enums.action_type import ActionType
 from app.models import (
-    ActionType,
     Batch,
     Protocol,
     QueryHistory,
@@ -119,9 +119,7 @@ async def get_tasks(
     # Выполнение запроса
     tasks = (await session.exec(statement)).all()
 
-    result = [
-        serialize_task(task, include_protocol_version=False) for task in tasks
-    ]
+    result = [serialize_task(task, include_protocol_version=False) for task in tasks]
 
     return {
         "ok": True,
@@ -302,10 +300,10 @@ async def update_task(
             new_str = new_value.isoformat() if new_value else None
             if old_str != new_str:
                 changed = True
-        elif field in ["assigned_to_id", "protocol_id"]:
-            if old_value != new_value:
-                changed = True
-        elif field in ["is_completed", "is_archived"]:
+        elif field in ["assigned_to_id", "protocol_id"] or field in [
+            "is_completed",
+            "is_archived",
+        ]:
             if old_value != new_value:
                 changed = True
         else:
@@ -616,12 +614,16 @@ async def get_archived_tasks(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    statement = select(Task).where(Task.is_archived == True).options(
-        selectinload(Task.created_by),
-        selectinload(Task.assigned_to),
-        selectinload(Task.protocol).selectinload(Protocol.stages),
-        selectinload(Task.task_stages),
-        selectinload(Task.batches).selectinload(Batch.samples),
+    statement = (
+        select(Task)
+        .where(Task.is_archived == True)
+        .options(
+            selectinload(Task.created_by),
+            selectinload(Task.assigned_to),
+            selectinload(Task.protocol).selectinload(Protocol.stages),
+            selectinload(Task.task_stages),
+            selectinload(Task.batches).selectinload(Batch.samples),
+        )
     )
 
     # Если передан department – показываем все задачи отдела (игнорируем создателя)

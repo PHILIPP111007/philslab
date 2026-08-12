@@ -1,78 +1,77 @@
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.models import Priority
+from app.enums.priority import Priority
 
 
 class TaskCreate(BaseModel):
     name: str
-    description: Optional[str] = ""
-    deadline: Optional[datetime] = None
+    description: str | None = ""
+    deadline: datetime | None = None
     priority: Priority = Priority.medium
-    assigned_to_id: Optional[int] = None
-    protocol_id: Optional[int] = None
-    department: Optional[str] = ""  # ✅ Добавлено
-    batch_ids: Optional[List[int]] = None
+    assigned_to_id: int | None = None
+    protocol_id: int | None = None
+    department: str | None = ""  # ✅ Добавлено
+    batch_ids: list[int] | None = None
 
 
 class TaskUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    deadline: Optional[datetime] = None
-    priority: Optional[Priority] = None
-    is_completed: Optional[bool] = None
-    assigned_to_id: Optional[int] = None
-    protocol_id: Optional[int] = None
-    stage_ids: Optional[List[int]] = None
-    department: Optional[str] = None  # ✅ Добавлено
-    batch_ids: Optional[List[int]] = None
+    name: str | None = None
+    description: str | None = None
+    deadline: datetime | None = None
+    priority: Priority | None = None
+    is_completed: bool | None = None
+    assigned_to_id: int | None = None
+    protocol_id: int | None = None
+    stage_ids: list[int] | None = None
+    department: str | None = None  # ✅ Добавлено
+    batch_ids: list[int] | None = None
 
 
 class StageCreate(BaseModel):
     name: str
-    description: Optional[str] = ""
-    order: Optional[int] = 0
-    protocol_id: Optional[int] = None
+    description: str | None = ""
+    order: int | None = 0
+    protocol_id: int | None = None
 
 
 class StageUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    is_completed: Optional[bool] = None
-    order: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    is_completed: bool | None = None
+    order: int | None = None
 
 
 class SampleCreateFull(BaseModel):
     name: str
     type: str
-    description: Optional[str] = ""
-    collection_date: Optional[datetime] = None
-    storage_location: Optional[str] = ""
-    quantity: Optional[float] = None
-    unit: Optional[str] = ""
+    description: str | None = ""
+    collection_date: datetime | None = None
+    storage_location: str | None = ""
+    quantity: float | None = None
+    unit: str | None = ""
 
 
 class SampleUpdateFull(BaseModel):
-    name: Optional[str] = None
-    type: Optional[str] = None
-    description: Optional[str] = None
-    collection_date: Optional[datetime] = None
-    storage_location: Optional[str] = None
-    quantity: Optional[float] = None
-    unit: Optional[str] = None
+    name: str | None = None
+    type: str | None = None
+    description: str | None = None
+    collection_date: datetime | None = None
+    storage_location: str | None = None
+    quantity: float | None = None
+    unit: str | None = None
 
 
 class ProtocolCreate(BaseModel):
     name: str
     code: str
-    description: Optional[str] = ""
-    version: Optional[str] = "1.0"
+    description: str | None = ""
+    version: str | None = "1.0"
 
 
 class ProtocolUpdate(BaseModel):
-    name: Optional[str] = None
-    code: Optional[str] = None
-    description: Optional[str] = None
-    version: Optional[str] = None
+    name: str | None = None
+    code: str | None = None
+    description: str | None = None
+    version: str | None = None

@@ -1,11 +1,9 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 
 class UserBody(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[str] = None
-    descr: Optional[str] = None
-    department: Optional[str] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    email: str | None = None
+    descr: str | None = None
+    department: str | None = None

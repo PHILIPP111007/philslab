@@ -1,6 +1,6 @@
-from typing import Optional
-
 from pydantic import BaseModel, field_validator
+
+from app.enums.material_type import MaterialType
 
 
 def empty_number_to_none(value):
@@ -10,17 +10,17 @@ def empty_number_to_none(value):
 class SampleCreate(BaseModel):
     """Схема для создания нового образца."""
 
-    sample_code: Optional[str] = None
-    sample_group_code: Optional[str] = None
-    zlims_code: Optional[str] = None
-    uin1: Optional[str] = None
-    uin2: Optional[str] = None
-    project_code: Optional[str] = None
-    sample_index: Optional[str] = None
-    qc_1: Optional[float] = None
-    qc_2: Optional[float] = None
-    descr: Optional[str] = None
-    material_type: Optional[str] = None
+    sample_code: str | None = None
+    sample_group_code: str | None = None
+    zlims_code: str | None = None
+    uin1: str | None = None
+    uin2: str | None = None
+    project_code: str | None = None
+    sample_index: str | None = None
+    qc_1: float | None = None
+    qc_2: float | None = None
+    descr: str | None = None
+    material_type: MaterialType | None = None
 
     _normalize_qc_values = field_validator("qc_1", "qc_2", mode="before")(
         empty_number_to_none
@@ -30,17 +30,17 @@ class SampleCreate(BaseModel):
 class SampleUpdate(BaseModel):
     """Схема для обновления образца."""
 
-    sample_code: Optional[str] = None
-    sample_group_code: Optional[str] = None
-    zlims_code: Optional[str] = None
-    uin1: Optional[str] = None
-    uin2: Optional[str] = None
-    project_code: Optional[str] = None
-    sample_index: Optional[str] = None
-    qc_1: Optional[float] = None
-    qc_2: Optional[float] = None
-    descr: Optional[str] = None
-    material_type: Optional[str] = None
+    sample_code: str | None = None
+    sample_group_code: str | None = None
+    zlims_code: str | None = None
+    uin1: str | None = None
+    uin2: str | None = None
+    project_code: str | None = None
+    sample_index: str | None = None
+    qc_1: float | None = None
+    qc_2: float | None = None
+    descr: str | None = None
+    material_type: MaterialType | None = None
 
     _normalize_qc_values = field_validator("qc_1", "qc_2", mode="before")(
         empty_number_to_none

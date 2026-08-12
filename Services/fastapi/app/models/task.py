@@ -1,11 +1,12 @@
 __all__ = ["Task"]
 
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .enums import Priority
+from app.enums.priority import Priority
+
 from .task_batch_link import TaskBatchLink
 
 if TYPE_CHECKING:
@@ -27,9 +28,9 @@ class Task(SQLModel, table=True):
 
     # Даты
     created_at: datetime = Field(default_factory=lambda: datetime.now())
-    deadline: Optional[datetime] = Field(default=None)
+    deadline: datetime | None = Field(default=None)
     updated_at: datetime = Field(default_factory=lambda: datetime.now())
-    completed_at: Optional[datetime] = Field(default=None)
+    completed_at: datetime | None = Field(default=None)
 
     # Приоритет и статус
     priority: Priority = Field(default=Priority.medium)
@@ -39,10 +40,10 @@ class Task(SQLModel, table=True):
 
     # Внешние ключи
     created_by_id: int = Field(foreign_key="app_user.id", index=True)
-    assigned_to_id: Optional[int] = Field(
+    assigned_to_id: int | None = Field(
         foreign_key="app_user.id", index=True, default=None
     )
-    protocol_id: Optional[int] = Field(
+    protocol_id: int | None = Field(
         foreign_key="app_protocol.id", index=True, default=None
     )
 
@@ -67,19 +68,19 @@ class Task(SQLModel, table=True):
     # )
 
     # Батчи (многие ко многим)
-    batches: List["Batch"] = Relationship(
+    batches: list["Batch"] = Relationship(
         back_populates="tasks",
         link_model=TaskBatchLink,
     )
 
     # Этапы задачи (TaskStage) — копии из протокола
-    task_stages: List["TaskStage"] = Relationship(
+    task_stages: list["TaskStage"] = Relationship(
         back_populates="task",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
     # История
-    history: List["QueryHistory"] = Relationship(back_populates="task")
+    history: list["QueryHistory"] = Relationship(back_populates="task")
 
     def get_progress(self) -> int:
         """Прогресс выполнения — считаем по этапам задачи (TaskStage)"""

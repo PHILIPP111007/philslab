@@ -3,11 +3,27 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
 from app.database import SessionDep
+from app.enums.material_type import MATERIAL_TYPE_LABELS
 from app.models import Batch, Sample
 from app.request_body.sample import SampleCreate, SampleUpdate
 from app.services.serializers import serialize_sample
 
 router = APIRouter(tags=["sample"])
+
+
+@router.get("/sample/material_types/")
+async def get_material_types(request: Request):
+    """Возвращает варианты типа материала для select на фронтенде."""
+    if not request.state.user:
+        return {"ok": False, "error": "Can not authenticate."}
+
+    return {
+        "ok": True,
+        "data": [
+            {"value": material_type.value, "label": label}
+            for material_type, label in MATERIAL_TYPE_LABELS.items()
+        ],
+    }
 
 
 def sample_search_condition(search: str):

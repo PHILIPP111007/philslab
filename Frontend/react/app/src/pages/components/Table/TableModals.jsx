@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
+const getOptionValue = (option) => (
+    typeof option === 'object' ? option.value : option
+)
+
+const getOptionLabel = (option) => (
+    typeof option === 'object' ? option.label : option
+)
+
 const isEditableColumn = (column) => (
     Boolean(column.accessorKey) &&
     column.id !== 'select' &&
@@ -39,7 +47,9 @@ function ModalFields({ columns, formData, onChange }) {
                     >
                         <option value="">Выберите...</option>
                         {column.options?.map((option) => (
-                            <option key={option} value={option}>{option}</option>
+                            <option key={getOptionValue(option)} value={getOptionValue(option)}>
+                                {getOptionLabel(option)}
+                            </option>
                         ))}
                     </select>
                 ) : column.editType === 'checkbox' ? (

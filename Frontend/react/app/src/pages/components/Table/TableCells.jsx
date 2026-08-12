@@ -1,6 +1,14 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, forwardRef, memo } from 'react'
 import { flexRender } from '@tanstack/react-table'
 
+const getOptionValue = (option) => (
+    typeof option === 'object' ? option.value : option
+)
+
+const getOptionLabel = (option) => (
+    typeof option === 'object' ? option.label : option
+)
+
 export const EditableCell = memo(function EditableCell({ getValue, row, column, table, onCellEdit, validate }) {
     const initialValue = getValue()
     const [value, setValue] = useState(initialValue)
@@ -135,17 +143,38 @@ export const EditableCell = memo(function EditableCell({ getValue, row, column, 
     if (isEditing) {
         return (
             <div ref={cellRef} className="editable-cell editable-cell--editing">
-                <input
-                    ref={inputRef}
-                    type={columnDef.editType || 'text'}
-                    value={value}
-                    onChange={(event) => setValue(event.target.value)}
-                    onBlur={handleBlur}
-                    onKeyDown={handleKeyDown}
-                    className={`editable-cell__input ${error ? 'editable-cell__input--error' : ''}`}
-                    placeholder={columnDef.placeholder || ''}
-                    step={columnDef.editType === 'number' ? 'any' : undefined}
-                />
+                {columnDef.editType === 'select' ? (
+                    <select
+                        ref={inputRef}
+                        value={value ?? ''}
+                        onChange={(event) => setValue(event.target.value)}
+                        onBlur={handleBlur}
+                        onKeyDown={handleKeyDown}
+                        className={`editable-cell__input ${error ? 'editable-cell__input--error' : ''}`}
+                    >
+                        <option value="">Выберите...</option>
+                        {columnDef.options?.map((option) => {
+                            const optionValue = getOptionValue(option)
+                            return (
+                                <option key={optionValue} value={optionValue}>
+                                    {getOptionLabel(option)}
+                                </option>
+                            )
+                        })}
+                    </select>
+                ) : (
+                    <input
+                        ref={inputRef}
+                        type={columnDef.editType || 'text'}
+                        value={value}
+                        onChange={(event) => setValue(event.target.value)}
+                        onBlur={handleBlur}
+                        onKeyDown={handleKeyDown}
+                        className={`editable-cell__input ${error ? 'editable-cell__input--error' : ''}`}
+                        placeholder={columnDef.placeholder || ''}
+                        step={columnDef.editType === 'number' ? 'any' : undefined}
+                    />
+                )}
                 {error && <span className="editable-cell__error">{error}</span>}
             </div>
         )

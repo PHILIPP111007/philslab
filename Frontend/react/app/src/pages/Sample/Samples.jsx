@@ -20,6 +20,7 @@ export default function Samples() {
     const [lazyParams, setLazyParams] = useState(null)
     const [totalRows, setTotalRows] = useState(0)
     const [loading, setLoading] = useState(true)
+    const [materialTypeOptions, setMaterialTypeOptions] = useState([])
 
     // Для модального окна создания батча
     const [showBatchModal, setShowBatchModal] = useState(false)
@@ -34,6 +35,34 @@ export default function Samples() {
         rememberPage(`samples/${params.username}/`)
     }, [params.username])
 
+    useEffect(() => {
+        let isActive = true
+
+        const loadMaterialTypes = async () => {
+            const response = await Fetch({
+                api_version: APIVersion.V2,
+                action: 'sample/material_types/',
+                method: HttpMethod.GET,
+            })
+            if (isActive && response?.ok) {
+                setMaterialTypeOptions(response.data || [])
+            }
+        }
+
+        loadMaterialTypes()
+        return () => { isActive = false }
+    }, [])
+
+    const materialTypeOptionsForTable = [
+        ...materialTypeOptions,
+        ...samples
+            .map((sample) => sample.material_type)
+            .filter(Boolean)
+            .filter((value, index, values) => values.indexOf(value) === index)
+            .filter((value) => !materialTypeOptions.some((option) => option.value === value))
+            .map((value) => ({ value, label: value })),
+    ]
+
     // ---------- КОЛОНКИ ----------
     const columns = [
         {
@@ -45,7 +74,7 @@ export default function Samples() {
             cell: ({ getValue, row }) => {
                 const id = getValue()
                 if (id > 0) {
-                        return (
+                    return (
                         <LinkButton to={`/sample/${id}/${params.username}/`}>{id}</LinkButton>
                     )
                 }
@@ -125,8 +154,9 @@ export default function Samples() {
         {
             accessorKey: 'material_type',
             header: 'Тип материала',
-            size: 120,
-            editType: 'text',
+            size: 150,
+            editType: 'select',
+            options: materialTypeOptionsForTable,
             required: false,
         },
         {

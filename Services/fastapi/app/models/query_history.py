@@ -1,11 +1,11 @@
 __all__ = ["QueryHistory"]
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
-from .enums import ActionType
+from app.enums.action_type import ActionType
 
 if TYPE_CHECKING:
     from .task import Task
@@ -20,8 +20,8 @@ class QueryHistory(SQLModel, table=True):
     id: int = Field(primary_key=True)
     action_type: ActionType
     field_name: str = Field(default="")
-    old_value: Optional[dict] = Field(default=None, sa_column=Column(JSON))
-    new_value: Optional[dict] = Field(default=None, sa_column=Column(JSON))
+    old_value: dict | None = Field(default=None, sa_column=Column(JSON))
+    new_value: dict | None = Field(default=None, sa_column=Column(JSON))
     comment: str = Field(default="")
     created_at: datetime = Field(default_factory=lambda: datetime.now())
 
