@@ -14,7 +14,7 @@ class TaskCreate(BaseModel):
     assigned_to_id: Optional[int] = None
     protocol_id: Optional[int] = None
     department: Optional[str] = ""  # ✅ Добавлено
-    batch_ids: Optional[List[int]] = []  # ✅ Добавляем
+    batch_ids: Optional[List[int]] = None
 
 
 class TaskUpdate(BaseModel):
@@ -34,6 +34,7 @@ class StageCreate(BaseModel):
     name: str
     description: Optional[str] = ""
     order: Optional[int] = 0
+    protocol_id: Optional[int] = None
 
 
 class StageUpdate(BaseModel):

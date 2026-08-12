@@ -9,6 +9,21 @@ from app.request_body.sample import SampleCreate, SampleUpdate
 router = APIRouter(tags=["sample"])
 
 
+def sample_search_condition(search: str):
+    """Возвращает единое условие поиска для списка и экспорта образцов."""
+    return (
+        Sample.sample_code.contains(search)
+        | Sample.sample_group_code.contains(search)
+        | Sample.zlims_code.contains(search)
+        | Sample.uin1.contains(search)
+        | Sample.uin2.contains(search)
+        | Sample.project_code.contains(search)
+        | Sample.sample_index.contains(search)
+        | Sample.descr.contains(search)
+        | Sample.material_type.contains(search)
+    )
+
+
 def serialize_sample(sample: Sample) -> dict:
     """Сериализует объект Sample в словарь с ISO-датами и связанными данными."""
     return {
@@ -101,8 +116,7 @@ async def get_samples(
 
     # Глобальный поиск
     if search:
-        search_cond = Sample.zlims_code.contains(search) | Sample.descr.contains(search)
-        statement = statement.where(search_cond)
+        statement = statement.where(sample_search_condition(search))
 
     # Сортировка
     if sort_by and hasattr(Sample, sort_by):
@@ -218,10 +232,7 @@ async def export_samples(
 
     # Глобальный поиск
     if search:
-        statement = statement.where(
-            (Sample.sample_code.contains(search)) | (Sample.descr.contains(search))
-            # Можно добавить другие поля при необходимости
-        )
+        statement = statement.where(sample_search_condition(search))
 
     # Применяем фильтры по полям
     for field, value in filters.items():

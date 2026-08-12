@@ -257,7 +257,7 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
             selectinload(Task.assigned_to),
             selectinload(Task.protocol).selectinload(Protocol.stages),
             selectinload(Task.task_stages),
-            selectinload(Task.batches),
+            selectinload(Task.batches).selectinload(Batch.samples),
             selectinload(Task.history).selectinload(QueryHistory.user),
         ],
     )
@@ -290,6 +290,11 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
             }
             for stage in task.protocol.stages
         ]
+
+    all_samples = []
+    for batch in task.batches:
+        all_samples.extend(batch.samples or [])
+    unique_samples = list({sample.id: sample for sample in all_samples}.values())
 
     return {
         "ok": True,
@@ -327,11 +332,19 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
                 "id": task.protocol.id,
                 "name": task.protocol.name,
                 "code": task.protocol.code,
+                "version": task.protocol.version,
                 "stages": protocol_stages_data,  # ← добавляем этапы протокола
             }
             if task.protocol
             else None,
             "stages": stages_data,
+            "samples": [
+                {
+                    "id": sample.id,
+                    "sample_code": sample.sample_code,
+                }
+                for sample in unique_samples
+            ],
             "batches": [
                 {
                     "id": b.id,
@@ -443,7 +456,7 @@ async def update_task(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    task = await session.get(Task, task_id)
+    task = await session.get(Task, task_id, options=[selectinload(Task.batches)])
     if not task:
         return {"ok": False, "error": "Not found task."}
 
@@ -535,7 +548,7 @@ async def update_task(
     # Обработка batch_ids
     if "batch_ids" in update_data:
         old_batch_ids = [b.id for b in task.batches]
-        new_batch_ids = update_data["batch_ids"]
+        new_batch_ids = update_data["batch_ids"] or []
         if set(old_batch_ids) != set(new_batch_ids):
             batches = (
                 await session.exec(select(Batch).where(Batch.id.in_(new_batch_ids)))
@@ -680,6 +693,12 @@ async def toggle_task_stage(
             session.add(task)
             await session.commit()
             await session.refresh(task)
+        elif not all_completed and task.is_completed:
+            task.is_completed = False
+            task.completed_at = None
+            session.add(task)
+            await session.commit()
+            await session.refresh(task)
 
     return {"ok": True, "data": task_stage}
 
@@ -814,7 +833,13 @@ async def get_archived_tasks(
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    statement = select(Task).where(Task.is_archived == True)
+    statement = select(Task).where(Task.is_archived == True).options(
+        selectinload(Task.created_by),
+        selectinload(Task.assigned_to),
+        selectinload(Task.protocol).selectinload(Protocol.stages),
+        selectinload(Task.task_stages),
+        selectinload(Task.batches).selectinload(Batch.samples),
+    )
 
     # Если передан department – показываем все задачи отдела (игнорируем создателя)
     if department is not None:
@@ -831,17 +856,81 @@ async def get_archived_tasks(
 
     result = []
     for task in tasks:
+        stages_data = [
+            {
+                "id": stage.id,
+                "name": stage.name,
+                "description": stage.description,
+                "is_completed": stage.is_completed,
+                "order": stage.order,
+            }
+            for stage in task.task_stages
+        ]
+        protocol_stages_data = [
+            {
+                "id": stage.id,
+                "name": stage.name,
+                "description": stage.description,
+                "is_completed": stage.is_completed,
+                "order": stage.order,
+            }
+            for stage in (task.protocol.stages if task.protocol else [])
+        ]
+        all_samples = []
+        for batch in task.batches:
+            all_samples.extend(batch.samples or [])
+        unique_samples = list({sample.id: sample for sample in all_samples}.values())
+
         result.append(
             {
                 "id": task.id,
                 "name": task.name,
                 "description": task.description,
+                "department": task.department or "",
                 "deadline": task.deadline.isoformat() if task.deadline else None,
                 "priority": task.priority,
                 "is_completed": task.is_completed,
                 "is_archived": task.is_archived,
                 "created_at": task.created_at.isoformat() if task.created_at else None,
                 "updated_at": task.updated_at.isoformat() if task.updated_at else None,
+                "created_by": {
+                    "id": task.created_by.id,
+                    "username": task.created_by.username,
+                    "first_name": task.created_by.first_name,
+                    "last_name": task.created_by.last_name,
+                }
+                if task.created_by
+                else None,
+                "assigned_to": {
+                    "id": task.assigned_to.id,
+                    "username": task.assigned_to.username,
+                    "first_name": task.assigned_to.first_name,
+                    "last_name": task.assigned_to.last_name,
+                }
+                if task.assigned_to
+                else None,
+                "protocol": {
+                    "id": task.protocol.id,
+                    "name": task.protocol.name,
+                    "code": task.protocol.code,
+                    "version": task.protocol.version,
+                    "stages": protocol_stages_data,
+                }
+                if task.protocol
+                else None,
+                "stages": stages_data,
+                "samples": [
+                    {"id": sample.id, "sample_code": sample.sample_code}
+                    for sample in unique_samples
+                ],
+                "batches": [
+                    {
+                        "id": batch.id,
+                        "name": batch.name,
+                        "department": batch.department,
+                    }
+                    for batch in task.batches
+                ],
             }
         )
 

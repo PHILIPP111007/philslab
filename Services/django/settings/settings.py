@@ -12,7 +12,12 @@ BASE_DIR: Path = Path(__file__).resolve().parent.parent
 SECRET_KEY: str = environ.get("SECRET_KEY", "12345")
 
 # SECURITY WARNING: don"t run with debug turned on in production!
-DEBUG: bool = not not int(environ.get("DEBUG", "0"))
+DEBUG: bool = environ.get("DEBUG", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 DEVELOPMENT = environ.get("DEVELOPMENT", "0")
 
 ALLOWED_HOSTS: list[str] = environ.get("ALLOWED_HOSTS", "*").split(",")

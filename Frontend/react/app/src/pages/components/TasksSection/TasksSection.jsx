@@ -64,7 +64,7 @@ export default function TasksSection({ departmentName }) {
         try {
             let url = `tasks/?assigned_to=${user.id}`;
             if (departmentName) {
-                url = `tasks/?department=${departmentName}`;
+                url += `&department=${encodeURIComponent(departmentName)}`;
             }
             const data = await Fetch({
                 api_version: APIVersion.V2,
@@ -88,7 +88,7 @@ export default function TasksSection({ departmentName }) {
         try {
             let url = `tasks/?created_by=${user.id}`;
             if (departmentName) {
-                url = `tasks/?department=${departmentName}`;
+                url += `&department=${encodeURIComponent(departmentName)}`;
             }
             const data = await Fetch({
                 api_version: APIVersion.V2,
@@ -545,7 +545,7 @@ export default function TasksSection({ departmentName }) {
                             </Button>
 
                             <LinkButton
-                                to={`/batches/${user.username}/`}
+                                to={`/samples/${user.username}/`}
                             >
                                 📎 Образцы ({task.samples?.length || 0})
                             </LinkButton>

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from sqlmodel import select
 
 from app.database import SessionDep
-from app.models import Stage
+from app.models import Protocol, Stage
 from app.request_body import StageCreate, StageUpdate
 
 router = APIRouter(tags=["stage"])
@@ -34,10 +34,18 @@ async def create_stage(session: SessionDep, request: Request, stage_data: StageC
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
+    if not stage_data.protocol_id:
+        return {"ok": False, "error": "protocol_id is required."}
+
+    protocol = await session.get(Protocol, stage_data.protocol_id)
+    if not protocol:
+        return {"ok": False, "error": "Protocol not found."}
+
     stage = Stage(
         name=stage_data.name,
         description=stage_data.description,
         order=stage_data.order,
+        protocol_id=stage_data.protocol_id,
     )
     session.add(stage)
     await session.commit()

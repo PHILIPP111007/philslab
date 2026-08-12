@@ -28,8 +28,8 @@ COPY ./Frontend/react/app/ .
 # Устанавливаем NODE_ENV=production для оптимизации сборки (если нужно)
 ENV NODE_ENV=production
 
-# Собираем production-билд
-RUN VITE_DEVELOPMENT=1 VITE_PROD_SERVER_HOST=0.0.0.0 VITE_PROD_SERVER_PORT=80 npm run build
+# В production API доступен через nginx в том же origin: /api/v1 и /api/v2.
+RUN VITE_DEVELOPMENT=0 VITE_PROD_FETCH_URL=/ npm run build
 
 # ---------- ФИНАЛЬНЫЙ ОБРАЗ (nginx) ----------
 FROM nginx:1.29.3-alpine

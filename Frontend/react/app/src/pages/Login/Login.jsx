@@ -5,7 +5,7 @@ import Fetch from "../../API/Fetch"
 import { AuthContext, UserContext } from "../../data/context.js"
 import { HttpMethod, CacheKeys, APIVersion } from "../../data/enums.js"
 import { getToken, setToken } from "../../modules/token.js"
-import { notify_success } from "../../modules/notify.js"
+import { notify_error, notify_success } from "../../modules/notify.js"
 
 export default function Login() {
     var { setIsAuth } = use(AuthContext)
@@ -20,21 +20,28 @@ export default function Login() {
     var navigate = useNavigate()
 
     async function auth() {
-        var token = getToken()
-        var data = await Fetch({ api_version: APIVersion.V1, action: "auth/users/me/", method: HttpMethod.GET })
+        try {
+            var token = getToken()
+            var data = await Fetch({ api_version: APIVersion.V1, action: "auth/users/me/", method: HttpMethod.GET })
 
-        if (data && !data.detail && data.username && token) {
-            setUser({ ...user, ...data })
-            setIsAuth(true)
+            if (data && !data.detail && data.username && token) {
+                setUser({ ...user, ...data })
+                setIsAuth(true)
 
-            var path = localStorage.getItem(CacheKeys.REMEMBER_PAGE)
-            if (path !== null) {
-                path = `/${path}/`
-            } else {
-                path = `/users/${data.username}/`
+                var path = localStorage.getItem(CacheKeys.REMEMBER_PAGE)
+                if (path !== null) {
+                    path = `/${path}/`
+                } else {
+                    path = `/users/${data.username}/`
+                }
+                navigate(path)
+            } else if (!token) {
+                setIsAuth(false)
             }
+        } catch {
+            setIsAuth(false)
+        } finally {
             setIsLoading(false)
-            navigate(path)
         }
     }
 
@@ -76,7 +83,10 @@ export default function Login() {
             setUser({ ...user, password: formData.password })
             notify_success('Вы успешно вошли!')
 
-            auth()
+            await auth()
+        } else {
+            setIsLoading(false)
+            notify_error(data?.error || data?.detail || 'Не удалось войти. Проверьте логин и пароль.')
         }
     }
 

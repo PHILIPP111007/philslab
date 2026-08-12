@@ -18,7 +18,10 @@ export default function User() {
     const [isEditing, setIsEditing] = useState(false)
     const [editData, setEditData] = useState({})
     const [loading, setLoading] = useState(false)
-    const { departments, loading: deptLoading } = useDepartments();
+    const { departments } = useDepartments();
+
+    const displayedUser = userLocal?.username ? userLocal : user
+    const canEditProfile = displayedUser?.id === user?.id
 
     useSetUser({ username: params.username, setUser: setUser, setUserLocal: setUserLocal })
 
@@ -28,11 +31,11 @@ export default function User() {
 
     const handleEdit = () => {
         setEditData({
-            first_name: user.first_name || '',
-            last_name: user.last_name || '',
-            email: user.email || '',
-            descr: user.descr || '',
-            department: user.department || '', // ✅ добавлено
+            first_name: displayedUser.first_name || '',
+            last_name: displayedUser.last_name || '',
+            email: displayedUser.email || '',
+            descr: displayedUser.descr || '',
+            department: displayedUser.department || '', // ✅ добавлено
         })
         setIsEditing(true)
     }
@@ -54,6 +57,7 @@ export default function User() {
             })
             if (data?.ok) {
                 setUser(prev => ({ ...prev, ...editData }))
+                setUserLocal(prev => ({ ...prev, ...editData }))
                 setIsEditing(false)
             }
         } catch (error) {
@@ -85,7 +89,7 @@ export default function User() {
                 <div className="user-card-main-page">
                     <div className="user-card-main-page__avatar">
                         <div className="user-card-main-page__avatar-placeholder">
-                            {getInitials(user.first_name, user.last_name)}
+                            {getInitials(displayedUser.first_name, displayedUser.last_name)}
                         </div>
                     </div>
 
@@ -93,16 +97,16 @@ export default function User() {
                         <div className="user-card-main-page__header">
                             <div className="user-card-main-page__header-left">
                                 <h2 className="user-card-main-page__name">
-                                    {user.first_name} {user.last_name}
+                                    {displayedUser.first_name} {displayedUser.last_name}
                                 </h2>
-                                <span className="user-card-main-page__username">@{user.username}</span>
+                                <span className="user-card-main-page__username">@{displayedUser.username}</span>
                             </div>
                             <div className="user-card-main-page__header-right">
                                 <Button
                                     className="btn btn-secondary"
                                     onClick={handleEdit}
                                     title="Редактировать"
-                                    disabled={loading}
+                                    disabled={loading || !canEditProfile}
                                 >
                                     {loading ? '⏳ Сохранение...' : '✏️ Редактировать'}
                                 </Button>
@@ -112,15 +116,15 @@ export default function User() {
                         <div className="user-card-main-page__details">
                             <div className="user-card-main-page__detail">
                                 <span className="user-card-main-page__detail-icon">📧</span>
-                                <span>{user.email || '—'}</span>
+                                <span>{displayedUser.email || '—'}</span>
                             </div>
                             <div className="user-card-main-page__detail">
                                 <span className="user-card-main-page__detail-icon">🏢</span> {/* ✅ добавлено */}
-                                <span>{user.department || '—'}</span>
+                                <span>{displayedUser.department || '—'}</span>
                             </div>
                             <div className="user-card-main-page__detail">
                                 <span className="user-card-main-page__detail-icon">📝</span>
-                                <span>{user.descr || '—'}</span>
+                                <span>{displayedUser.descr || '—'}</span>
                             </div>
                         </div>
                     </div>

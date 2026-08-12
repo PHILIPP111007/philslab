@@ -51,9 +51,14 @@ async def get_user(session: SessionDep, request: Request, username: str):
 
 
 @router.put("/user/{username}/")
-async def put_user(session: SessionDep, request: Request, user_body: UserBody):
+async def put_user(
+    session: SessionDep, request: Request, username: str, user_body: UserBody
+):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
+
+    if request.state.user.username != username:
+        return {"ok": False, "error": "Can only update your own profile."}
 
     user = await session.exec(select(User).where(User.id == request.state.user.id))
     user = user.first()
