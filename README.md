@@ -1,6 +1,6 @@
 # PhilsLab
 
-Project repository.
+Project repository
 
 - [Database schema](docs/DATABASE_SCHEMA.md)
 - [Frontend development](docs/FRONTEND.md)
