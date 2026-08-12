@@ -20,6 +20,7 @@ export default function Sample() {
     const params = useParams()
     const navigate = useNavigate()
     const sampleId = params.id
+    const username = params.username || user?.username
 
     const [sample, setSample] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -44,8 +45,8 @@ export default function Sample() {
 
     // Запоминаем страницу
     useEffect(() => {
-        rememberPage(`sample/${sampleId}/`)
-    }, [sampleId])
+        rememberPage(`sample/${sampleId}/${username}`)
+    }, [sampleId, username])
 
     // Загрузка данных
     const loadSample = useCallback(async () => {
@@ -117,7 +118,7 @@ export default function Sample() {
         })
         if (data?.ok) {
             notify_success('Образец удалён')
-            navigate('/samples')
+            navigate(`/samples/${username}/`)
         } else {
             notify_error(data?.error || 'Ошибка удаления')
         }
@@ -131,7 +132,7 @@ export default function Sample() {
             size: 70,
             cell: ({ getValue }) => {
                 const id = getValue()
-                return id ? <LinkButton to={`/batch/${id}/`}>{id}</LinkButton> : '—'
+                return id ? <LinkButton to={`/batch/${id}/${username}/`}>{id}</LinkButton> : '—'
             },
         },
         { accessorKey: 'name', header: 'Название', size: 200 },
@@ -167,7 +168,7 @@ export default function Sample() {
                 <Header />
                 <div className="sample-detail" style={{ padding: '2rem' }}>
                     <h2>Образец не найден</h2>
-                    <Button onClick={() => navigate('/samples')}>← К списку</Button>
+                    <Button onClick={() => navigate(`/samples/${username}/`)}>← К списку</Button>
                 </div>
             </>
         )

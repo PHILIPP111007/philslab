@@ -31,12 +31,12 @@ export var PrivateRoutes = [
         element: <User />
     },
     {
-        path: "/hello/",
+        path: "/hello/:username/",
         name: "Hello",
         element: <Hello />
     },
     {
-        path: "/samples/",
+        path: "/samples/:username/",
         name: "Samples",
         element: <Samples />
     },
@@ -51,12 +51,12 @@ export var PrivateRoutes = [
         element: <Department />
     },
     {
-        path: "/batches/",
+        path: "/batches/:username/",
         name: "AllBatches",
         element: <AllBatches />
     },
     {
-        path: "/batch/:id/",
+        path: "/batch/:id/:username/",
         name: "Batch",
         element: <Batch />
     },
@@ -71,12 +71,12 @@ export var PrivateRoutes = [
         element: <AdminPage />
     },
     {
-        path: "/task/:id/",
+        path: "/task/:id/:username/",
         name: "Task",
         element: <Task />
     },
     {
-        path: "/sample/:id/",
+        path: "/sample/:id/:username/",
         name: "Sample",
         element: <Sample />
     },

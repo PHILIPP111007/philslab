@@ -84,7 +84,7 @@ export default function Department() {
                 <br />
                 <section className="section section-filled">
                     <h3 className="section__title">📦 Батчи</h3>
-                    <Batches department={departmentName} />
+                    <Batches department={departmentName} username={targetUsername} />
                 </section>
             </div>
         </>

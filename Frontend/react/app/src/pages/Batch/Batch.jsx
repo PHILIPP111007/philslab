@@ -21,6 +21,7 @@ export default function Batch() {
     const params = useParams()
     const navigate = useNavigate()
     const batchId = params.id
+    const username = params.username || user?.username
 
     const [batch, setBatch] = useState(null)
     const [samples, setSamples] = useState([])
@@ -71,8 +72,8 @@ export default function Batch() {
     const { departments } = useDepartments();
 
     useEffect(() => {
-        rememberPage(`batch/${batchId}`)
-    }, [batchId])
+        rememberPage(`batch/${batchId}/${username}`)
+    }, [batchId, username])
 
     // ---------- ЗАГРУЗКА БАТЧА ----------
     const loadBatch = useCallback(async () => {
@@ -88,10 +89,10 @@ export default function Batch() {
             setTasks(data.data.tasks || [])
         } else {
             notify_error(data?.error || 'Батч не найден')
-            navigate('/batches')
+            navigate(`/batches/${username}/`)
         }
         setLoading(false)
-    }, [batchId, navigate])
+    }, [batchId, navigate, username])
 
     useEffect(() => {
         loadBatch()
@@ -356,7 +357,7 @@ export default function Batch() {
         })
         if (res?.ok) {
             notify_success('Батч удален!')
-            navigate('/batches')
+            navigate(`/batches/${username}/`)
         } else {
             notify_error(res?.error || 'Ошибка удаления')
         }
@@ -374,7 +375,7 @@ export default function Batch() {
                 const id = getValue()
                 if (id > 0) {
                     return (
-                        <LinkButton to={`/sample/${id}/`}>{id}</LinkButton>
+                        <LinkButton to={`/sample/${id}/${username}/`}>{id}</LinkButton>
                     )
                 }
                 return id
@@ -459,7 +460,7 @@ export default function Batch() {
             size: 70,
             cell: ({ getValue }) => {
                 const id = getValue()
-                return id ? <LinkButton to={`/task/${id}/`}>{id}</LinkButton> : '—'
+                return id ? <LinkButton to={`/task/${id}/${username}/`}>{id}</LinkButton> : '—'
             },
         },
         { accessorKey: 'name', header: 'Название', size: 200 },
@@ -503,7 +504,7 @@ export default function Batch() {
                 <div className="batch-detail">
                     <div className="batch-detail__not-found">
                         <h2>Батч не найден</h2>
-                        <Button onClick={() => navigate('/batches')}>
+                        <Button onClick={() => navigate(`/batches/${username}/`)}>
                             ← Вернуться к списку
                         </Button>
                     </div>
@@ -519,7 +520,7 @@ export default function Batch() {
                 <div className="batch-detail__container">
                     {/* Навигация */}
                     <div className="batch-detail__nav">
-                        <LinkButton to={`/batches/${user.username}`} variant="secondary" size="sm">
+                        <LinkButton to={`/batches/${user.username}/`} variant="secondary" size="sm">
                             ← Все батчи
                         </LinkButton>
                     </div>

@@ -19,6 +19,7 @@ export default function Task() {
     const params = useParams()
     const navigate = useNavigate()
     const taskId = params.id
+    const username = params.username || user?.username
 
     // Основные состояния
     const [task, setTask] = useState(null)
@@ -51,8 +52,8 @@ export default function Task() {
 
     // Запоминаем страницу
     useEffect(() => {
-        rememberPage(`task/${taskId}`)
-    }, [taskId])
+        rememberPage(`task/${taskId}/${username}`)
+    }, [taskId, username])
 
     // ---------- Загрузка данных ----------
     const loadTask = useCallback(async () => {
@@ -70,10 +71,10 @@ export default function Task() {
             setProtocol(taskData?.protocol || null)
         } else {
             notify_error(data?.error || 'Задача не найдена')
-            navigate('/')
+            navigate(`/main_page/${username}/`)
         }
         setLoading(false)
-    }, [taskId, navigate])
+    }, [taskId, navigate, username])
 
 
     const loadUsers = useCallback(async () => {
@@ -201,7 +202,7 @@ export default function Task() {
         })
         if (data?.ok) {
             notify_success('Задача удалена')
-            navigate('/')
+            navigate(`/main_page/${username}/`)
         } else {
             notify_error(data?.error || 'Ошибка удаления')
         }
@@ -267,7 +268,7 @@ export default function Task() {
                 <Header />
                 <div className="task-detail" style={{ padding: '2rem' }}>
                     <h2>Задача не найдена</h2>
-                    <Button onClick={() => navigate('/')}>← На главную</Button>
+                    <Button onClick={() => navigate(`/main_page/${username}/`)}>← На главную</Button>
                 </div>
             </>
         )
@@ -418,7 +419,7 @@ export default function Task() {
                                 <h3>📦 Связанные батчи</h3>
                                 <div className="task-detail__batches-list">
                                     {task.batches.map(batch => (
-                                        <LinkButton key={batch.id} to={`/batch/${batch.id}`}>
+                                        <LinkButton key={batch.id} to={`/batch/${batch.id}/${username}/`}>
                                             {batch.name || `Батч #${batch.id}`}
                                         </LinkButton>
                                     ))}
@@ -432,7 +433,7 @@ export default function Task() {
                                 <h3>🧪 Образцы</h3>
                                 <div className="task-detail__samples-list">
                                     {task.samples.map(sample => (
-                                        <LinkButton key={sample.id} to={`/sample/${sample.id}`}>
+                                        <LinkButton key={sample.id} to={`/sample/${sample.id}/${username}/`}>
                                             {sample.sample_code || `Образец #${sample.id}`}
                                         </LinkButton>
                                     ))}

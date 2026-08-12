@@ -9,7 +9,7 @@ import StatCard from '../../components/StatCard/StatCard'
 import LinkButton from '../../components/LinkButton/LinkButton'
 
 // 🔽 Добавлен пропс department
-export default function Batches({ department = null }) {
+export default function Batches({ department = null, username = '' }) {
     const [batches, setBatches] = useState([])
     const [lazyParams, setLazyParams] = useState(null)
     const [totalRows, setTotalRows] = useState(0)
@@ -29,7 +29,7 @@ export default function Batches({ department = null }) {
                     const id = getValue()
                     if (id > 0) {
                         return (
-                            <LinkButton to={`/batch/${id}/`}>{id}</LinkButton>
+                            <LinkButton to={`/batch/${id}/${username}/`}>{id}</LinkButton>
                         )
                     }
                     return id
@@ -105,7 +105,7 @@ export default function Batches({ department = null }) {
 
         // Если передан department, убираем колонку "Отдел" (она не нужна, т.к. все батчи одного отдела)
         return department ? base.filter(col => col.accessorKey !== 'department') : base
-    }, [department, departments])
+    }, [department, departments, username])
 
     // ---------- ЗАГРУЗКА ДАННЫХ (с фильтром по отделу) ----------
     const loadBatches = useCallback(async () => {

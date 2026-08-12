@@ -74,7 +74,7 @@ export default function Header() {
                                         <br />
                                         <LinkButton to={`/batches/${user.username}/`} variant="secondary">Все батчи</LinkButton>
                                         <br />
-                                        <LinkButton to="/hello/" variant="secondary">Страница со стилями</LinkButton>
+                                        <LinkButton to={`/hello/${user.username}/`} variant="secondary">Страница со стилями</LinkButton>
                                     </div>
 
                                     <div className="sticky-header__setting-group sticky-header__setting-group--theme">

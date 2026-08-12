@@ -3,8 +3,9 @@ import { useState, use, useEffect } from 'react'
 import { useNavigate } from "react-router-dom"
 import Fetch from "../../API/Fetch"
 import { AuthContext, UserContext } from "../../data/context.js"
-import { HttpMethod, CacheKeys, APIVersion } from "../../data/enums.js"
+import { HttpMethod, APIVersion } from "../../data/enums.js"
 import { getToken, setToken } from "../../modules/token.js"
+import { getRememberedPage } from "../../modules/rememberPage.js"
 import { notify_error, notify_success } from "../../modules/notify.js"
 
 export default function Login() {
@@ -28,12 +29,8 @@ export default function Login() {
                 setUser({ ...user, ...data })
                 setIsAuth(true)
 
-                var path = localStorage.getItem(CacheKeys.REMEMBER_PAGE)
-                if (path !== null) {
-                    path = `/${path}/`
-                } else {
-                    path = `/users/${data.username}/`
-                }
+                var path = getRememberedPage(data.username)
+                    || `/users/${data.username}/`
                 navigate(path)
             } else if (!token) {
                 setIsAuth(false)

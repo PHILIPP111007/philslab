@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import rememberPage from '../../modules/rememberPage'
 import Table from "../components/Table/Table"
 import { useTheme } from '../components/Theme/ThemeContext'
 import UserCard from "../components/UserCard/UserCard"
@@ -16,6 +18,7 @@ import ProgressBar from '../components/ProgressBar/ProgressBar'
 // ОСНОВНОЙ КОМПОНЕНТ С ТЕМОЙ
 // ============================================
 export default function Hello() {
+    const { username } = useParams()
     const { theme, isDark, toggleTheme } = useTheme()
     const [users, setUsers] = useState([
         { id: 1, name: 'Анна Кузнецова', email: 'anna@example.com', age: 25, city: 'Москва', status: 'Активен', salary: 85000, department: 'Разработка', experience: 3 },
@@ -27,6 +30,10 @@ export default function Hello() {
         { id: 7, name: 'Иван Волков', email: 'ivan@example.com', age: 41, city: 'Нижний Новгород', status: 'Заблокирован', salary: 54000, department: 'Аутсорс', experience: 15 },
         { id: 8, name: 'Мария Лебедева', email: 'maria@example.com', age: 23, city: 'Москва', status: 'Активен', salary: 67000, department: 'Дизайн', experience: 1 },
     ])
+
+    useEffect(() => {
+        rememberPage(`hello/${username}`)
+    }, [username])
 
     // ============================================
     // КОЛОНКИ ДЛЯ ТАБЛИЦЫ

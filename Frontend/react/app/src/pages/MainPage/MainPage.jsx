@@ -19,7 +19,7 @@ export default function MainPage() {
             id: 'search',
             title: '🔍 Поиск',
             description: 'Поиск по всем разделам системы',
-            to: '/search/',
+            to: `/search/${params.username}/`,
             variant: 'secondary',
         },
         {
@@ -47,7 +47,7 @@ export default function MainPage() {
             id: 'warehouse',
             title: '📦 Склад отдела',
             description: 'Управление складскими запасами',
-            to: '/warehouse/',
+            to: `/warehouse/${params.username}/`,
             variant: 'secondary',
         },
         {

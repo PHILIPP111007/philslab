@@ -14,7 +14,7 @@ export default function AllBatches() {
     return (
         <>
             <Header />
-            <Batches />
+            <Batches username={params.username} />
         </>
     )
 }

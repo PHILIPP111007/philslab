@@ -45,8 +45,8 @@ export default function Samples() {
             cell: ({ getValue, row }) => {
                 const id = getValue()
                 if (id > 0) {
-                    return (
-                        <LinkButton to={`/sample/${id}/`}>{id}</LinkButton>
+                        return (
+                        <LinkButton to={`/sample/${id}/${params.username}/`}>{id}</LinkButton>
                     )
                 }
                 return id

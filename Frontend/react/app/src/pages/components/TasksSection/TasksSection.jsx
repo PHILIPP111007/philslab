@@ -502,7 +502,7 @@ export default function TasksSection({ departmentName }) {
                                     task.batches.map(batch => (
                                         <LinkButton
                                             key={batch.id}
-                                            to={`/batch/${batch.id}`}
+                                            to={`/batch/${batch.id}/${user.username}/`}
                                             style={{ marginRight: '8px' }}
                                         >
                                             {batch.name || `#${batch.id}`}
