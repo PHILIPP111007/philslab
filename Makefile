@@ -55,7 +55,7 @@ django:
 	export DEBUG=1 && \
 	python manage.py makemigrations && \
 	python manage.py migrate && \
-	uvicorn settings.asgi:application --host localhost --port 8000 --workers 1 --reload --loop uvloop
+	uvicorn settings.asgi:application --host localhost --port 1972 --workers 1 --reload --loop uvloop
 
 fastapi:
 	@echo "Starting fastapi..."
