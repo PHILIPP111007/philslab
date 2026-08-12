@@ -9,55 +9,9 @@ from sqlmodel import func, select
 from app.database import SessionDep
 from app.models import Batch, BatchSampleLink, Sample, Task, TaskBatchLink
 from app.request_body import BatchCreate, BatchUpdate
+from app.services.serializers import serialize_batch
 
 router = APIRouter(tags=["batch"])
-
-
-# ------------------------------------------------------------
-# Безопасная сериализация – связи передаются явно
-# ------------------------------------------------------------
-def serialize_batch(batch: Batch, samples: list = None, tasks: list = None) -> dict:
-    subs = samples if samples is not None else []
-    tsk = tasks if tasks is not None else []
-
-    return {
-        "id": batch.id,
-        "name": batch.name,
-        "department": batch.department,
-        "descr": batch.descr,
-        "timestamp": batch.timestamp.isoformat() if batch.timestamp else None,
-        "updated_at": batch.updated_at.isoformat() if batch.updated_at else None,
-        "user_id": batch.user_id,
-        "sample_count": len(subs),
-        "samples": [
-            {
-                "id": s.id,
-                "sample_code": s.sample_code,
-                "sample_group_code": s.sample_group_code,
-                "zlims_code": s.zlims_code,
-                "uin1": s.uin1,
-                "uin2": s.uin2,
-                "project_code": s.project_code,
-                "sample_index": s.sample_index,
-                "qc_1": s.qc_1,
-                "qc_2": s.qc_2,
-                "descr": s.descr,
-                "material_type": s.material_type,
-                "timestamp": s.timestamp.isoformat() if s.timestamp else None,
-            }
-            for s in subs
-        ],
-        "tasks": [
-            {
-                "id": t.id,
-                "name": t.name,
-                "is_completed": t.is_completed,
-                "priority": t.priority,
-                "department": t.department,
-            }
-            for t in tsk
-        ],
-    }
 
 
 # ------------------------------------------------------------

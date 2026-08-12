@@ -15,6 +15,7 @@ from app.models import (
     TaskStage,
 )
 from app.request_body import TaskCreate, TaskUpdate
+from app.services.serializers import serialize_task
 
 router = APIRouter(tags=["task"])
 
@@ -118,116 +119,9 @@ async def get_tasks(
     # Выполнение запроса
     tasks = (await session.exec(statement)).all()
 
-    # --- Формирование ответа (как в вашем коде) ---
-    result = []
-    for task in tasks:
-        stages_data = [
-            {
-                "id": stage.id,
-                "name": stage.name,
-                "description": stage.description,
-                "is_completed": stage.is_completed,
-                "order": stage.order,
-            }
-            for stage in task.task_stages
-        ]
-
-        protocol_stages_data = []
-        if task.protocol:
-            protocol_stages_data = [
-                {
-                    "id": stage.id,
-                    "name": stage.name,
-                    "description": stage.description,
-                    "is_completed": stage.is_completed,
-                    "order": stage.order,
-                }
-                for stage in task.protocol.stages
-            ]
-
-        all_samples = []
-        for batch in task.batches:
-            all_samples.extend(batch.samples or [])
-        unique_samples = list({s.id: s for s in all_samples}.values())
-
-        task_dict = {
-            "id": task.id,
-            "name": task.name,
-            "description": task.description,
-            "department": task.department or "",
-            "deadline": task.deadline.isoformat() if task.deadline else None,
-            "priority": task.priority,
-            "is_completed": task.is_completed,
-            "is_archived": task.is_archived,
-            "created_at": task.created_at.isoformat() if task.created_at else None,
-            "updated_at": task.updated_at.isoformat() if task.updated_at else None,
-            "completed_at": task.completed_at.isoformat()
-            if task.completed_at
-            else None,
-            "created_by": {
-                "id": task.created_by.id,
-                "username": task.created_by.username,
-                "first_name": task.created_by.first_name,
-                "last_name": task.created_by.last_name,
-            }
-            if task.created_by
-            else None,
-            "assigned_to": {
-                "id": task.assigned_to.id,
-                "username": task.assigned_to.username,
-                "first_name": task.assigned_to.first_name,
-                "last_name": task.assigned_to.last_name,
-            }
-            if task.assigned_to
-            else None,
-            "protocol": {
-                "id": task.protocol.id,
-                "name": task.protocol.name,
-                "code": task.protocol.code,
-                "stages": protocol_stages_data,
-            }
-            if task.protocol
-            else None,
-            "stages": stages_data,
-            "samples": [
-                {
-                    "id": s.id,
-                    "sample_code": s.sample_code,
-                }
-                for s in unique_samples
-            ],
-            "batches": [
-                {
-                    "id": b.id,
-                    "name": b.name,
-                    "department": b.department,
-                }
-                for b in task.batches
-            ],
-            "history": [
-                {
-                    "id": history.id,
-                    "action_type": history.action_type,
-                    "field_name": history.field_name,
-                    "old_value": history.old_value,
-                    "new_value": history.new_value,
-                    "comment": history.comment,
-                    "created_at": history.created_at.isoformat()
-                    if history.created_at
-                    else None,
-                    "user": {
-                        "id": history.user.id,
-                        "username": history.user.username,
-                        "first_name": history.user.first_name,
-                        "last_name": history.user.last_name,
-                    }
-                    if history.user
-                    else None,
-                }
-                for history in task.history
-            ],
-        }
-        result.append(task_dict)
+    result = [
+        serialize_task(task, include_protocol_version=False) for task in tasks
+    ]
 
     return {
         "ok": True,
@@ -265,118 +159,7 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
     if not task:
         return {"ok": False, "error": "Not found task."}
 
-    # ✅ Этапы задачи (TaskStage)
-    stages_data = [
-        {
-            "id": stage.id,
-            "name": stage.name,
-            "description": stage.description,
-            "is_completed": stage.is_completed,
-            "order": stage.order,
-        }
-        for stage in task.task_stages
-    ]
-
-    # ✅ Этапы протокола (оригинальные)
-    protocol_stages_data = []
-    if task.protocol:
-        protocol_stages_data = [
-            {
-                "id": stage.id,
-                "name": stage.name,
-                "description": stage.description,
-                "is_completed": stage.is_completed,
-                "order": stage.order,
-            }
-            for stage in task.protocol.stages
-        ]
-
-    all_samples = []
-    for batch in task.batches:
-        all_samples.extend(batch.samples or [])
-    unique_samples = list({sample.id: sample for sample in all_samples}.values())
-
-    return {
-        "ok": True,
-        "data": {
-            "id": task.id,
-            "name": task.name,
-            "description": task.description,
-            "department": task.department or "",
-            "deadline": task.deadline.isoformat() if task.deadline else None,
-            "priority": task.priority,
-            "is_completed": task.is_completed,
-            "is_archived": task.is_archived,
-            "created_at": task.created_at.isoformat() if task.created_at else None,
-            "updated_at": task.updated_at.isoformat() if task.updated_at else None,
-            "completed_at": task.completed_at.isoformat()
-            if task.completed_at
-            else None,
-            "created_by": {
-                "id": task.created_by.id,
-                "username": task.created_by.username,
-                "first_name": task.created_by.first_name,
-                "last_name": task.created_by.last_name,
-            }
-            if task.created_by
-            else None,
-            "assigned_to": {
-                "id": task.assigned_to.id,
-                "username": task.assigned_to.username,
-                "first_name": task.assigned_to.first_name,
-                "last_name": task.assigned_to.last_name,
-            }
-            if task.assigned_to
-            else None,
-            "protocol": {
-                "id": task.protocol.id,
-                "name": task.protocol.name,
-                "code": task.protocol.code,
-                "version": task.protocol.version,
-                "stages": protocol_stages_data,  # ← добавляем этапы протокола
-            }
-            if task.protocol
-            else None,
-            "stages": stages_data,
-            "samples": [
-                {
-                    "id": sample.id,
-                    "sample_code": sample.sample_code,
-                }
-                for sample in unique_samples
-            ],
-            "batches": [
-                {
-                    "id": b.id,
-                    "name": b.name,
-                    "department": b.department,
-                }
-                for b in task.batches
-            ],
-            "history": [
-                {
-                    "id": history.id,
-                    "action_type": history.action_type,
-                    "field_name": history.field_name,
-                    "old_value": history.old_value,
-                    "new_value": history.new_value,
-                    "comment": history.comment,
-                    "created_at": history.created_at.isoformat()
-                    if history.created_at
-                    else None,
-                    "user": {
-                        "id": history.user.id,
-                        "username": history.user.username,
-                        "first_name": history.user.first_name,
-                        "last_name": history.user.last_name,
-                    }
-                    if history.user
-                    else None,
-                }
-                for history in task.history
-            ],
-        },
-    }
+    return {"ok": True, "data": serialize_task(task)}
 
 
 # ============================================
@@ -854,85 +637,7 @@ async def get_archived_tasks(
     statement = statement.offset(offset).limit(page_size)
     tasks = (await session.exec(statement)).all()
 
-    result = []
-    for task in tasks:
-        stages_data = [
-            {
-                "id": stage.id,
-                "name": stage.name,
-                "description": stage.description,
-                "is_completed": stage.is_completed,
-                "order": stage.order,
-            }
-            for stage in task.task_stages
-        ]
-        protocol_stages_data = [
-            {
-                "id": stage.id,
-                "name": stage.name,
-                "description": stage.description,
-                "is_completed": stage.is_completed,
-                "order": stage.order,
-            }
-            for stage in (task.protocol.stages if task.protocol else [])
-        ]
-        all_samples = []
-        for batch in task.batches:
-            all_samples.extend(batch.samples or [])
-        unique_samples = list({sample.id: sample for sample in all_samples}.values())
-
-        result.append(
-            {
-                "id": task.id,
-                "name": task.name,
-                "description": task.description,
-                "department": task.department or "",
-                "deadline": task.deadline.isoformat() if task.deadline else None,
-                "priority": task.priority,
-                "is_completed": task.is_completed,
-                "is_archived": task.is_archived,
-                "created_at": task.created_at.isoformat() if task.created_at else None,
-                "updated_at": task.updated_at.isoformat() if task.updated_at else None,
-                "created_by": {
-                    "id": task.created_by.id,
-                    "username": task.created_by.username,
-                    "first_name": task.created_by.first_name,
-                    "last_name": task.created_by.last_name,
-                }
-                if task.created_by
-                else None,
-                "assigned_to": {
-                    "id": task.assigned_to.id,
-                    "username": task.assigned_to.username,
-                    "first_name": task.assigned_to.first_name,
-                    "last_name": task.assigned_to.last_name,
-                }
-                if task.assigned_to
-                else None,
-                "protocol": {
-                    "id": task.protocol.id,
-                    "name": task.protocol.name,
-                    "code": task.protocol.code,
-                    "version": task.protocol.version,
-                    "stages": protocol_stages_data,
-                }
-                if task.protocol
-                else None,
-                "stages": stages_data,
-                "samples": [
-                    {"id": sample.id, "sample_code": sample.sample_code}
-                    for sample in unique_samples
-                ],
-                "batches": [
-                    {
-                        "id": batch.id,
-                        "name": batch.name,
-                        "department": batch.department,
-                    }
-                    for batch in task.batches
-                ],
-            }
-        )
+    result = [serialize_task(task, include_history=False) for task in tasks]
 
     return {"ok": True, "data": result}
 

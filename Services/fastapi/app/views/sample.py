@@ -5,6 +5,7 @@ from sqlmodel import func, select
 from app.database import SessionDep
 from app.models import Batch, Sample
 from app.request_body.sample import SampleCreate, SampleUpdate
+from app.services.serializers import serialize_sample
 
 router = APIRouter(tags=["sample"])
 
@@ -22,46 +23,6 @@ def sample_search_condition(search: str):
         | Sample.descr.contains(search)
         | Sample.material_type.contains(search)
     )
-
-
-def serialize_sample(sample: Sample) -> dict:
-    """Сериализует объект Sample в словарь с ISO-датами и связанными данными."""
-    return {
-        "id": sample.id,
-        "sample_code": sample.sample_code,
-        "sample_group_code": sample.sample_group_code,
-        "zlims_code": sample.zlims_code,
-        "uin1": sample.uin1,
-        "uin2": sample.uin2,
-        "project_code": sample.project_code,
-        "sample_index": sample.sample_index,
-        "qc_1": sample.qc_1,
-        "qc_2": sample.qc_2,
-        "descr": sample.descr,
-        "material_type": sample.material_type,
-        "timestamp": sample.timestamp.isoformat() if sample.timestamp else None,
-        "updated_at": sample.updated_at.isoformat() if sample.updated_at else None,
-        "user_id": sample.user_id,
-        "user": {
-            "id": sample.user.id,
-            "username": sample.user.username,
-            "first_name": sample.user.first_name,
-            "last_name": sample.user.last_name,
-        }
-        if sample.user
-        else None,
-        "batches": [
-            {
-                "id": batch.id,
-                "name": batch.name,
-                "department": batch.department,
-                "timestamp": batch.timestamp.isoformat() if batch.timestamp else None,
-                # sample_count вычисляется, если загружены связанные образцы
-                "sample_count": len(batch.samples) if hasattr(batch, "samples") else 0,
-            }
-            for batch in (sample.batches or [])
-        ],
-    }
 
 
 @router.get("/sample/{sample_id}/")
