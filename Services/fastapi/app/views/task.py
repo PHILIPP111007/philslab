@@ -219,9 +219,20 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
     )
     session.add(history)
     await session.commit()
-    await session.refresh(task)
 
-    return {"ok": True, "data": task}
+    result = await session.get(
+        Task,
+        task_id,
+        options=[
+            selectinload(Task.created_by),
+            selectinload(Task.assigned_to),
+            selectinload(Task.protocol).selectinload(Protocol.stages),
+            selectinload(Task.task_stages),
+            selectinload(Task.batches).selectinload(Batch.samples),
+            selectinload(Task.history).selectinload(QueryHistory.user),
+        ],
+    )
+    return {"ok": True, "data": serialize_task(result)}
 
 
 # ============================================
@@ -360,7 +371,7 @@ async def update_task(
                 selectinload(Task.assigned_to),
                 selectinload(Task.protocol).selectinload(Protocol.stages),
                 selectinload(Task.task_stages),
-                selectinload(Task.batches),
+                selectinload(Task.batches).selectinload(Batch.samples),
                 selectinload(Task.history).selectinload(QueryHistory.user),
             ],
         )
@@ -401,11 +412,14 @@ async def update_task(
                 selectinload(Task.assigned_to),
                 selectinload(Task.protocol).selectinload(Protocol.stages),
                 selectinload(Task.task_stages),
-                selectinload(Task.batches),
+                selectinload(Task.batches).selectinload(Batch.samples),
                 selectinload(Task.history).selectinload(QueryHistory.user),
             ],
         )
-        return {"ok": True, "data": result}
+        return {
+            "ok": True,
+            "data": serialize_task(result),
+        }
     else:
         # Если изменений не было, просто возвращаем задачу
         result = await session.get(
@@ -416,11 +430,14 @@ async def update_task(
                 selectinload(Task.assigned_to),
                 selectinload(Task.protocol).selectinload(Protocol.stages),
                 selectinload(Task.task_stages),
-                selectinload(Task.batches),
+                selectinload(Task.batches).selectinload(Batch.samples),
                 selectinload(Task.history).selectinload(QueryHistory.user),
             ],
         )
-        return {"ok": True, "data": result}
+        return {
+            "ok": True,
+            "data": serialize_task(result),
+        }
 
 
 # ============================================

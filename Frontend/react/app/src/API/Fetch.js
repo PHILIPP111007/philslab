@@ -3,6 +3,39 @@ import { DEVELOPMENT, PROD_FETCH_URL, DEVELOPMENT_DJANGO_FETCH_URL, DEVELOPMENT_
 import { getToken } from "../modules/token.js"
 import { notify_error } from "../modules/notify.js"
 
+async function parseResponse(response) {
+    const rawBody = response.status === 204 ? "" : await response.text()
+    let payload = null
+
+    if (rawBody) {
+        try {
+            payload = JSON.parse(rawBody)
+        } catch {
+            payload = { data: rawBody }
+        }
+    }
+
+    if (!response.ok) {
+        const error = payload?.error || payload?.detail || `HTTP ${response.status}`
+        return { ok: false, error }
+    }
+
+    if (payload === null) return { ok: true, data: null }
+    if (typeof payload !== "object") return { ok: true, data: payload }
+    return payload
+}
+
+function reportApiError(data) {
+    if (data?.ok !== false) return
+
+    const message = data.error || data.detail
+    if (!message) return
+
+    const logMessage = `Not 2xx response: ${message}`
+    console.warn(logMessage)
+    notify_error(message)
+}
+
 export default async function Fetch({ api_version, action, method, body, token, is_uploading_file, params, signal }) {
 
     // External token gives by auth() func
@@ -43,7 +76,8 @@ export default async function Fetch({ api_version, action, method, body, token, 
     var credentials = api_version === APIVersion.V2 ? "include" : "same-origin"
 
     if (method === HttpMethod.GET) {
-        data = await fetch(url, {
+        try {
+            data = await fetch(url, {
             method: "GET",
             headers: {
                 "Accept": "application/json;text/plain",
@@ -53,25 +87,13 @@ export default async function Fetch({ api_version, action, method, body, token, 
             mode: "cors",
             credentials: credentials,
             signal: signal,
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (!data.ok) {
-                    if (data.error) {
-                        var msg = `Not 2xx response: ${data.error}`
-                        console.warn(msg)
-                        notify_error(msg)
-                    }
+            }).then(parseResponse)
+        } catch (error) {
+            if (error?.name !== "AbortError") console.error(error)
+            return { ok: false, error: error?.message || "Ошибка сетевого запроса" }
+        }
 
-                    if (data.detail) {
-                        console.warn(data.detail)
-                        notify_error(data.detail)
-                    }
-                }
-                return data
-            })
-            .catch((error) => console.error(error))
-
+        reportApiError(data)
         return data
 
     } else {
@@ -91,32 +113,21 @@ export default async function Fetch({ api_version, action, method, body, token, 
             }
         }
 
-        data = await fetch(url, {
+        try {
+            data = await fetch(url, {
             method: method,
             headers: headers,
             mode: "cors",
             body: body,
             credentials: credentials,
             signal: signal,
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (!data.ok) {
-                    if (data.error) {
-                        var msg = `Not 2xx response: ${data.error}`
-                        console.warn(msg)
-                        notify_error(msg)
-                    }
+            }).then(parseResponse)
+        } catch (error) {
+            if (error?.name !== "AbortError") console.error(error)
+            return { ok: false, error: error?.message || "Ошибка сетевого запроса" }
+        }
 
-                    if (data.detail) {
-                        console.warn(data.detail)
-                        notify_error(data.detail)
-                    }
-                }
-                return data
-            })
-            .catch((error) => console.error(error))
-
+        reportApiError(data)
         return data
     }
 }

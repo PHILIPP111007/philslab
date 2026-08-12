@@ -25,7 +25,7 @@ export default function Batches({ department = null, username = '' }) {
                 size: 70,
                 enableEditing: false,
                 enableSorting: true,
-                cell: ({ getValue, row }) => {
+                cell: ({ getValue }) => {
                     const id = getValue()
                     if (id > 0) {
                         return (

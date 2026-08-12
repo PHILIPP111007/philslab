@@ -71,7 +71,7 @@ export default function Samples() {
             size: 70,
             enableEditing: false,
             enableSorting: true,
-            cell: ({ getValue, row }) => {
+            cell: ({ getValue }) => {
                 const id = getValue()
                 if (id > 0) {
                     return (
@@ -429,7 +429,7 @@ export default function Samples() {
                         </Button>
                     </div>
 
-                    {loading && !lazyParams ? (
+                    {loading && (!lazyParams || deptLoading) ? (
                         <Spinner />
                     ) : (
                         <Table

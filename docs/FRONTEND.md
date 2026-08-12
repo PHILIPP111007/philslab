@@ -248,8 +248,8 @@ export const Priority = {
 ```js
 export const DEVELOPMENT = import.meta.env.VITE_DEVELOPMENT || '0';
 export const PROD_FETCH_URL = import.meta.env.VITE_PROD_FETCH_URL || '';
-export const DEVELOPMENT_DJANGO_FETCH_URL = import.meta.env.VITE_DEVELOPMENT_DJANGO_FETCH_URL || 'http://localhost:8000/';
-export const DEVELOPMENT_FASTAPI_FETCH_URL = import.meta.env.VITE_DEVELOPMENT_FASTAPI_FETCH_URL || 'http://localhost:8001/';
+export const DEVELOPMENT_DJANGO_FETCH_URL = import.meta.env.VITE_DEVELOPMENT_DJANGO_FETCH_URL || 'http://localhost:1972/';
+export const DEVELOPMENT_FASTAPI_FETCH_URL = import.meta.env.VITE_DEVELOPMENT_FASTAPI_FETCH_URL || 'http://localhost:1974/';
 ```
 
 ---

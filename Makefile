@@ -37,7 +37,7 @@ createsuperuser:
 	export DEVELOPMENT=1 && \
 	export DEBUG=1 && \
 	python manage.py createsuperuser
-	@echo "Go to the http:\/\/localhost:8000/admin_page/"
+	@echo "Go to the http:\/\/localhost:1972/admin_page/"
 
 shell:
 	@echo "Starting django shell..."

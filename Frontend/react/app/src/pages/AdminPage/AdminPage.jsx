@@ -1,6 +1,5 @@
-import { useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { UserContext } from '../../data/context.js';
 import Header from '../components/Header/Header';
 import rememberPage from '../../modules/rememberPage';
 import Fetch from '../../API/Fetch';
@@ -12,12 +11,10 @@ import Spinner from '../components/Spinner/Spinner';
 import Badge from '../components/Badge/Badge';
 
 export default function AdminPage() {
-    const { user } = useContext(UserContext);
     const params = useParams();
     const [loading, setLoading] = useState(true);
     const [protocols, setProtocols] = useState([]);
     const [totalRows, setTotalRows] = useState(0);
-    const [lazyParams, setLazyParams] = useState(null);
 
     // Состояния для модалок протоколов
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -77,12 +74,6 @@ export default function AdminPage() {
             setTotalRows(res.total || 0);
         }
     }, []); // ← пустой массив
-
-    useEffect(() => {
-        if (lazyParams) {
-            fetchProtocols(lazyParams);
-        }
-    }, [lazyParams, fetchProtocols]);
 
     useEffect(() => {
         loadProtocols();
@@ -258,8 +249,11 @@ export default function AdminPage() {
         const otherStage = stages[newIndex];
         // Меняем order
         const tempOrder = stage.order;
-        stage.order = otherStage.order;
-        otherStage.order = tempOrder;
+        const updatedStages = stages.map((item, index) => {
+            if (index === currentIndex) return { ...item, order: otherStage.order };
+            if (index === newIndex) return { ...item, order: tempOrder };
+            return item;
+        });
 
         // Отправляем оба обновления
         const updateStage = async (s) => {
@@ -270,7 +264,10 @@ export default function AdminPage() {
                 body: { order: s.order },
             });
         };
-        await Promise.all([updateStage(stage), updateStage(otherStage)]);
+        await Promise.all([
+            updateStage(updatedStages[currentIndex]),
+            updateStage(updatedStages[newIndex]),
+        ]);
         // Перезагружаем список
         loadStages(currentProtocolId);
     };

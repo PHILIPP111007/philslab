@@ -217,7 +217,7 @@ async def export_samples(
             continue
         column = getattr(Sample, field)
         # Для числовых полей – точное совпадение
-        if field in ("qc_1", "qc_2", "sample_id", "user_id"):
+        if field in ("id", "qc_1", "qc_2", "user_id"):
             try:
                 if "." in value:
                     num_val = float(value)
