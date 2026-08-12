@@ -10,8 +10,10 @@ import {
     flexRender,
 } from '@tanstack/react-table'
 import ExcelJS from 'exceljs'
-import { useState, useMemo, useEffect, useRef, useLayoutEffect, useCallback, memo, forwardRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { notify_error } from '../../../modules/notify'
+import { AddModal, DeleteModal, EditModal } from './TableModals'
+import { EditableCell, TableRow } from './TableCells'
 
 // ============================================
 // АГРЕГАЦИИ
@@ -54,395 +56,6 @@ const numberContainsFilter = (row, columnId, filterValue) => {
 }
 
 // ============================================
-// INLINE EDITABLE CELL
-// ============================================
-const EditableCell = memo(function EditableCell({ getValue, row, column, table, onCellEdit, validate, onStartEdit, onEndEdit }) {
-    const initialValue = getValue()
-    const [value, setValue] = useState(initialValue)
-    const [isEditing, setIsEditing] = useState(false)
-    const [error, setError] = useState(null)
-    const inputRef = useRef(null)
-    const cellRef = useRef(null)
-    const isSavingRef = useRef(false)
-
-    const columnDef = column.columnDef
-    const isEditable = columnDef.editable !== false
-
-    const { applyValueToSelectedCells } = table.options.meta || {}
-
-    const conditionalStyle = useMemo(() => {
-        if (typeof columnDef.conditionalFormatting === 'function') {
-            const result = columnDef.conditionalFormatting(initialValue, row.original, column)
-            if (result && typeof result === 'object') return result
-        }
-        return {}
-    }, [columnDef, initialValue, row.original, column])
-
-    useEffect(() => { if (!isEditing) setValue(initialValue) }, [initialValue, isEditing])
-
-    useLayoutEffect(() => {
-        if (isEditing && inputRef.current) {
-            const timer = setTimeout(() => { inputRef.current?.focus(); inputRef.current?.select() }, 0)
-            return () => clearTimeout(timer)
-        }
-    }, [isEditing])
-
-    const handleDoubleClick = (e) => {
-        if (isEditable && !isEditing) {
-            e.preventDefault(); e.stopPropagation()
-            onStartEdit?.(row.id, column.id); setIsEditing(true)
-        }
-    }
-
-    const handleSave = useCallback(() => {
-        if (isSavingRef.current) return; isSavingRef.current = true; setError(null)
-        if (validate && value !== initialValue) {
-            const result = validate(value, row.original)
-            if (typeof result === 'string') { setError(result); inputRef.current?.focus(); isSavingRef.current = false; return }
-        }
-        if (value !== initialValue) onCellEdit?.(row.original, column.id, value)
-        setIsEditing(false); onEndEdit?.()
-        setTimeout(() => { isSavingRef.current = false }, 100)
-    }, [value, initialValue, validate, row, column, onCellEdit, onEndEdit])
-
-    const moveToCellBelow = useCallback(() => {
-        const currentTd = cellRef.current?.closest('td')
-        const currentTr = currentTd?.closest('tr')
-        const tbody = currentTr?.closest('tbody')
-        if (!tbody) return
-
-        setTimeout(() => {
-            const rows = Array.from(tbody.querySelectorAll('tr'))
-            const currentRowIdx = rows.indexOf(currentTr)
-            let nextRow = rows[currentRowIdx + 1]
-
-            if (!nextRow) {
-                if (table.getCanNextPage?.()) {
-                    const currentCellIdx = Array.from(currentTr.querySelectorAll('td')).indexOf(currentTd)
-                    const { requestCellFocusAfterPageChange } = table.options.meta || {}
-                    if (requestCellFocusAfterPageChange) {
-                        requestCellFocusAfterPageChange(currentCellIdx)
-                    }
-                    table.nextPage()
-                }
-                return
-            }
-
-            const cells = Array.from(nextRow.querySelectorAll('td'))
-            const currentCellIdx = Array.from(currentTr.querySelectorAll('td')).indexOf(currentTd)
-            const nextCell = cells[currentCellIdx]
-            if (!nextCell) return
-
-            const editableDiv = nextCell.querySelector('.editable-cell--editable')
-            if (editableDiv) {
-                editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
-            }
-        }, 150)
-    }, [table])
-
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault()
-            if (applyValueToSelectedCells) {
-                applyValueToSelectedCells(value)
-                setIsEditing(false)
-                onEndEdit?.()
-            }
-            return
-        }
-
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); moveToCellBelow(); return }
-        if (e.key === 'Escape') { e.preventDefault(); setValue(initialValue); setIsEditing(false); setError(null); onEndEdit?.(); return }
-        if (e.key === 'Tab') {
-            e.preventDefault(); handleSave()
-            const currentCell = cellRef.current?.closest('td'); if (!currentCell) return
-            const currentRow = currentCell.closest('tr'); const allCells = Array.from(currentRow.querySelectorAll('td') || [])
-            const currentIndex = allCells.indexOf(currentCell); const nextCell = allCells[currentIndex + (e.shiftKey ? -1 : 1)]
-            if (nextCell) {
-                const editableDiv = nextCell.querySelector('.editable-cell--editable')
-                if (editableDiv) setTimeout(() => editableDiv.dispatchEvent(new MouseEvent('dblclick', { bubbles: true })), 50)
-            }
-        }
-    }
-
-    const handleBlur = () => { setTimeout(() => { if (isEditing && !isSavingRef.current) handleSave() }, 100) }
-
-    if (isEditing) {
-        return (
-            <div ref={cellRef} className="editable-cell editable-cell--editing">
-                <input ref={inputRef} type={columnDef.editType || 'text'} value={value}
-                    onChange={(e) => setValue(e.target.value)} onBlur={handleBlur} onKeyDown={handleKeyDown}
-                    className={`editable-cell__input ${error ? 'editable-cell__input--error' : ''}`}
-                    placeholder={columnDef.placeholder || ''} step={columnDef.editType === 'number' ? 'any' : undefined} />
-                {error && <span className="editable-cell__error">{error}</span>}
-            </div>
-        )
-    }
-
-    return (
-        <div ref={cellRef} className={`editable-cell ${isEditable ? 'editable-cell--editable' : ''}`}
-            onDoubleClick={handleDoubleClick} title={isEditable ? 'Двойной клик для редактирования' : ''} style={conditionalStyle}>
-            <span className="editable-cell__value">{value ?? ''}</span>
-            {isEditable && <span className="editable-cell__indicator">✎</span>}
-        </div>
-    )
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.row.original === nextProps.row.original &&
-        prevProps.column.id === nextProps.column.id &&
-        prevProps.getValue() === nextProps.getValue()
-    )
-})
-
-// ============================================
-// МОДАЛЬНЫЕ ОКНА
-// ============================================
-function EditModal({ user, isOpen, onClose, onSave, columns }) {
-    const [formData, setFormData] = useState({})
-    const formRef = useRef(null)
-
-    useEffect(() => {
-        if (isOpen && user) setFormData({ ...user })
-    }, [isOpen, user])
-
-    useEffect(() => {
-        if (isOpen) {
-            setTimeout(() => {
-                formRef.current?.querySelector('input')?.focus()
-            }, 100)
-        }
-    }, [isOpen])
-
-    if (!isOpen) return null
-
-    const editableColumns = columns.filter(
-        (col) => col.id !== 'select' && col.id !== 'actions' && col.enableEditing !== false
-    )
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target
-        setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
-    }
-
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        onSave(formData)
-        onClose()
-    }
-
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal" onClick={(e) => e.stopPropagation()} ref={formRef}>
-                <h2 className="modal-title">Редактирование записи</h2>
-                <form onSubmit={handleSubmit}>
-                    {editableColumns.map((col) => {
-                        const accessor = col.accessorKey || col.id
-                        const label = col.header || accessor
-                        const value = formData[accessor] ?? ''
-
-                        return (
-                            <div key={accessor} className="modal-form-group">
-                                <label>{label}</label>
-                                {col.editType === 'select' ? (
-                                    <select
-                                        name={accessor}
-                                        value={value}
-                                        onChange={handleChange}
-                                        className="modal-input"
-                                        required={col.required !== false}
-                                    >
-                                        <option value="">Выберите...</option>
-                                        {col.options?.map((option) => (
-                                            <option key={option} value={option}>{option}</option>
-                                        ))}
-                                    </select>
-                                ) : col.editType === 'checkbox' ? (
-                                    <input
-                                        type="checkbox"
-                                        name={accessor}
-                                        checked={!!value}
-                                        onChange={handleChange}
-                                        className="modal-checkbox"
-                                    />
-                                ) : (
-                                    <input
-                                        type={col.editType || 'text'}
-                                        name={accessor}
-                                        value={value}
-                                        onChange={handleChange}
-                                        className="modal-input"
-                                        required={col.required !== false}
-                                        step={col.editType === 'number' ? 'any' : undefined}
-                                    />
-                                )}
-                            </div>
-                        )
-                    })}
-                    <div className="modal-button-group">
-                        <button type="button" onClick={onClose} className="modal-button-cancel">Отмена</button>
-                        <button type="submit" className="modal-button-save">💾 Сохранить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    )
-}
-
-function DeleteModal({ item, isOpen, onClose, onConfirm }) {
-    if (!isOpen) return null
-
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal modal-small" onClick={(e) => e.stopPropagation()}>
-                <h2 className="modal-title">Подтверждение удаления</h2>
-                <p className="modal-text">
-                    Вы уверены, что хотите удалить запись <strong>#{item?.id}</strong>?
-                </p>
-                <div className="modal-button-group modal-button-group-center">
-                    <button type="button" onClick={onClose} className="modal-button-cancel">Отмена</button>
-                    <button type="button" onClick={() => { onConfirm(item); onClose() }} className="modal-button-delete" autoFocus>🗑️ Удалить</button>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-function AddModal({ isOpen, onClose, onSave, columns }) {
-    const [formData, setFormData] = useState({})
-    const formRef = useRef(null)
-
-    useEffect(() => {
-        if (isOpen) {
-            const initialData = {}
-            columns.forEach((col) => {
-                if (col.accessorKey && col.enableEditing !== false) {
-                    initialData[col.accessorKey] = col.defaultValue ?? ''
-                }
-            })
-            setFormData(initialData)
-            setTimeout(() => {
-                formRef.current?.querySelector('input')?.focus()
-            }, 100)
-        }
-    }, [columns, isOpen])
-
-    if (!isOpen) return null
-
-    const editableColumns = columns.filter(
-        (col) => col.id !== 'select' && col.id !== 'actions' && col.enableEditing !== false
-    )
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target
-        setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
-    }
-
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        onSave(formData)
-        onClose()
-    }
-
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal" onClick={(e) => e.stopPropagation()} ref={formRef}>
-                <h2 className="modal-title">Добавление новой записи</h2>
-                <form onSubmit={handleSubmit}>
-                    {editableColumns.map((col) => {
-                        const accessor = col.accessorKey || col.id
-                        const label = col.header || accessor
-                        const value = formData[accessor] ?? ''
-
-                        return (
-                            <div key={accessor} className="modal-form-group">
-                                <label>{label}</label>
-                                {col.editType === 'select' ? (
-                                    <select
-                                        name={accessor}
-                                        value={value}
-                                        onChange={handleChange}
-                                        className="modal-input"
-                                        required={col.required !== false}
-                                    >
-                                        <option value="">Выберите...</option>
-                                        {col.options?.map((option) => (
-                                            <option key={option} value={option}>{option}</option>
-                                        ))}
-                                    </select>
-                                ) : col.editType === 'checkbox' ? (
-                                    <input
-                                        type="checkbox"
-                                        name={accessor}
-                                        checked={!!value}
-                                        onChange={handleChange}
-                                        className="modal-checkbox"
-                                    />
-                                ) : (
-                                    <input
-                                        type={col.editType || 'text'}
-                                        name={accessor}
-                                        value={value}
-                                        onChange={handleChange}
-                                        className="modal-input"
-                                        required={col.required !== false}
-                                        step={col.editType === 'number' ? 'any' : undefined}
-                                    />
-                                )}
-                            </div>
-                        )
-                    })}
-                    <div className="modal-button-group">
-                        <button type="button" onClick={onClose} className="modal-button-cancel">Отмена</button>
-                        <button type="submit" className="modal-button-save">➕ Добавить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    )
-}
-
-// ============================================
-// КОМПОНЕНТ СТРОКИ (с поддержкой ref)
-// ============================================
-const TableRow = forwardRef(({ row, rowIndex, handleRowContextMenu, onCellClick, isCellSelected, enableCellSelection }, ref) => {
-    const isTempRow = row.original.id < 0
-    return (
-        <tr
-            ref={ref}
-            className={`${row.getIsSelected() ? 'table-row-selected' : 'table-row'} ${isTempRow ? 'table-row--empty' : ''}`}
-            onContextMenu={(e) => handleRowContextMenu(e, row.original)}
-        >
-            {row.getVisibleCells().map((cell, colIndex) => {
-                const sticky = cell.column.columnDef.sticky
-                const stickyStyle = sticky === 'left'
-                    ? { position: 'sticky', left: 0, zIndex: 1, background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)' }
-                    : {}
-
-                const isSelected = enableCellSelection && isCellSelected(rowIndex, colIndex)
-
-                return (
-                    <td
-                        key={cell.id}
-                        className={`table-cell ${sticky === 'left' ? 'sticky-left' : ''} ${isSelected ? 'cell-selected' : ''}`}
-                        style={{ width: cell.column.getSize(), ...stickyStyle }}
-                        data-row-index={rowIndex}
-                        data-col-index={colIndex}
-                        onClick={(e) => {
-                            if (enableCellSelection) {
-                                if (e.target.closest('input, select, textarea')) return
-                                onCellClick(rowIndex, colIndex, e)
-                            }
-                        }}
-                    >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                )
-            })}
-        </tr>
-    )
-})
-
-// ============================================
 // ОСНОВНОЙ КОМПОНЕНТ ТАБЛИЦЫ
 // ============================================
 export default function Table({
@@ -457,7 +70,6 @@ export default function Table({
     enableColumnVisibility = true,
     enableAddButton = true,
     enableExport = true,
-    enableImport = true,
     enableActionsColumn = true,
     enableInlineEdit = true,
     enableEmptyRow = true,
@@ -502,7 +114,7 @@ export default function Table({
 
     // ---------- состояние ----------
     const [data, setData] = useState(() => {
-        if (enableEmptyRow) {
+        if (enableEmptyRow && !infiniteScroll) {
             if (initialData.length === 0) return [createEmptyRowData(-1)]
             return ensureEmptyRow(initialData)
         }
@@ -524,34 +136,19 @@ export default function Table({
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [addModalOpen, setAddModalOpen] = useState(false)
     const [selectedItem, setSelectedItem] = useState(null)
-    const [editingCellId, setEditingCellId] = useState(null)
-    const [focusRequest, setFocusRequest] = useState(null)
-    const [tableKey, setTableKey] = useState(0)
-    const isInitialMount = useRef(true)
-
     const [selectedCells, setSelectedCells] = useState(new Set())
     const [lastSelectedCell, setLastSelectedCell] = useState(null)
 
     const [isLoadingMore, setIsLoadingMore] = useState(false)
     const [hasMoreData, setHasMoreData] = useState(true)
-    const observerRef = useRef(null)
-    const lastRowRef = useRef(null)
+    const [lastRowElement, setLastRowElement] = useState(null)
+    const setLastRowRef = useCallback((node) => setLastRowElement(node), [])
 
     const effectiveEnableEmptyRow = infiniteScroll ? false : enableEmptyRow
 
     // ---------- эффекты ----------
     useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false
-            return
-        }
         setColumnSizing({})
-        setTableKey(prev => prev + 1)
-    }, [columnVisibility])
-
-    useEffect(() => {
-        setColumnSizing({})
-        setTableKey(prev => prev + 1)
     }, [columnVisibility])
 
     // Сброс выделения при смене страницы/фильтров
@@ -563,39 +160,30 @@ export default function Table({
     // При изменении фильтров или сортировки сбрасываем данные и загружаем первую страницу
     useEffect(() => {
         if (infiniteScroll) {
-            console.log('[Table] 🔄 Фильтры изменились, сброс данных');
             setData([]);
             setPageIndex(0);
             setHasMoreData(true);
             setIsLoadingMore(false);
-            console.log('[Table] 📤 Вызов onLazyLoad для страницы 0');
             onLazyLoad?.({ pageIndex: 0, pageSize, sorting, globalFilter, columnFilters });
         }
-    }, [sorting, globalFilter, columnFilters, infiniteScroll]);
+    }, [sorting, globalFilter, columnFilters, infiniteScroll, onLazyLoad, pageSize]);
 
-    // Загрузка новых данных при изменении initialData (для infiniteScroll — добавление, для обычного — замена)
+    // Синхронизация внешних данных с локальным состоянием таблицы.
     useEffect(() => {
-        if (!lazy) return;
-        if (infiniteScroll) {
-            console.log('[Table] 📦 Получены новые данные, длина:', initialData.length);
+        if (lazy && infiniteScroll) {
             setData(prev => {
                 const existingIds = new Set(prev.map(item => item.id));
                 const newItems = initialData.filter(item => !existingIds.has(item.id));
                 const newData = [...prev, ...newItems];
-                console.log('[Table] 📊 После добавления:', newData.length, 'записей');
                 if (totalRows > 0 && newData.length >= totalRows) {
                     setHasMoreData(false);
-                    console.log('[Table] 🛑 hasMoreData = false (totalRows достигнут)');
                 } else if (totalRows > 0) {
                     setHasMoreData(true);
-                    console.log('[Table] ✅ hasMoreData = true (ещё есть данные)');
                 } else {
                     if (initialData.length < pageSize) {
                         setHasMoreData(false);
-                        console.log('[Table] 🛑 hasMoreData = false (последняя страница)');
                     } else {
                         setHasMoreData(true);
-                        console.log('[Table] ✅ hasMoreData = true (есть ещё страницы)');
                     }
                 }
                 return newData;
@@ -610,7 +198,6 @@ export default function Table({
     const loadMore = useCallback(() => {
         if (isLoadingMore || !hasMoreData || !lazy) return;
         const nextPage = pageIndex + 1;
-        console.log('[Table] ⬇️ loadMore вызывает onLazyLoad для страницы', nextPage);
         setIsLoadingMore(true);
         // Обновляем pageIndex, чтобы отображать текущую страницу (опционально)
         setPageIndex(nextPage);
@@ -618,9 +205,10 @@ export default function Table({
         onLazyLoad?.({ pageIndex: nextPage, pageSize, sorting, globalFilter, columnFilters });
     }, [isLoadingMore, hasMoreData, lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad]);
 
-    // Пересоздаём observer при изменении lastRowRef.current или infiniteScroll
+    // Наблюдаем за последней строкой через callback ref: изменение ref.current
+    // само по себе не вызывает ререндер и не может быть dependency effect.
     useEffect(() => {
-        if (!infiniteScroll || !lastRowRef.current) return
+        if (!infiniteScroll || !lastRowElement) return
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -631,15 +219,12 @@ export default function Table({
             { root: null, rootMargin: '0px 0px 200px 0px', threshold: 0.1 }
         )
 
-        observer.observe(lastRowRef.current)
-        observerRef.current = observer
+        observer.observe(lastRowElement)
 
         return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect()
-            }
+            observer.disconnect()
         }
-    }, [infiniteScroll, lastRowRef.current, loadMore])
+    }, [infiniteScroll, lastRowElement, loadMore])
 
     // Lazy-загрузка при изменении pageIndex (или других параметров)
     // Lazy-загрузка при изменении параметров (только для обычной пагинации)
@@ -647,11 +232,6 @@ export default function Table({
         if (!lazy || infiniteScroll) return; // при infiniteScroll мы вызываем вручную
         onLazyLoad?.({ pageIndex, pageSize, sorting, globalFilter, columnFilters });
     }, [lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad, infiniteScroll]);
-
-    // ---------- остальные обработчики (без изменений) ----------
-    const updateData = useCallback((rowIndex, columnId, value) => {
-        setData((old) => old.map((row, index) => index === rowIndex ? { ...row, [columnId]: value } : row))
-    }, [])
 
     const handleEdit = useCallback((updatedItem) => {
         setData((old) => {
@@ -884,8 +464,7 @@ export default function Table({
             if (enableInlineEdit && isEditable) {
                 processedCol.cell = (props) => (
                     <EditableCell {...props} onCellEdit={handleCellEdit} validate={validateCell}
-                        onStartEdit={(rowId, colId) => setEditingCellId(`${rowId}-${colId}`)}
-                        onEndEdit={() => setEditingCellId(null)} />
+                    />
                 )
             }
             if (!processedCol.filterFn) {
@@ -895,10 +474,6 @@ export default function Table({
         })
         return [...selectionColumn, ...processedColumns, ...actionsColumn]
     }, [userColumns, enableInlineEdit, selectionColumn, actionsColumn, handleCellEdit, validateCell])
-
-    const requestCellFocusAfterPageChange = useCallback((columnIndex) => {
-        setFocusRequest({ columnIndex })
-    }, [])
 
     // ---------- ТАБЛИЦА ----------
     const table = useReactTable({
@@ -948,7 +523,7 @@ export default function Table({
         getGroupedRowModel: getGroupedRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
         filterFns: { text: textFilter, numberContains: numberContainsFilter },
-        meta: { updateData, requestCellFocusAfterPageChange },
+        meta: {},
         enableSorting,
         enableColumnFilters: enableFiltering,
         enableGrouping,
@@ -1100,9 +675,22 @@ export default function Table({
     // ---------- РЕНДЕР ----------
     return (
         <div className="table-container">
-            <EditModal user={selectedItem} isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} onSave={handleEdit} columns={userColumns} />
+            <EditModal
+                key={editModalOpen ? `edit-${selectedItem?.id ?? 'new'}` : 'edit-closed'}
+                user={selectedItem}
+                isOpen={editModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                onSave={handleEdit}
+                columns={userColumns}
+            />
             <DeleteModal item={selectedItem} isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={handleDelete} />
-            <AddModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} onSave={handleAdd} columns={userColumns} />
+            <AddModal
+                key={addModalOpen ? 'add-open' : 'add-closed'}
+                isOpen={addModalOpen}
+                onClose={() => setAddModalOpen(false)}
+                onSave={handleAdd}
+                columns={userColumns}
+            />
 
             <div className="table-toolbar">
                 <div className="table-toolbar-left">
@@ -1174,7 +762,7 @@ export default function Table({
             )}
 
             <div className="table-wrapper">
-                <table className="table" key={tableKey}>
+                <table className="table">
                     <thead>
                         {table.getHeaderGroups().map(headerGroup => (
                             <tr key={headerGroup.id}>
@@ -1225,7 +813,7 @@ export default function Table({
                                     return (
                                         <TableRow
                                             key={row.id}
-                                            ref={infiniteScroll && isLastRow ? lastRowRef : null}
+                                            ref={infiniteScroll && isLastRow ? setLastRowRef : null}
                                             row={row}
                                             rowIndex={rowIndex}
                                             handleRowContextMenu={handleRowContextMenu}

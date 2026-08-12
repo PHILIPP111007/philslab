@@ -36,7 +36,7 @@ export var PrivateRoutes = [
         element: <Hello />
     },
     {
-        path: "/samples/:username/",
+        path: "/samples/",
         name: "Samples",
         element: <Samples />
     },
@@ -51,7 +51,7 @@ export var PrivateRoutes = [
         element: <Department />
     },
     {
-        path: "/batches/:username/",
+        path: "/batches/",
         name: "AllBatches",
         element: <AllBatches />
     },
