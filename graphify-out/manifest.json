@@ -1,0 +1,612 @@
+{
+  "Frontend/react/app/eslint.config.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "3aa4b57d7f08181d86bde52a4dcb7f22",
+    "semantic_hash": "3aa4b57d7f08181d86bde52a4dcb7f22"
+  },
+  "Frontend/react/app/package.json": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "45424f590e39f1109d7dd474ce62921e",
+    "semantic_hash": "45424f590e39f1109d7dd474ce62921e"
+  },
+  "Frontend/react/app/src/API/Fetch.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "52a2ee36b97b4608d8ebeae09d5f868d",
+    "semantic_hash": "52a2ee36b97b4608d8ebeae09d5f868d"
+  },
+  "Frontend/react/app/src/App.jsx": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "22b042994565217475f3e92d5f51ec88",
+    "semantic_hash": "22b042994565217475f3e92d5f51ec88"
+  },
+  "Frontend/react/app/src/data/constants.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "be9953fb9f4176d5dcdedee35fe3cc2b",
+    "semantic_hash": "be9953fb9f4176d5dcdedee35fe3cc2b"
+  },
+  "Frontend/react/app/src/data/context.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "3d87a0a150898672e05841e3571f801a",
+    "semantic_hash": "3d87a0a150898672e05841e3571f801a"
+  },
+  "Frontend/react/app/src/data/enums.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "3b29a672bb4e0ee34892535879ef7215",
+    "semantic_hash": "3b29a672bb4e0ee34892535879ef7215"
+  },
+  "Frontend/react/app/src/data/routes.jsx": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "15231ad1169416892a93f23bbf3a2f09",
+    "semantic_hash": "15231ad1169416892a93f23bbf3a2f09"
+  },
+  "Frontend/react/app/src/hooks/useAuth.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "6240e4b30234cc5b29be606b30d0755c",
+    "semantic_hash": "6240e4b30234cc5b29be606b30d0755c"
+  },
+  "Frontend/react/app/src/hooks/useDepartments.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "6e5de2b903b0d3b0c0c85a21672e84bf",
+    "semantic_hash": "6e5de2b903b0d3b0c0c85a21672e84bf"
+  },
+  "Frontend/react/app/src/main.jsx": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "85d3f64d001a50865c6b55adb50feb2c",
+    "semantic_hash": "85d3f64d001a50865c6b55adb50feb2c"
+  },
+  "Frontend/react/app/src/modules/dateTime.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "019a1cf757f8b1b1eb98cd272c876f7f",
+    "semantic_hash": "019a1cf757f8b1b1eb98cd272c876f7f"
+  },
+  "Frontend/react/app/src/modules/notify.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "f53792884991525f3a7920aa7b949b62",
+    "semantic_hash": "f53792884991525f3a7920aa7b949b62"
+  },
+  "Frontend/react/app/src/modules/protectedRoute.jsx": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "b116fd99bd797a3dda66c4d8b5df43b4",
+    "semantic_hash": "b116fd99bd797a3dda66c4d8b5df43b4"
+  },
+  "Frontend/react/app/src/modules/rememberPage.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "a82915de6e3e5fb17dc20f6c028ce517",
+    "semantic_hash": "a82915de6e3e5fb17dc20f6c028ce517"
+  },
+  "Frontend/react/app/src/modules/token.js": {
+    "mtime": 1786532174.5822024,
+    "ast_hash": "23e0c825a216b1679384b9125c8603c3",
+    "semantic_hash": "23e0c825a216b1679384b9125c8603c3"
+  },
+  "Frontend/react/app/src/pages/AdminPage/AdminPage.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "9ecd28ff1a3665555cf2ab95a333168d",
+    "semantic_hash": "9ecd28ff1a3665555cf2ab95a333168d"
+  },
+  "Frontend/react/app/src/pages/Batch/AllBatches.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "bb46b7f8fa37fa7a9f3f04b506265ea8",
+    "semantic_hash": "bb46b7f8fa37fa7a9f3f04b506265ea8"
+  },
+  "Frontend/react/app/src/pages/Batch/Batch.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "dbbc13033ae82406da9538e4b857d846",
+    "semantic_hash": "dbbc13033ae82406da9538e4b857d846"
+  },
+  "Frontend/react/app/src/pages/Department/Department.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "87b569ea3dd6552abd178781456abae1",
+    "semantic_hash": "87b569ea3dd6552abd178781456abae1"
+  },
+  "Frontend/react/app/src/pages/ErrorPage/ErrorPage.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "16549ef6e3c6d0dac4bac50a1c24377b",
+    "semantic_hash": "16549ef6e3c6d0dac4bac50a1c24377b"
+  },
+  "Frontend/react/app/src/pages/Hello/Hello.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "60109ed1631d077204d88c4d62b7d363",
+    "semantic_hash": "60109ed1631d077204d88c4d62b7d363"
+  },
+  "Frontend/react/app/src/pages/Login/Login.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "2d81f2ab50d7a5ac45440c29edea4a21",
+    "semantic_hash": "2d81f2ab50d7a5ac45440c29edea4a21"
+  },
+  "Frontend/react/app/src/pages/MainPage/MainPage.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "76e544903dc23f21ccb4dba18599c366",
+    "semantic_hash": "76e544903dc23f21ccb4dba18599c366"
+  },
+  "Frontend/react/app/src/pages/Protocol/Protocols.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "77d6d7c7b7303543fbde8bb4796f7f08",
+    "semantic_hash": "77d6d7c7b7303543fbde8bb4796f7f08"
+  },
+  "Frontend/react/app/src/pages/Sample/Sample.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "a51056a25337066a29e8ff110906c2e4",
+    "semantic_hash": "a51056a25337066a29e8ff110906c2e4"
+  },
+  "Frontend/react/app/src/pages/Sample/Samples.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "18d495546f6ef2914f9818c52765b318",
+    "semantic_hash": "18d495546f6ef2914f9818c52765b318"
+  },
+  "Frontend/react/app/src/pages/Statistics/Statistics.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "db0a337be7adfabdc3269244ca6bbdc0",
+    "semantic_hash": "db0a337be7adfabdc3269244ca6bbdc0"
+  },
+  "Frontend/react/app/src/pages/Task/Task.jsx": {
+    "mtime": 1786532174.5862026,
+    "ast_hash": "a19c3cd0d92adf763d5e8f8600ea838a",
+    "semantic_hash": "a19c3cd0d92adf763d5e8f8600ea838a"
+  },
+  "Frontend/react/app/src/pages/User/User.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "67efef114da5d08dfde67ec67b5b3797",
+    "semantic_hash": "67efef114da5d08dfde67ec67b5b3797"
+  },
+  "Frontend/react/app/src/pages/components/Accordion/Accordion.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "73a85519bcf322e8751bb5c99bf77773",
+    "semantic_hash": "73a85519bcf322e8751bb5c99bf77773"
+  },
+  "Frontend/react/app/src/pages/components/Alert/Alert.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "a3d2da34f46676d38b765c397cdcfd41",
+    "semantic_hash": "a3d2da34f46676d38b765c397cdcfd41"
+  },
+  "Frontend/react/app/src/pages/components/Badge/Badge.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "a4489d30186e8750dd708fb41b0bb14c",
+    "semantic_hash": "a4489d30186e8750dd708fb41b0bb14c"
+  },
+  "Frontend/react/app/src/pages/components/Batch/Batches.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "0067a2ca661ce45f76b150de286d80a3",
+    "semantic_hash": "0067a2ca661ce45f76b150de286d80a3"
+  },
+  "Frontend/react/app/src/pages/components/Button/Button.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "0e6bbbff561c4510fa012d1189eab646",
+    "semantic_hash": "0e6bbbff561c4510fa012d1189eab646"
+  },
+  "Frontend/react/app/src/pages/components/CompletedTasksChart/CompletedTasksChart.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "c095c7b4008ffe604a4d1c8d5eb9415e",
+    "semantic_hash": "c095c7b4008ffe604a4d1c8d5eb9415e"
+  },
+  "Frontend/react/app/src/pages/components/Header/Header.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "5d1fc211f1c9fc6abbaa07eb2e1d917d",
+    "semantic_hash": "5d1fc211f1c9fc6abbaa07eb2e1d917d"
+  },
+  "Frontend/react/app/src/pages/components/LinkButton/LinkButton.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "4b196f673e1301f6dbca77bcace3e1f9",
+    "semantic_hash": "4b196f673e1301f6dbca77bcace3e1f9"
+  },
+  "Frontend/react/app/src/pages/components/List/List.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "3990677fefd6321550698d9f59dc6fc3",
+    "semantic_hash": "3990677fefd6321550698d9f59dc6fc3"
+  },
+  "Frontend/react/app/src/pages/components/ProgressBar/ProgressBar.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "b0419b022f6debbef3067a000a86354a",
+    "semantic_hash": "b0419b022f6debbef3067a000a86354a"
+  },
+  "Frontend/react/app/src/pages/components/Spinner/Spinner.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "ef1c2d1b1782cddd1ac023cb99656873",
+    "semantic_hash": "ef1c2d1b1782cddd1ac023cb99656873"
+  },
+  "Frontend/react/app/src/pages/components/StatCard/StatCard.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "ceab85aa5e3965b5642227d41cb5992a",
+    "semantic_hash": "ceab85aa5e3965b5642227d41cb5992a"
+  },
+  "Frontend/react/app/src/pages/components/SuspenseLoading/SuspenseLoading.jsx": {
+    "mtime": 1786532174.5902026,
+    "ast_hash": "3c1eb1ecad5aacde2b13471968e1ab20",
+    "semantic_hash": "3c1eb1ecad5aacde2b13471968e1ab20"
+  },
+  "Frontend/react/app/src/pages/components/Table/Table.jsx": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d0e1b220c6d5d41a868169b6796e6d70",
+    "semantic_hash": "d0e1b220c6d5d41a868169b6796e6d70"
+  },
+  "Frontend/react/app/src/pages/components/TasksSection/TasksSection.jsx": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "8ea3b6a2c5d5d51a8c4bb1b1e68bab67",
+    "semantic_hash": "8ea3b6a2c5d5d51a8c4bb1b1e68bab67"
+  },
+  "Frontend/react/app/src/pages/components/Theme/ThemeContext.jsx": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "4247afad2555c1990c80e47bd285df72",
+    "semantic_hash": "4247afad2555c1990c80e47bd285df72"
+  },
+  "Frontend/react/app/src/pages/components/Theme/ThemeToggle.jsx": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "ea5277fb5c9bb622b7d860653aabfc52",
+    "semantic_hash": "ea5277fb5c9bb622b7d860653aabfc52"
+  },
+  "Frontend/react/app/src/pages/components/UserCard/UserCard.jsx": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "60bf82e19f3fe554d4fbb4e7977fcb95",
+    "semantic_hash": "60bf82e19f3fe554d4fbb4e7977fcb95"
+  },
+  "Frontend/react/app/vite.config.js": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d1bc84d991228ada9b2918b3425aed96",
+    "semantic_hash": "d1bc84d991228ada9b2918b3425aed96"
+  },
+  "Services/django/app/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/django/app/admin.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "47435a74eba11f1dedbc068788ac9260",
+    "semantic_hash": "47435a74eba11f1dedbc068788ac9260"
+  },
+  "Services/django/app/apps.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "dafc618db04c216c7ebaa1e3a5c0ab81",
+    "semantic_hash": "dafc618db04c216c7ebaa1e3a5c0ab81"
+  },
+  "Services/django/app/enums.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/django/app/migrations/0001_initial.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "f8a9a16ba0235ae5447d98802606d617",
+    "semantic_hash": "f8a9a16ba0235ae5447d98802606d617"
+  },
+  "Services/django/app/migrations/0002_task_department.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "23de09561ee89310502720d717cd6eaa",
+    "semantic_hash": "23de09561ee89310502720d717cd6eaa"
+  },
+  "Services/django/app/migrations/0003_alter_queryhistory_action_type.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "bd6c397c8c31928842e0c7ad377f0d97",
+    "semantic_hash": "bd6c397c8c31928842e0c7ad377f0d97"
+  },
+  "Services/django/app/migrations/0004_alter_task_options_remove_task_stages_taskstage.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "b1b6a9f9a6e2462bf03b624d5d0d8b79",
+    "semantic_hash": "b1b6a9f9a6e2462bf03b624d5d0d8b79"
+  },
+  "Services/django/app/migrations/0005_alter_taskstage_options.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "022d194ff8b43b439700add1dc02a0a4",
+    "semantic_hash": "022d194ff8b43b439700add1dc02a0a4"
+  },
+  "Services/django/app/migrations/0006_remove_sample_zlims_id_sample_material_type_and_more.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "214aba2703ad6e47a176d27cca67a90e",
+    "semantic_hash": "214aba2703ad6e47a176d27cca67a90e"
+  },
+  "Services/django/app/migrations/0007_alter_task_options.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "0129b80adb75fac647e662c1d4e7401d",
+    "semantic_hash": "0129b80adb75fac647e662c1d4e7401d"
+  },
+  "Services/django/app/migrations/0008_alter_sample_sample_index.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "21f9a9406d82e99886b7feb3f9d5285b",
+    "semantic_hash": "21f9a9406d82e99886b7feb3f9d5285b"
+  },
+  "Services/django/app/migrations/0009_task_batches.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "7e37f0cbf102d7827f18d26a34991f07",
+    "semantic_hash": "7e37f0cbf102d7827f18d26a34991f07"
+  },
+  "Services/django/app/migrations/0010_batchsubsample_subsample.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "e7bd7fbdc72e496f9faf4bc1ffb5c490",
+    "semantic_hash": "e7bd7fbdc72e496f9faf4bc1ffb5c490"
+  },
+  "Services/django/app/migrations/0011_batch_subsamples_delete_batchsubsample.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "9e259a1eb5b28bc242ac87ef626cac01",
+    "semantic_hash": "9e259a1eb5b28bc242ac87ef626cac01"
+  },
+  "Services/django/app/migrations/0012_remove_task_samples.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "134bcda232f9ac7b6081e856b7205782",
+    "semantic_hash": "134bcda232f9ac7b6081e856b7205782"
+  },
+  "Services/django/app/migrations/0013_remove_batch_subsamples_remove_sample_name_and_more.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "f6ef4a7ce1ed4a3817d92365975fa3de",
+    "semantic_hash": "f6ef4a7ce1ed4a3817d92365975fa3de"
+  },
+  "Services/django/app/migrations/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/django/app/models/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "ec09bc64465089402a5ebe545a54cbf3",
+    "semantic_hash": "ec09bc64465089402a5ebe545a54cbf3"
+  },
+  "Services/django/app/models/batch.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "1d15f367b4a7dc5423b1e63b7d5a7a4e",
+    "semantic_hash": "1d15f367b4a7dc5423b1e63b7d5a7a4e"
+  },
+  "Services/django/app/models/protocol.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "4189b313b2cda59a5a0d7a5e8de3d5f0",
+    "semantic_hash": "4189b313b2cda59a5a0d7a5e8de3d5f0"
+  },
+  "Services/django/app/models/query_history.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "7a712a82dfc64e5db716d720771ea897",
+    "semantic_hash": "7a712a82dfc64e5db716d720771ea897"
+  },
+  "Services/django/app/models/sample.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "17f93ac6455adea7a4448a28a8eff933",
+    "semantic_hash": "17f93ac6455adea7a4448a28a8eff933"
+  },
+  "Services/django/app/models/stage.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "3cf5507c65efa3c1771a53c0e995bb60",
+    "semantic_hash": "3cf5507c65efa3c1771a53c0e995bb60"
+  },
+  "Services/django/app/models/task.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "beb9205c5ddb2b160f14616bd326f939",
+    "semantic_hash": "beb9205c5ddb2b160f14616bd326f939"
+  },
+  "Services/django/app/models/task_stage.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "8a73e1d95823a2ec27c5709b024bbfc6",
+    "semantic_hash": "8a73e1d95823a2ec27c5709b024bbfc6"
+  },
+  "Services/django/app/models/user.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "8bdf0f5914a0255defb3968d4d80be16",
+    "semantic_hash": "8bdf0f5914a0255defb3968d4d80be16"
+  },
+  "Services/django/app/services/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "f000e9e4691fa993a8a66d7ff585be15",
+    "semantic_hash": "f000e9e4691fa993a8a66d7ff585be15"
+  },
+  "Services/django/app/urls.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "ebbb03abfb100f5d910caa695eee4414",
+    "semantic_hash": "ebbb03abfb100f5d910caa695eee4414"
+  },
+  "Services/django/app/views/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/django/app/views/token.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "b8ee17c374bcbbe67b8886e8ed9e8958",
+    "semantic_hash": "b8ee17c374bcbbe67b8886e8ed9e8958"
+  },
+  "Services/django/granian.sh": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "ca0585e9ec6c7b0c3cc4193fde407fc6",
+    "semantic_hash": "ca0585e9ec6c7b0c3cc4193fde407fc6"
+  },
+  "Services/django/manage.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "8f655cdfbfd0370f3df42c45aa6cc125",
+    "semantic_hash": "8f655cdfbfd0370f3df42c45aa6cc125"
+  },
+  "Services/django/settings/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/django/settings/asgi.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "e3332eb8161ed262167abfc8f3c60b2f",
+    "semantic_hash": "e3332eb8161ed262167abfc8f3c60b2f"
+  },
+  "Services/django/settings/settings.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "1c1f2cc324b4ef5116156a92785b35f5",
+    "semantic_hash": "1c1f2cc324b4ef5116156a92785b35f5"
+  },
+  "Services/django/settings/urls.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "2b1a97b935bea2f16cc918c192b0cab9",
+    "semantic_hash": "2b1a97b935bea2f16cc918c192b0cab9"
+  },
+  "Services/django/uvicorn.sh": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "a43d9af62f066fd736a78b4b4647dae2",
+    "semantic_hash": "a43d9af62f066fd736a78b4b4647dae2"
+  },
+  "Services/fastapi/app/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/fastapi/app/constants.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "1be3667fb139bfdfc0684dec96c3d4ef",
+    "semantic_hash": "1be3667fb139bfdfc0684dec96c3d4ef"
+  },
+  "Services/fastapi/app/database.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "7ac03feae84bd06a6701184d518d0873",
+    "semantic_hash": "7ac03feae84bd06a6701184d518d0873"
+  },
+  "Services/fastapi/app/enums/__init__.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/fastapi/app/enums/department.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "97fc34d11f72975571494ed064440033",
+    "semantic_hash": "97fc34d11f72975571494ed064440033"
+  },
+  "Services/fastapi/app/main.py": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "5561327ecce86256c97e50158dc99635",
+    "semantic_hash": "5561327ecce86256c97e50158dc99635"
+  },
+  "Services/fastapi/app/models/__init__.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "9944c344688a0a326ef68c2f0c16fc7d",
+    "semantic_hash": "9944c344688a0a326ef68c2f0c16fc7d"
+  },
+  "Services/fastapi/app/models/batch.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "c82736f1e6e6d72f721d55b8177d2050",
+    "semantic_hash": "c82736f1e6e6d72f721d55b8177d2050"
+  },
+  "Services/fastapi/app/models/batch_sample_link.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "1bc2954330848fcbc9c03a614738be71",
+    "semantic_hash": "1bc2954330848fcbc9c03a614738be71"
+  },
+  "Services/fastapi/app/models/enums.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "1dd573c72eacb37e1e71dbb87309d0c3",
+    "semantic_hash": "1dd573c72eacb37e1e71dbb87309d0c3"
+  },
+  "Services/fastapi/app/models/protocol.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "6a971356166e276a315c4f59faea4c50",
+    "semantic_hash": "6a971356166e276a315c4f59faea4c50"
+  },
+  "Services/fastapi/app/models/protocol_stage_link.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "f059718742acc7e43221c52335d58b1b",
+    "semantic_hash": "f059718742acc7e43221c52335d58b1b"
+  },
+  "Services/fastapi/app/models/query_history.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "8af8cb75a8c27268f9c507bd6d7bfa06",
+    "semantic_hash": "8af8cb75a8c27268f9c507bd6d7bfa06"
+  },
+  "Services/fastapi/app/models/sample.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "713bd3c300448abaab6c156e1706b4b5",
+    "semantic_hash": "713bd3c300448abaab6c156e1706b4b5"
+  },
+  "Services/fastapi/app/models/stage.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "c6d15f1e4e6a2bdee7b191dac4817329",
+    "semantic_hash": "c6d15f1e4e6a2bdee7b191dac4817329"
+  },
+  "Services/fastapi/app/models/task.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "06620cc8996dbf8d97b8ad1da44e40fa",
+    "semantic_hash": "06620cc8996dbf8d97b8ad1da44e40fa"
+  },
+  "Services/fastapi/app/models/task_batch_link.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "4b9116cf6f4681ae770f8bcd21125bbf",
+    "semantic_hash": "4b9116cf6f4681ae770f8bcd21125bbf"
+  },
+  "Services/fastapi/app/models/task_stage.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "ed6c6e01374aa1b814722239174a3665",
+    "semantic_hash": "ed6c6e01374aa1b814722239174a3665"
+  },
+  "Services/fastapi/app/models/task_stage_link.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "ef16ab3098bbd8001f4ee98c0948fda1",
+    "semantic_hash": "ef16ab3098bbd8001f4ee98c0948fda1"
+  },
+  "Services/fastapi/app/models/token.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "c722c9bfc8f373d7509acae5ae5f2b7a",
+    "semantic_hash": "c722c9bfc8f373d7509acae5ae5f2b7a"
+  },
+  "Services/fastapi/app/models/user.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "6668426def5a03862762e9879fca4572",
+    "semantic_hash": "6668426def5a03862762e9879fca4572"
+  },
+  "Services/fastapi/app/request_body/__init__.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "b9c8cde03550dd2d57ed47875d6137a5",
+    "semantic_hash": "b9c8cde03550dd2d57ed47875d6137a5"
+  },
+  "Services/fastapi/app/request_body/batch.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "af9069760bb580143ca94d515d2b506b",
+    "semantic_hash": "af9069760bb580143ca94d515d2b506b"
+  },
+  "Services/fastapi/app/request_body/sample.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "55e14820c705417d87da706f38de0c13",
+    "semantic_hash": "55e14820c705417d87da706f38de0c13"
+  },
+  "Services/fastapi/app/request_body/task.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "184bf31eb777b1cb226ed798ee7fce98",
+    "semantic_hash": "184bf31eb777b1cb226ed798ee7fce98"
+  },
+  "Services/fastapi/app/request_body/user.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "08599ca735ce360bd55aaf3b63546085",
+    "semantic_hash": "08599ca735ce360bd55aaf3b63546085"
+  },
+  "Services/fastapi/app/views/__init__.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "Services/fastapi/app/views/batch.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "b781fd3ed3583407b10811163b11f6fc",
+    "semantic_hash": "b781fd3ed3583407b10811163b11f6fc"
+  },
+  "Services/fastapi/app/views/department.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "aa31c5d9592f51b80ff0d09134ba1905",
+    "semantic_hash": "aa31c5d9592f51b80ff0d09134ba1905"
+  },
+  "Services/fastapi/app/views/protocol.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "b34eca3de4ba70690f6f898959f42503",
+    "semantic_hash": "b34eca3de4ba70690f6f898959f42503"
+  },
+  "Services/fastapi/app/views/sample.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "8d85d9cf85522b802f676cfd42244ac6",
+    "semantic_hash": "8d85d9cf85522b802f676cfd42244ac6"
+  },
+  "Services/fastapi/app/views/stage.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "2faa3bf70b22a022877e41b4bc7aa335",
+    "semantic_hash": "2faa3bf70b22a022877e41b4bc7aa335"
+  },
+  "Services/fastapi/app/views/task.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "142cfaaa3ee904781d49b75fa1e5bf2d",
+    "semantic_hash": "142cfaaa3ee904781d49b75fa1e5bf2d"
+  },
+  "Services/fastapi/app/views/user.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "3d599534a2bf7a778777af64855626ba",
+    "semantic_hash": "3d599534a2bf7a778777af64855626ba"
+  },
+  "Services/fastapi/run.py": {
+    "mtime": 1786532174.5982027,
+    "ast_hash": "db373d52d32717d66df8fc232b196a98",
+    "semantic_hash": "db373d52d32717d66df8fc232b196a98"
+  }
+}
