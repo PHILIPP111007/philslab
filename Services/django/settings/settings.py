@@ -39,6 +39,8 @@ THIRD_PARTY_APPS: list[str] = [
     # Servers
     "uvicorn",
     "granian",
+    # WebSocket
+    "channels",
     # REST API
     "rest_framework",
     "rest_framework.authtoken",
@@ -113,6 +115,13 @@ else:
             "PASSWORD": environ.get("PG_PASSWORD", "postgres"),
         },
     }
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 
 # Password validation

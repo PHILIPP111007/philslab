@@ -19,6 +19,7 @@ __all__ = ["urlpatterns"]
 
 from django.urls import include, path, re_path
 
+from app.consumers.table import TableEditorConsumer
 from app.views import token
 
 urlpatterns = []
@@ -29,5 +30,8 @@ auth_urlpatterns = [
     re_path(r"^token/logout/?$", token.TokenDestroyView.as_view(), name="logout"),
 ]
 
+websocket_urlpatterns = [
+    path("ws/v1/table/<str:username>/", TableEditorConsumer.as_asgi()),
+]
 
 urlpatterns += auth_urlpatterns

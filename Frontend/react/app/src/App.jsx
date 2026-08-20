@@ -1,7 +1,7 @@
 import './pages/components/Theme/Theme.css'
 import './App.css'
 import { Suspense, useState } from "react"
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { AuthContext, UserContext } from "./data/context.js"
 import { PrivateRoutes, PublicRoutes } from "./data/routes.jsx"
@@ -13,7 +13,7 @@ import SuspenseLoading from "./pages/components/SuspenseLoading/SuspenseLoading.
 
 export default function App() {
 
-    var [isAuth, setIsAuth] = useState(true)
+    var [isAuth, setIsAuth] = useState(false)
     var [user, setUser] = useState({
         id: 0,
         username: "",

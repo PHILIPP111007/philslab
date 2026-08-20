@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useContext, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import Fetch from '../../API/Fetch'
 import { buildSamplePayload } from '../../API/payloads'
@@ -7,6 +7,8 @@ import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
 import { formatDate } from '../../modules/dateTime'
 import { useDepartments } from '../../hooks/useDepartments'
+import { UserContext } from '../../data/context'
+import { WEBSOCKET_DJANGO_URL } from "../../data/constants"
 import Spinner from "../components/Spinner/Spinner"
 import Table from "../components/Table/Table"
 import Header from '../components/Header/Header'
@@ -15,6 +17,7 @@ import Button from '../components/Button/Button'
 import LinkButton from '../components/LinkButton/LinkButton'
 
 export default function Samples() {
+    const { user } = useContext(UserContext)
     const params = useParams()
     const [samples, setSamples] = useState([])
     const [lazyParams, setLazyParams] = useState(null)
@@ -22,7 +25,11 @@ export default function Samples() {
     const [loading, setLoading] = useState(true)
     const [materialTypeOptions, setMaterialTypeOptions] = useState([])
 
-    // Для модального окна создания батча
+    // WebSocket состояние
+    const [editor, setEditor] = useState(null) // { id, username }
+    const wsRef = useRef(null)
+
+    // Модалка батча
     const [showBatchModal, setShowBatchModal] = useState(false)
     const [batchName, setBatchName] = useState('')
     const [batchDepartment, setBatchDepartment] = useState('')
@@ -31,13 +38,77 @@ export default function Samples() {
 
     const { departments, loading: deptLoading } = useDepartments()
 
-    useEffect(() => {
-        rememberPage(`samples/${params.username}/`)
-    }, [params.username])
+    const isEditing = editor !== null && editor.id === user.id
+    const isTableLocked = editor !== null && editor.id !== user.id
+    const canEdit = isEditing  // Только когда текущий пользователь нажал "Редактировать"
 
+    useEffect(() => {
+        rememberPage(`samples/${user.username}/`)
+    }, [user.username])
+
+    // ---------- WebSocket (пересоздаётся при изменении user.id) ----------
+    useEffect(() => {
+        if (user.username) {
+
+            const wsUrl = `${WEBSOCKET_DJANGO_URL}table/${user.username}/`
+            console.log('🔌 WebSocket URL:', wsUrl)
+
+            const ws = new WebSocket(wsUrl)
+            wsRef.current = ws
+
+            ws.onopen = () => {
+                console.log('✅ WebSocket connected')
+            }
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data)
+                    if (data.table_name === 'samples') {
+                        if (data.editor === null) {
+                            setEditor(null)
+                        } else {
+                            setEditor({ id: data.editor.id, username: data.editor.username })
+                        }
+                    }
+                } catch (e) {
+                    console.error('❌ WebSocket message error', e)
+                }
+            }
+
+            ws.onerror = (error) => {
+                console.error('❌ WebSocket error:', error)
+            }
+
+            ws.onclose = (event) => {
+                console.log('🔴 WebSocket disconnected, code:', event.code, 'reason:', event.reason)
+            }
+
+            return () => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.close()
+                }
+            }
+        }
+    }, [user.username]) // ← ключевое исправление: зависимость от user.id
+
+    // ---------- Отправка сообщений ----------
+    const sendWsMessage = useCallback((action) => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+                table_name: 'samples',
+                action: action,
+            }))
+        } else {
+            console.warn('⚠️ WebSocket не открыт, сообщение не отправлено')
+        }
+    }, [])
+
+    const handleStartEdit = () => sendWsMessage('lock')
+    const handleStopEdit = () => sendWsMessage('release')
+
+    // ---------- Загрузка типов материалов ----------
     useEffect(() => {
         let isActive = true
-
         const loadMaterialTypes = async () => {
             const response = await Fetch({
                 api_version: APIVersion.V2,
@@ -48,7 +119,6 @@ export default function Samples() {
                 setMaterialTypeOptions(response.data || [])
             }
         }
-
         loadMaterialTypes()
         return () => { isActive = false }
     }, [])
@@ -168,7 +238,7 @@ export default function Samples() {
         },
     ]
 
-    // ---------- ЗАГРУЗКА ДАННЫХ (с пагинацией) ----------
+    // ---------- ЗАГРУЗКА ДАННЫХ ----------
     const fetchSamples = useCallback(async (params) => {
         const query = new URLSearchParams();
         query.set('page', params.pageIndex + 1);
@@ -196,12 +266,11 @@ export default function Samples() {
         }
     }, [])
 
-    // ---------- ПОЛУЧЕНИЕ ID ВСЕХ ОТФИЛЬТРОВАННЫХ ОБРАЗЦОВ (через export) ----------
+    // ---------- ПОЛУЧЕНИЕ ID ВСЕХ ОТФИЛЬТРОВАННЫХ ОБРАЗЦОВ ----------
     const fetchAllFilteredSampleIds = useCallback(async () => {
         if (!lazyParams) return []
 
         const query = new URLSearchParams();
-        // Используем экспортный эндпоинт, который возвращает все записи без пагинации
         if (lazyParams.sorting.length > 0) {
             query.set('sort_by', lazyParams.sorting[0].id);
             query.set('sort_order', lazyParams.sorting[0].desc ? 'desc' : 'asc');
@@ -227,6 +296,11 @@ export default function Samples() {
 
     // ---------- ОБРАБОТЧИКИ CRUD ----------
     const handleDataChange = async (newData, meta) => {
+        if (!canEdit) {
+            notify_error('Пока что нельзя редактировать')
+            return
+        }
+
         if (meta?.operation === 'edit' && meta.data) {
             const updatedItem = meta.data
             const data = await Fetch({
@@ -322,7 +396,7 @@ export default function Samples() {
         return res?.data || [];
     };
 
-    // ---------- СОЗДАНИЕ БАТЧА ИЗ ОТФИЛЬТРОВАННЫХ ОБРАЗЦОВ ----------
+    // ---------- СОЗДАНИЕ БАТЧА ----------
     const handleCreateBatchFromFilter = async () => {
         if (!batchName.trim()) {
             notify_error('Введите название батча')
@@ -331,14 +405,12 @@ export default function Samples() {
 
         setIsCreating(true)
         try {
-            // 1. Получаем ID всех образцов, соответствующих текущим фильтрам (через export)
             const sampleIds = await fetchAllFilteredSampleIds()
             if (sampleIds.length === 0) {
                 notify_error('Нет образцов, соответствующих фильтрам')
                 return
             }
 
-            // 2. Создаём батч
             const createRes = await Fetch({
                 api_version: APIVersion.V2,
                 action: 'batch/',
@@ -354,7 +426,6 @@ export default function Samples() {
             }
             const batchId = createRes.data.id
 
-            // 3. Добавляем все образцы в батч (по одному)
             const addPromises = sampleIds.map(sampleId =>
                 Fetch({
                     api_version: APIVersion.V2,
@@ -370,7 +441,6 @@ export default function Samples() {
                 notify_success(`Батч "${batchName.trim()}" создан с ${sampleIds.length} образцами`)
             }
 
-            // 4. Обновляем таблицу и закрываем модалку
             if (lazyParams) {
                 await fetchSamples(lazyParams)
             }
@@ -415,18 +485,53 @@ export default function Samples() {
             <div className="app theme-transition">
                 <div className="stats">
                     <StatCard label="Всего образцов" value={totalRows} color="var(--blue)" />
+                    <StatCard
+                        label="Статус редактирования"
+                        value={
+                            editor === null ? 'Свободно' :
+                                editor.id === user.id ? 'Вы редактируете' :
+                                    `Редактирует: ${editor.username}`
+                        }
+                        color={
+                            editor === null ? 'var(--green)' :
+                                editor.id === user.id ? 'var(--blue)' :
+                                    'var(--orange)'
+                        }
+                    />
                 </div>
 
                 <section className="section">
-                    <div className="samples-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div className="samples-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                         <h2 className="section__title" style={{ margin: 0 }}>Список образцов</h2>
-                        <Button
-                            variant="primary"
-                            onClick={() => setShowBatchModal(true)}
-                            disabled={isCreating || totalRows === 0}
-                        >
-                            📦 Создать батч из отфильтрованных ({totalRows})
-                        </Button>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            {editor === null ? (
+                                <Button
+                                    variant="primary"
+                                    onClick={handleStartEdit}
+                                    disabled={isTableLocked}
+                                >
+                                    🔒 Редактировать
+                                </Button>
+                            ) : editor.id === user.id ? (
+                                <Button
+                                    variant="secondary"
+                                    onClick={handleStopEdit}
+                                >
+                                    🔓 Закончить
+                                </Button>
+                            ) : (
+                                <Button variant="secondary" disabled>
+                                    🔒 Занято
+                                </Button>
+                            )}
+                            <Button
+                                variant="primary"
+                                onClick={() => setShowBatchModal(true)}
+                                disabled={isCreating || totalRows === 0 || isTableLocked}
+                            >
+                                📦 Создать батч из отфильтрованных ({totalRows})
+                            </Button>
+                        </div>
                     </div>
 
                     {loading && (!lazyParams || deptLoading) ? (
@@ -444,14 +549,14 @@ export default function Samples() {
                             enableFiltering
                             enablePagination
                             enableColumnVisibility
-                            enableAddButton
+                            enableAddButton={canEdit}
                             enableExport
-                            enableInlineEdit
+                            enableInlineEdit={canEdit}
+                            enableActionsColumn={canEdit}
                             enableCellSelection={true}
                             enableEmptyRow={true}
                             onDataChange={handleDataChange}
                             onExportAll={handleExportAll}
-                        // infiniteScroll
                         />
                     )}
                 </section>
@@ -470,7 +575,7 @@ export default function Samples() {
                                 value={batchName}
                                 onChange={(e) => setBatchName(e.target.value)}
                                 placeholder="Введите название"
-                                disabled={isCreating}
+                                disabled={isCreating || isTableLocked}
                             />
                         </div>
                         <div className="modal__field">
@@ -478,7 +583,7 @@ export default function Samples() {
                             <select
                                 value={batchDepartment}
                                 onChange={(e) => setBatchDepartment(e.target.value)}
-                                disabled={isCreating}
+                                disabled={isCreating || isTableLocked}
                             >
                                 <option value="">Не выбран</option>
                                 {departments.map(dept => (
@@ -493,7 +598,7 @@ export default function Samples() {
                                 onChange={(e) => setBatchDescr(e.target.value)}
                                 placeholder="Описание батча"
                                 rows="3"
-                                disabled={isCreating}
+                                disabled={isCreating || isTableLocked}
                             />
                         </div>
                         <div className="modal__actions">
@@ -507,7 +612,7 @@ export default function Samples() {
                             <Button
                                 variant="primary"
                                 onClick={handleCreateBatchFromFilter}
-                                disabled={isCreating || !batchName.trim() || totalRows === 0}
+                                disabled={isCreating || !batchName.trim() || totalRows === 0 || isTableLocked}
                             >
                                 {isCreating ? 'Создание...' : 'Создать батч'}
                             </Button>

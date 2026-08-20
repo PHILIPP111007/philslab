@@ -11,5 +11,6 @@ export var notify_success = (msg) => {
 }
 export var notify_error = (msg) => {
     toast.remove()
-    toast.error(msg)
+    const message = typeof msg === 'object' ? JSON.stringify(msg) : String(msg)
+    toast.error(message)
 }

@@ -4,15 +4,15 @@ from enum import Enum
 class MaterialType(str, Enum):
     """Допустимые типы биоматериала образца."""
 
-    BLOOD = "blood"
-    TISSUE = "tissue"
-    DNA = "dna"
-    RNA = "rna"
-    PROTEIN = "protein"
-    CELLS = "cells"
-    BACTERIA = "bacteria"
-    VIRUSES = "viruses"
-    OTHER = "other"
+    BLOOD = "Кровь"
+    TISSUE = "Ткань"
+    DNA = "ДНК"
+    RNA = "РНК"
+    PROTEIN = "Белок"
+    CELLS = "Клетки"
+    BACTERIA = "Бактерии"
+    VIRUSES = "Вирусы"
+    OTHER = "Другое"
 
 
 MATERIAL_TYPE_LABELS = {
