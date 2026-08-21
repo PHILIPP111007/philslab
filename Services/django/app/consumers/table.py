@@ -1,29 +1,65 @@
+import asyncio
 import json
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from rest_framework.authtoken.models import Token
 
 from app.enums import WebSocketGroup
-from app.models import User
 
 
 class TableEditorConsumer(AsyncWebsocketConsumer):
+    authentication_timeout = 5
+
     async def connect(self):
         self.username = self.scope["url_route"]["kwargs"]["username"]
-        self.user = await self._get_user(self.username)
+        self.user = None
+        self.group_name = None
+        self.is_authenticated = False
+        self._authentication_timeout_task = asyncio.create_task(
+            self._close_unauthenticated_connection()
+        )
 
-        if not self.user:
-            await self.close()
-            return
-
-        self.group_name = WebSocketGroup.TABLE_EDITOR_GROUP.value
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        # Browser WebSocket clients cannot set an Authorization header. Accept
+        # the connection first, then require the token in the first message.
+        # This keeps the token out of the URL and browser history.
         await self.accept()
 
+    async def _close_unauthenticated_connection(self):
+        await asyncio.sleep(self.authentication_timeout)
+        if not self.is_authenticated:
+            await self.close(code=4401)
+
+    async def _cancel_authentication_timeout(self):
+        task = self._authentication_timeout_task
+        if task and not task.done() and task is not asyncio.current_task():
+            task.cancel()
+
+    async def _authenticate(self, token):
+        user = await self._get_user_by_token(token)
+        if not user or user.username != self.username:
+            await self.close(code=4403)
+            return False
+
+        self.user = user
+        self.group_name = WebSocketGroup.TABLE_EDITOR_GROUP.value
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        self.is_authenticated = True
+        await self._cancel_authentication_timeout()
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "authenticated",
+                    "username": self.user.username,
+                }
+            )
+        )
+        return True
+
     async def disconnect(self, close_code):
-        # Проверяем, был ли определён group_name
+        await self._cancel_authentication_timeout()
+
         if hasattr(self, "group_name") and self.group_name:
-            # При отключении отправляем сообщение об освобождении
             await self.channel_layer.group_send(
                 self.group_name,
                 {
@@ -35,9 +71,35 @@ class TableEditorConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
+        try:
+            data = json.loads(text_data)
+        except (TypeError, json.JSONDecodeError):
+            await self.close(code=4400)
+            return
+
+        if not isinstance(data, dict):
+            await self.close(code=4400)
+            return
+
+        if not self.is_authenticated:
+            if data.get("type") != "authenticate":
+                await self.close(code=4401)
+                return
+
+            token = data.get("token")
+            if not isinstance(token, str) or not token:
+                await self.close(code=4401)
+                return
+
+            await self._authenticate(token)
+            return
+
         table_name = data.get("table_name")
         action = data.get("action", "lock")
+
+        if table_name != "samples" or action not in {"lock", "release"}:
+            await self.close(code=4400)
+            return
 
         if action == "release":
             await self.channel_layer.group_send(
@@ -72,5 +134,10 @@ class TableEditorConsumer(AsyncWebsocketConsumer):
         )
 
     @database_sync_to_async
-    def _get_user(self, username: str):
-        return User.objects.filter(username=username).first()
+    def _get_user_by_token(self, token_key: str):
+        token = (
+            Token.objects.select_related("user")
+            .filter(key=token_key, user__is_active=True)
+            .first()
+        )
+        return token.user if token else None

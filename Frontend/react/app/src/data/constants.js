@@ -18,7 +18,13 @@ export const PROD_FETCH_URL = import.meta.env.VITE_PROD_FETCH_URL
         ? `https://${PROD_SERVER_HOST}:${PROD_SERVER_PORT}/`
         : '/')
 
-export const PROD_WEBSOCKET_DJANGO_URL = `wss://${PROD_SERVER_HOST}:${PROD_SERVER_PORT}/ws/v1/`
+const PROD_WEBSOCKET_BASE_URL = PROD_SERVER_HOST && PROD_SERVER_PORT
+    ? `wss://${PROD_SERVER_HOST}:${PROD_SERVER_PORT}/`
+    : typeof window !== 'undefined'
+        ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/`
+        : 'ws://localhost/'
+
+export const PROD_WEBSOCKET_DJANGO_URL = `${PROD_WEBSOCKET_BASE_URL}ws/v1/`
 
 // Общая переменная для использования в коде
 export const WEBSOCKET_DJANGO_URL = DEVELOPMENT === '1' ? DEVELOPMENT_WEBSOCKET_DJANGO_URL : PROD_WEBSOCKET_DJANGO_URL

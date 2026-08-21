@@ -6,6 +6,7 @@ import { notify_error, notify_success } from '../../modules/notify'
 import rememberPage from "../../modules/rememberPage"
 import { HttpMethod, APIVersion } from '../../data/enums'
 import { formatDate } from '../../modules/dateTime'
+import { getToken } from '../../modules/token'
 import { useDepartments } from '../../hooks/useDepartments'
 import { UserContext } from '../../data/context'
 import { WEBSOCKET_DJANGO_URL } from "../../data/constants"
@@ -57,7 +58,16 @@ export default function Samples() {
             wsRef.current = ws
 
             ws.onopen = () => {
-                console.log('✅ WebSocket connected')
+                const token = getToken()
+                if (!token) {
+                    ws.close(4401, 'Authentication required')
+                    return
+                }
+
+                ws.send(JSON.stringify({
+                    type: 'authenticate',
+                    token,
+                }))
             }
 
             ws.onmessage = (event) => {
@@ -80,12 +90,19 @@ export default function Samples() {
             }
 
             ws.onclose = (event) => {
+                if (wsRef.current === ws) {
+                    wsRef.current = null
+                }
+                setEditor(null)
                 console.log('🔴 WebSocket disconnected, code:', event.code, 'reason:', event.reason)
             }
 
             return () => {
-                if (ws.readyState === WebSocket.OPEN) {
+                if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
                     ws.close()
+                }
+                if (wsRef.current === ws) {
+                    wsRef.current = null
                 }
             }
         }
