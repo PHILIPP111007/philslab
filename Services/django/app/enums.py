@@ -1,5 +1,5 @@
-from enum import StrEnum
+from enum import Enum
 
 
-class WebSocketGroup(StrEnum):
+class WebSocketGroup(Enum):
     TABLE_EDITOR_GROUP = "table_editor_group"
