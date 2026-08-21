@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_services_django_app_consumers_init_py", "label": "__init__.py", "file_type": "code", "source_file": "Services/django/app/consumers/__init__.py", "source_location": "L1"}], "edges": [], "raw_calls": []}
