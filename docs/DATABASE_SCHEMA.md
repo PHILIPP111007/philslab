@@ -39,6 +39,11 @@ graph TB
     Task -->|имеет копии| TaskStage
     Task -->|связана с| TaskBatchLink
     TaskBatchLink -->|связан с| Batch
+    User -->|имеет историю| QueryHistory
+    Protocol -->|имеет историю| QueryHistory
+    Stage -->|имеет историю| QueryHistory
+    Sample -->|имеет историю| QueryHistory
+    Batch -->|имеет историю| QueryHistory
     Task -->|имеет историю| QueryHistory
     
     Batch -->|содержит| Sample

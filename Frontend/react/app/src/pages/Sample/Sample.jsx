@@ -14,6 +14,7 @@ import Button from '../components/Button/Button'
 import Badge from '../components/Badge/Badge'
 import LinkButton from '../components/LinkButton/LinkButton'
 import Table from '../components/Table/Table'
+import History from '../components/History/History'
 
 export default function Sample() {
     const { user } = useContext(UserContext)
@@ -313,6 +314,12 @@ export default function Sample() {
                         </div>
                     </div>
                 </div>
+
+                <History
+                    entityType="sample"
+                    entityId={sample.id}
+                    refreshKey={sample.updated_at}
+                />
             </div>
 
             {/* Модалка редактирования */}

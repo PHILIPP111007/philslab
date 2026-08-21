@@ -9,11 +9,13 @@ import Header from '../components/Header/Header'
 import Spinner from '../components/Spinner/Spinner'
 import Accordion from '../components/Accordion/Accordion'
 import Badge from '../components/Badge/Badge'
+import History from '../components/History/History'
 
 export default function Protocols() {
     const { user } = useContext(UserContext)
     const [protocols, setProtocols] = useState([])
     const [loading, setLoading] = useState(true)
+    const [openProtocolIds, setOpenProtocolIds] = useState([])
     var params = useParams()
 
     const loadProtocols = useCallback(async () => {
@@ -117,6 +119,12 @@ export default function Protocols() {
                                 </div>
                             )}
                         </div>
+                        <History
+                            entityType="protocol"
+                            entityId={protocol.id}
+                            refreshKey={protocol.updated_at}
+                            enabled={openProtocolIds.includes(protocol.id)}
+                        />
                     </div>
                 ),
             }
@@ -142,6 +150,7 @@ export default function Protocols() {
                             multiple
                             defaultOpen={[]}
                             variant="compact"
+                            onToggle={setOpenProtocolIds}
                         />
                     )}
                 </section>

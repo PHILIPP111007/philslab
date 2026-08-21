@@ -15,6 +15,7 @@ import Header from '../components/Header/Header'
 import Button from '../components/Button/Button'
 import Badge from '../components/Badge/Badge'
 import LinkButton from '../components/LinkButton/LinkButton'
+import History from '../components/History/History'
 
 export default function Batch() {
     const { user } = useContext(UserContext)
@@ -638,6 +639,12 @@ export default function Batch() {
                     </div>
                 </div>
             </div>
+
+            <History
+                entityType="batch"
+                entityId={batch.id}
+                refreshKey={batch.updated_at}
+            />
 
             {/* Модалка добавления задачи */}
             {showAddTaskModal && (

@@ -11,7 +11,7 @@ from app.constants import (
 )
 from app.database import engine
 from app.models import Token, User
-from app.views import batch, department, protocol, sample, stage, task, user
+from app.views import batch, department, history, protocol, sample, stage, task, user
 
 app = FastAPI(
     title="PhilsLab",
@@ -98,6 +98,7 @@ routers = [
     task.router,
     batch.router,
     department.router,
+    history.router,
 ]
 
 for router in routers:

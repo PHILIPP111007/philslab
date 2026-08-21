@@ -10,6 +10,7 @@ import { useSetUser } from "../../hooks/useAuth.js"
 import { useDepartments } from '../../hooks/useDepartments';
 import Button from "../components/Button/Button"
 import TasksSection from '../components/TasksSection/TasksSection'
+import History from '../components/History/History'
 
 export default function User() {
     const { user, setUser } = useContext(UserContext)
@@ -18,6 +19,7 @@ export default function User() {
     const [isEditing, setIsEditing] = useState(false)
     const [editData, setEditData] = useState({})
     const [loading, setLoading] = useState(false)
+    const [historyRefresh, setHistoryRefresh] = useState(0)
     const { departments } = useDepartments();
 
     const displayedUser = userLocal?.username ? userLocal : user
@@ -58,6 +60,7 @@ export default function User() {
             if (data?.ok) {
                 setUser(prev => ({ ...prev, ...editData }))
                 setUserLocal(prev => ({ ...prev, ...editData }))
+                setHistoryRefresh(prev => prev + 1)
                 setIsEditing(false)
             }
         } catch (error) {
@@ -129,6 +132,12 @@ export default function User() {
                         </div>
                     </div>
                 </div>
+
+                <History
+                    entityType="user"
+                    entityId={displayedUser?.id}
+                    refreshKey={historyRefresh}
+                />
 
                 {isEditing && (
                     <div className="user-modal-overlay" onClick={handleCancel}>

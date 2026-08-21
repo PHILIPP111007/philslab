@@ -13,12 +13,14 @@ if TYPE_CHECKING:
 
 
 class QueryHistory(SQLModel, table=True):
-    """История изменений задачи"""
+    """Универсальная история изменений сущностей."""
 
     __tablename__ = "app_queryhistory"
 
     id: int = Field(primary_key=True)
     action_type: ActionType
+    entity_type: str = Field(default="task", max_length=50, index=True)
+    entity_id: int | None = Field(default=None, index=True)
     field_name: str = Field(default="")
     old_value: dict | None = Field(default=None, sa_column=Column(JSON))
     new_value: dict | None = Field(default=None, sa_column=Column(JSON))
@@ -27,7 +29,11 @@ class QueryHistory(SQLModel, table=True):
 
     # Внешние ключи
     user_id: int = Field(foreign_key="app_user.id", index=True)
-    task_id: int = Field(foreign_key="app_task.id", index=True)
+    task_id: int | None = Field(
+        default=None,
+        foreign_key="app_task.id",
+        index=True,
+    )
 
     # Связи
     user: "User" = Relationship(back_populates="history_entries")

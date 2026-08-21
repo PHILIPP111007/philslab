@@ -179,7 +179,9 @@ FastAPI использует асинхронные SQLAlchemy/SQLModel-запр
 - Protocol и Stage — SOP и его этапы;
 - Task и TaskStage — задача и копии этапов протокола;
 - Batch и Sample — лабораторные образцы и партии;
-- QueryHistory — история изменений task;
+- QueryHistory — универсальная история изменений User, Sample, Batch, Protocol,
+  Stage и Task; для обратной совместимости у записей задач также сохраняется
+  nullable-связь `task_id`;
 - Token — DRF/FastAPI token;
 - link tables для many-to-many: BatchSampleLink, TaskBatchLink, ProtocolStageLink, TaskStageLink.
 

@@ -5,6 +5,7 @@ from django.db import models
 class QueryHistory(models.Model):
     class ActionType(models.TextChoices):
         CREATED = "created", "Создание"
+        DELETED = "deleted", "Удаление"
         UPDATED = "updated", "Обновление"
         STATUS_CHANGED = "status_changed", "Изменение статуса"
         PRIORITY_CHANGED = "priority_changed", "Изменение приоритета"
@@ -23,9 +24,23 @@ class QueryHistory(models.Model):
         related_name="history_entries",
         verbose_name="Пользователь",
     )
+    entity_type = models.CharField(
+        max_length=50,
+        default="task",
+        db_index=True,
+        verbose_name="Тип сущности",
+    )
+    entity_id = models.BigIntegerField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="ID сущности",
+    )
     task = models.ForeignKey(
         "app.Task",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="history",
         verbose_name="Задача",
     )
@@ -39,3 +54,11 @@ class QueryHistory(models.Model):
     new_value = models.JSONField(null=True, blank=True, verbose_name="Новое значение")
     comment = models.TextField(blank=True, verbose_name="Комментарий")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата и время")
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=("entity_type", "entity_id", "-created_at"),
+                name="queryhistory_entity_idx",
+            ),
+        ]

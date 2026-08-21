@@ -13,6 +13,7 @@ import Badge from '../components/Badge/Badge'
 import ProgressBar from '../components/ProgressBar/ProgressBar'
 import LinkButton from '../components/LinkButton/LinkButton'
 import Spinner from '../components/Spinner/Spinner'
+import History from '../components/History/History'
 
 export default function Task() {
     const { user } = useContext(UserContext)
@@ -25,7 +26,6 @@ export default function Task() {
     const [task, setTask] = useState(null)
     const [loading, setLoading] = useState(true)
     const [stages, setStages] = useState([])
-    const [history, setHistory] = useState([])
     const [protocol, setProtocol] = useState(null)
 
     // Состояния модалок
@@ -41,7 +41,6 @@ export default function Task() {
         is_completed: false,
     })
     const [showStepsModal, setShowStepsModal] = useState(false)
-    const [showHistoryModal, setShowHistoryModal] = useState(false)
     const [showProtocolModal, setShowProtocolModal] = useState(false)
     const [saving, setSaving] = useState(false)
 
@@ -67,7 +66,6 @@ export default function Task() {
             const taskData = data.data
             setTask(taskData)
             setStages(taskData?.stages || [])
-            setHistory(taskData?.history || [])
             setProtocol(taskData?.protocol || null)
         } else {
             notify_error(data?.error || 'Задача не найдена')
@@ -369,6 +367,12 @@ export default function Task() {
                             )}
                         </div>
 
+                        <History
+                            entityType="task"
+                            entityId={task.id}
+                            refreshKey={task.updated_at}
+                        />
+
                         {/* Прогресс */}
                         <div className="task-detail__progress">
                             <div className="task-detail__progress-header">
@@ -456,15 +460,6 @@ export default function Task() {
                             </div>
                         )}
 
-                        {/* История */}
-                        {history.length > 0 && (
-                            <div className="task-detail__history">
-                                <h3>📜 История изменений</h3>
-                                <Button variant="secondary" size="sm" onClick={() => setShowHistoryModal(true)}>
-                                    Показать историю
-                                </Button>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
@@ -627,52 +622,6 @@ export default function Task() {
                 )
             }
 
-            {/* Модалка истории */}
-            {
-                showHistoryModal && (
-                    <div className="task-modal-overlay" onClick={() => setShowHistoryModal(false)}>
-                        <div className="task-modal task-modal--history" onClick={(e) => e.stopPropagation()}>
-                            <h2 className="task-modal__title">📜 История изменений</h2>
-                            {history.length === 0 ? (
-                                <p className="task-modal__empty">История пуста</p>
-                            ) : (
-                                <div className="task-history-list">
-                                    {history.map((entry) => (
-                                        <div key={entry.id} className="task-history-list__item">
-                                            <div className="task-history-list__header">
-                                                <span className="task-history-list__user">
-                                                    {entry.user?.first_name} {entry.user?.last_name} (@{entry.user?.username})
-                                                </span>
-                                                <span className="task-history-list__date">{formatDate(entry.created_at)}</span>
-                                            </div>
-                                            <div className="task-history-list__body">
-                                                <Badge variant="secondary">{entry.get_action_type_display?.() || entry.action_type}</Badge>
-                                                {entry.field_name && (
-                                                    <span className="task-history-list__field">{entry.field_name}</span>
-                                                )}
-                                                {entry.old_value && (
-                                                    <span className="task-history-list__old">было: {JSON.stringify(entry.old_value)}</span>
-                                                )}
-                                                {entry.new_value && (
-                                                    <span className="task-history-list__new">стало: {JSON.stringify(entry.new_value)}</span>
-                                                )}
-                                                {entry.comment && (
-                                                    <span className="task-history-list__comment">💬 {entry.comment}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                            <div className="task-modal__buttons">
-                                <Button variant="secondary" onClick={() => setShowHistoryModal(false)}>
-                                    Закрыть
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
 
             {/* Модалка протокола */}
             {

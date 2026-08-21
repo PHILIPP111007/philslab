@@ -186,6 +186,8 @@ def serialize_task(
         result["history"] = [
             {
                 "id": history.id,
+                "entity_type": history.entity_type,
+                "entity_id": history.entity_id,
                 "action_type": history.action_type,
                 "field_name": history.field_name,
                 "old_value": history.old_value,

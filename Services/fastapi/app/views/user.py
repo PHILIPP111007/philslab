@@ -3,6 +3,8 @@ from fastapi import APIRouter, Query, Request
 from sqlmodel import func, select
 
 from app.database import SessionDep
+from app.services.history import add_history
+from app.enums.action_type import ActionType
 from app.models import User
 from app.request_body import UserBody
 
@@ -65,15 +67,34 @@ async def put_user(
     if not user:
         return {"ok": False, "error": "Not found user."}
 
-    # Обновляем только переданные поля
+    # Обновляем только переданные поля и сохраняем изменения профиля.
     update_data = user_body.model_dump(exclude_unset=True)
+    changes = []
     for field, value in update_data.items():
         if hasattr(user, field):
+            old_value = getattr(user, field)
+            if old_value == value:
+                continue
+            changes.append((field, old_value, value))
             setattr(user, field, value)
 
     session.add(user)
     await session.commit()
     await session.refresh(user)
+
+    for field, old_value, new_value in changes:
+        await add_history(
+            session,
+            entity_type="user",
+            entity_id=user.id,
+            user_id=request.state.user.id,
+            field_name=field,
+            old_value={field: old_value},
+            new_value={field: new_value},
+            comment=f"Изменено поле профиля: {field}",
+        )
+    if changes:
+        await session.commit()
 
     return {"ok": True, "user": user}
 

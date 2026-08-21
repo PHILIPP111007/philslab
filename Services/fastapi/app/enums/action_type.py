@@ -5,6 +5,7 @@ class ActionType(str, Enum):
     """Тип действия в истории"""
 
     CREATED = "created"
+    DELETED = "deleted"
     UPDATED = "updated"
     STATUS_CHANGED = "status_changed"
     PRIORITY_CHANGED = "priority_changed"

@@ -1,0 +1,120 @@
+.entity-history {
+    margin-top: 24px;
+    padding: 20px;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.entity-history__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.entity-history__title {
+    margin: 0;
+    color: var(--text-white);
+    font-size: 18px;
+}
+
+.entity-history__refresh {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.entity-history__refresh:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text-white);
+}
+
+.entity-history__refresh:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.entity-history__status {
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.entity-history__status--error {
+    color: var(--red);
+}
+
+.entity-history__list {
+    display: grid;
+    gap: 10px;
+}
+
+.entity-history__item {
+    padding: 12px 14px;
+    border-left: 3px solid var(--blue);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+}
+
+.entity-history__item-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.entity-history__action {
+    color: var(--text-white);
+    font-weight: 600;
+}
+
+.entity-history__date,
+.entity-history__user,
+.entity-history__field {
+    color: var(--text-dark);
+    font-size: 12px;
+}
+
+.entity-history__user {
+    margin-top: 4px;
+}
+
+.entity-history__field {
+    margin-top: 8px;
+}
+
+.entity-history__value,
+.entity-history__comment {
+    margin-top: 6px;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.entity-history__value--old {
+    color: var(--orange);
+}
+
+.entity-history__value--new {
+    color: var(--green);
+}
+
+.entity-history__comment {
+    color: var(--text);
+}
+
+@media (max-width: 480px) {
+    .entity-history {
+        padding: 14px;
+    }
+
+    .entity-history__item-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+}

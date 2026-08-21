@@ -15,6 +15,7 @@ from app.models import (
     TaskStage,
 )
 from app.request_body import TaskCreate, TaskUpdate
+from app.services.history import add_history
 from app.services.serializers import serialize_task
 
 router = APIRouter(tags=["task"])
@@ -213,6 +214,8 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
     # История
     history = QueryHistory(
         action_type=ActionType.CREATED,
+        entity_type="task",
+        entity_id=task_id,
         user_id=request.state.user.id,
         task_id=task_id,
         comment=f"Задача '{task_name}' создана",
@@ -394,6 +397,8 @@ async def update_task(
 
             history = QueryHistory(
                 action_type=action_type,
+                entity_type="task",
+                entity_id=task_id_value,
                 user_id=request.state.user.id,
                 task_id=task_id_value,
                 field_name=change["field"],
@@ -452,6 +457,18 @@ async def delete_task(session: SessionDep, request: Request, task_id: int):
     if not task:
         return {"ok": False, "error": "Not found task."}
 
+    await add_history(
+        session,
+        entity_type="task",
+        entity_id=task.id,
+        user_id=request.state.user.id,
+        action_type=ActionType.DELETED,
+        old_value={"name": task.name},
+        comment=f"Задача '{task.name}' удалена",
+        # Do not retain the nullable FK: deleting the task would cascade its
+        # history rows. The generic entity_id keeps the deletion audit record.
+        task_id=None,
+    )
     await session.delete(task)
     await session.commit()
     return {"ok": True}
@@ -481,22 +498,50 @@ async def toggle_task_stage(
     await session.commit()
     await session.refresh(task_stage)
 
+    await add_history(
+        session,
+        entity_type="task",
+        entity_id=task_id,
+        user_id=request.state.user.id,
+        action_type=ActionType.STAGE_COMPLETED,
+        field_name=f"stage:{stage_id}",
+        new_value={"is_completed": task_stage.is_completed},
+        comment=f"Этап #{stage_id} {'выполнен' if task_stage.is_completed else 'открыт'}",
+        task_id=task_id,
+    )
+
     # Проверяем, все ли этапы выполнены
     task = await session.get(Task, task_id, options=[selectinload(Task.task_stages)])
+    status_change = None
     if task:
         all_completed = all(s.is_completed for s in task.task_stages)
         if all_completed and not task.is_completed:
+            status_change = (False, True)
             task.is_completed = True
             task.completed_at = datetime.now()
             session.add(task)
-            await session.commit()
-            await session.refresh(task)
         elif not all_completed and task.is_completed:
+            status_change = (True, False)
             task.is_completed = False
             task.completed_at = None
             session.add(task)
-            await session.commit()
-            await session.refresh(task)
+
+        if status_change:
+            await add_history(
+                session,
+                entity_type="task",
+                entity_id=task_id,
+                user_id=request.state.user.id,
+                action_type=ActionType.STATUS_CHANGED,
+                field_name="is_completed",
+                old_value={"is_completed": status_change[0]},
+                new_value={"is_completed": status_change[1]},
+                comment=f"Задача автоматически {'завершена' if status_change[1] else 'возвращена в работу'} по этапам",
+                task_id=task_id,
+            )
+
+        await session.commit()
+        await session.refresh(task)
 
     return {"ok": True, "data": task_stage}
 
@@ -515,7 +560,7 @@ async def get_task_history(session: SessionDep, request: Request, task_id: int):
 
     history = (
         await session.exec(
-            select(QueryHistory)
+            select(QueryHistory).options(selectinload(QueryHistory.user))
             .where(QueryHistory.task_id == task_id)
             .order_by(QueryHistory.created_at.desc())
         )
@@ -565,6 +610,8 @@ async def archive_task(session: SessionDep, request: Request, task_id: int):
 
     history = QueryHistory(
         action_type=ActionType.UPDATED,
+        entity_type="task",
+        entity_id=task_id_value,
         user_id=request.state.user.id,
         task_id=task_id_value,
         field_name="is_archived",
@@ -604,6 +651,8 @@ async def unarchive_task(session: SessionDep, request: Request, task_id: int):
 
     history = QueryHistory(
         action_type=ActionType.UPDATED,
+        entity_type="task",
+        entity_id=task_id_value,
         user_id=request.state.user.id,
         task_id=task_id_value,
         field_name="is_archived",

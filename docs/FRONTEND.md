@@ -207,6 +207,21 @@ ws.send(JSON.stringify({
 `release`; отключение другого клиента не снимает блокировку. Сейчас registry
 lock рассчитан на используемый один worker с in-memory channel layer.
 
+### История изменений сущностей
+
+Для страниц сущностей используется общий компонент `src/pages/components/History/`.
+Он загружает историю через FastAPI endpoint:
+
+```text
+GET /api/v2/history/{entity_type}/{entity_id}/
+```
+
+Поддерживаемые типы: `user`, `sample`, `batch`, `protocol`, `stage`, `task`.
+История записывается на backend при создании, изменении, удалении и изменении
+связей. Не дублируйте разметку истории в страницах: подключайте компонент
+`History` и передавайте `entityType`, `entityId` и, при необходимости,
+`refreshKey` после сохранения сущности.
+
 ---
 
 ## 🧭 Маршрутизация (Routing)

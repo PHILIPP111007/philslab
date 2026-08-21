@@ -7,11 +7,15 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
 from app.database import SessionDep
+from app.enums.action_type import ActionType
 from app.models import Batch, BatchSampleLink, Sample, Task, TaskBatchLink
 from app.request_body import BatchCreate, BatchUpdate
+from app.services.history import add_history, snapshot
 from app.services.serializers import serialize_batch
 
 router = APIRouter(tags=["batch"])
+
+BATCH_HISTORY_FIELDS = ["name", "department", "descr"]
 
 
 # ------------------------------------------------------------
@@ -133,6 +137,17 @@ async def create_batch(session: SessionDep, request: Request, batch_data: BatchC
     session.add(batch)
     await session.commit()
 
+    await add_history(
+        session,
+        entity_type="batch",
+        entity_id=batch.id,
+        user_id=request.state.user.id,
+        action_type=ActionType.CREATED,
+        new_value=snapshot(batch, BATCH_HISTORY_FIELDS),
+        comment=f"Батч #{batch.id} создан",
+    )
+    await session.commit()
+
     # Загружаем свежий объект без связей и отдельно связи
     batch_obj = await session.get(Batch, batch.id)
     subs, tsk = await _load_batch_relations(session, batch.id)
@@ -151,12 +166,32 @@ async def put_batch(
         return {"ok": False, "error": "Batch not found."}
 
     update_data = batch_data.model_dump(exclude_unset=True)
+    changes = []
     for field, value in update_data.items():
+        old_value = getattr(batch, field)
+        if old_value == value:
+            continue
+        changes.append((field, old_value, value))
         setattr(batch, field, value)
 
-    batch.updated_at = datetime.now()
+    if changes:
+        batch.updated_at = datetime.now()
     session.add(batch)
     await session.commit()
+
+    for field, old_value, new_value in changes:
+        await add_history(
+            session,
+            entity_type="batch",
+            entity_id=batch.id,
+            user_id=request.state.user.id,
+            field_name=field,
+            old_value={field: old_value},
+            new_value={field: new_value},
+            comment=f"Изменено поле батча: {field}",
+        )
+    if changes:
+        await session.commit()
 
     batch_obj = await session.get(Batch, batch_id)
     subs, tsk = await _load_batch_relations(session, batch_id)
@@ -172,6 +207,15 @@ async def delete_batch(session: SessionDep, request: Request, batch_id: int):
     if not batch:
         return {"ok": False, "error": "Batch not found."}
 
+    await add_history(
+        session,
+        entity_type="batch",
+        entity_id=batch.id,
+        user_id=request.state.user.id,
+        action_type=ActionType.DELETED,
+        old_value=snapshot(batch, BATCH_HISTORY_FIELDS),
+        comment=f"Батч #{batch.id} удалён",
+    )
     await session.delete(batch)
     await session.commit()
     return {"ok": True}
@@ -203,6 +247,29 @@ async def add_sample_to_batch(
 
     link = BatchSampleLink(batch_id=batch_id, sample_id=sample_id)
     session.add(link)
+    batch.updated_at = datetime.now()
+    await session.commit()
+
+    await add_history(
+        session,
+        entity_type="batch",
+        entity_id=batch_id,
+        user_id=request.state.user.id,
+        action_type=ActionType.SAMPLE_ADDED,
+        field_name="samples",
+        new_value={"sample_id": sample_id},
+        comment=f"Образец #{sample_id} добавлен в батч",
+    )
+    await add_history(
+        session,
+        entity_type="sample",
+        entity_id=sample_id,
+        user_id=request.state.user.id,
+        action_type=ActionType.SAMPLE_ADDED,
+        field_name="batches",
+        new_value={"batch_id": batch_id},
+        comment=f"Образец добавлен в батч #{batch_id}",
+    )
     await session.commit()
 
     batch_obj = await session.get(Batch, batch_id)
@@ -228,6 +295,31 @@ async def remove_sample_from_batch(
         return {"ok": False, "error": "Sample not found in batch."}
 
     await session.delete(item)
+    batch = await session.get(Batch, batch_id)
+    if batch:
+        batch.updated_at = datetime.now()
+    await session.commit()
+
+    await add_history(
+        session,
+        entity_type="batch",
+        entity_id=batch_id,
+        user_id=request.state.user.id,
+        action_type=ActionType.SAMPLE_REMOVED,
+        field_name="samples",
+        old_value={"sample_id": sample_id},
+        comment=f"Образец #{sample_id} удалён из батча",
+    )
+    await add_history(
+        session,
+        entity_type="sample",
+        entity_id=sample_id,
+        user_id=request.state.user.id,
+        action_type=ActionType.SAMPLE_REMOVED,
+        field_name="batches",
+        old_value={"batch_id": batch_id},
+        comment=f"Образец удалён из батча #{batch_id}",
+    )
     await session.commit()
 
     batch_obj = await session.get(Batch, batch_id)
@@ -276,6 +368,28 @@ async def add_task_to_batch(
 
     link = TaskBatchLink(batch_id=batch_id, task_id=task_id)
     session.add(link)
+    batch.updated_at = datetime.now()
+    await session.commit()
+
+    await add_history(
+        session,
+        entity_type="batch",
+        entity_id=batch_id,
+        user_id=request.state.user.id,
+        field_name="tasks",
+        new_value={"task_id": task_id},
+        comment=f"Задача #{task_id} добавлена в батч",
+    )
+    await add_history(
+        session,
+        entity_type="task",
+        entity_id=task_id,
+        user_id=request.state.user.id,
+        field_name="batches",
+        new_value={"batch_id": batch_id},
+        comment=f"Задача добавлена в батч #{batch_id}",
+        task_id=task_id,
+    )
     await session.commit()
 
     batch_obj = await session.get(Batch, batch_id)
@@ -301,6 +415,30 @@ async def remove_task_from_batch(
         return {"ok": False, "error": "Task not found in batch."}
 
     await session.delete(item)
+    batch = await session.get(Batch, batch_id)
+    if batch:
+        batch.updated_at = datetime.now()
+    await session.commit()
+
+    await add_history(
+        session,
+        entity_type="batch",
+        entity_id=batch_id,
+        user_id=request.state.user.id,
+        field_name="tasks",
+        old_value={"task_id": task_id},
+        comment=f"Задача #{task_id} удалена из батча",
+    )
+    await add_history(
+        session,
+        entity_type="task",
+        entity_id=task_id,
+        user_id=request.state.user.id,
+        field_name="batches",
+        old_value={"batch_id": batch_id},
+        comment=f"Задача удалена из батча #{batch_id}",
+        task_id=task_id,
+    )
     await session.commit()
 
     batch_obj = await session.get(Batch, batch_id)

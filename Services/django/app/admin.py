@@ -97,11 +97,18 @@ class ProtocolAdmin(admin.ModelAdmin):
 @admin.register(QueryHistory)
 class QueryHistoryAdmin(admin.ModelAdmin):
     list_display = (
+        "entity_type",
+        "entity_id",
         "field_name",
         "created_at",
     )
     list_filter = ("action_type", "created_at", "user")
-    search_fields = ("task__name", "user__username", "comment")
+    search_fields = (
+        "entity_type",
+        "task__name",
+        "user__username",
+        "comment",
+    )
     ordering = ("-created_at",)
     readonly_fields = ("created_at",)
 

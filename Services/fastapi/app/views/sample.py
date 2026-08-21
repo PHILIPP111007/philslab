@@ -1,14 +1,32 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
 from app.database import SessionDep
+from app.enums.action_type import ActionType
 from app.enums.material_type import MATERIAL_TYPE_LABELS
 from app.models import Batch, Sample
 from app.request_body.sample import SampleCreate, SampleUpdate
+from app.services.history import add_history, snapshot
 from app.services.serializers import serialize_sample
 
 router = APIRouter(tags=["sample"])
+
+SAMPLE_HISTORY_FIELDS = [
+    "sample_code",
+    "sample_group_code",
+    "zlims_code",
+    "uin1",
+    "uin2",
+    "project_code",
+    "sample_index",
+    "qc_1",
+    "qc_2",
+    "descr",
+    "material_type",
+]
 
 
 @router.get("/sample/material_types/")
@@ -148,6 +166,17 @@ async def create_sample(
     await session.commit()
     await session.refresh(sample)
 
+    await add_history(
+        session,
+        entity_type="sample",
+        entity_id=sample.id,
+        user_id=request.state.user.id,
+        action_type=ActionType.CREATED,
+        new_value=snapshot(sample, SAMPLE_HISTORY_FIELDS),
+        comment=f"Образец #{sample.id} создан",
+    )
+    await session.commit()
+
     return {"ok": True, "data": sample}
 
 
@@ -163,14 +192,35 @@ async def put_sample(
     if not sample:
         return {"ok": False, "error": "Not found sample."}
 
-    # Применяем только переданные поля
+    # Применяем только переданные поля и фиксируем каждое изменение отдельно.
     update_data = sample_data.model_dump(exclude_unset=True)
+    changes = []
     for field, value in update_data.items():
+        old_value = getattr(sample, field)
+        if old_value == value:
+            continue
+        changes.append((field, old_value, value))
         setattr(sample, field, value)
 
+    if changes:
+        sample.updated_at = datetime.now()
     session.add(sample)
     await session.commit()
     await session.refresh(sample)
+
+    for field, old_value, new_value in changes:
+        await add_history(
+            session,
+            entity_type="sample",
+            entity_id=sample.id,
+            user_id=request.state.user.id,
+            field_name=field,
+            old_value={field: old_value},
+            new_value={field: new_value},
+            comment=f"Изменено поле образца: {field}",
+        )
+    if changes:
+        await session.commit()
     return {"ok": True, "data": sample}
 
 
@@ -184,6 +234,15 @@ async def delete_sample(session: SessionDep, request: Request, sample_id: int):
     if not sample:
         return {"ok": False, "error": "Not found sample."}
 
+    await add_history(
+        session,
+        entity_type="sample",
+        entity_id=sample.id,
+        user_id=request.state.user.id,
+        action_type=ActionType.DELETED,
+        old_value=snapshot(sample, SAMPLE_HISTORY_FIELDS),
+        comment=f"Образец #{sample.id} удалён",
+    )
     await session.delete(sample)
     await session.commit()
     return {"ok": True}
