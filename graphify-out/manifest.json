@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/data/constants.js": {
-    "mtime": 1787304629.395371,
-    "ast_hash": "2e6636abfc3d49ffadc5ea694f26de50",
+    "mtime": 1787315017.067259,
+    "ast_hash": "189c52aa6d878e6c4f6df5788746376f",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/data/context.js": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Batch/Batch.jsx": {
-    "mtime": 1786542818.7168849,
-    "ast_hash": "33ff9a2d456389feed8b9d092dc010ea",
+    "mtime": 1787320726.7384415,
+    "ast_hash": "6b78ead0cd04a843f9b0e1c72827e9e9",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Department/Department.jsx": {
@@ -120,18 +120,18 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Protocol/Protocols.jsx": {
-    "mtime": 1786532174.5862026,
-    "ast_hash": "77d6d7c7b7303543fbde8bb4796f7f08",
-    "semantic_hash": "77d6d7c7b7303543fbde8bb4796f7f08"
+    "mtime": 1787319921.019758,
+    "ast_hash": "4ccf4266c9b240d1dcce42063d4472b5",
+    "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Sample/Sample.jsx": {
-    "mtime": 1786542718.58375,
-    "ast_hash": "3820dea42f19218b7c5767b4a1318b27",
+    "mtime": 1787320910.880884,
+    "ast_hash": "4246bf81561ce3fdfab9d980b99172fd",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Sample/Samples.jsx": {
-    "mtime": 1787304629.395371,
-    "ast_hash": "cba77b4926475bba73db414ef211db8f",
+    "mtime": 1787315733.5563383,
+    "ast_hash": "1cf9a9e12a8ef46172c167f7ab72b1df",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Statistics/Statistics.jsx": {
@@ -140,13 +140,13 @@
     "semantic_hash": "db0a337be7adfabdc3269244ca6bbdc0"
   },
   "Frontend/react/app/src/pages/Task/Task.jsx": {
-    "mtime": 1786542818.9328873,
-    "ast_hash": "b5002fdf7fb0b8c1c92dda0dfaaead50",
+    "mtime": 1787319920.7597547,
+    "ast_hash": "bd0f4c494043613789db55036f613c8b",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/User/User.jsx": {
-    "mtime": 1787304629.395371,
-    "ast_hash": "4c354603fcf5b0c95146630cb2d1f97d",
+    "mtime": 1787320053.3175113,
+    "ast_hash": "88e2f5150bb276313a202183cd9189fb",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/Accordion/Accordion.jsx": {
@@ -215,8 +215,8 @@
     "semantic_hash": "3c1eb1ecad5aacde2b13471968e1ab20"
   },
   "Frontend/react/app/src/pages/components/Table/Table.jsx": {
-    "mtime": 1786541694.8645082,
-    "ast_hash": "3bdb3c9e24da11d3d0dd81cba611ea91",
+    "mtime": 1787317185.3554919,
+    "ast_hash": "2e5a40a0357ef60d364191b5277b7c31",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/TasksSection/TasksSection.jsx": {
@@ -250,9 +250,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "Services/django/app/admin.py": {
-    "mtime": 1786532174.5942028,
-    "ast_hash": "47435a74eba11f1dedbc068788ac9260",
-    "semantic_hash": "47435a74eba11f1dedbc068788ac9260"
+    "mtime": 1787320192.231353,
+    "ast_hash": "c3b07b306257a6696e844dd54995eeca",
+    "semantic_hash": ""
   },
   "Services/django/app/apps.py": {
     "mtime": 1786532174.5942028,
@@ -350,9 +350,9 @@
     "semantic_hash": "4189b313b2cda59a5a0d7a5e8de3d5f0"
   },
   "Services/django/app/models/query_history.py": {
-    "mtime": 1786532174.5942028,
-    "ast_hash": "7a712a82dfc64e5db716d720771ea897",
-    "semantic_hash": "7a712a82dfc64e5db716d720771ea897"
+    "mtime": 1787319678.2285419,
+    "ast_hash": "875ff243ec87c90a4a75022223faca76",
+    "semantic_hash": ""
   },
   "Services/django/app/models/sample.py": {
     "mtime": 1786532174.5942028,
@@ -460,9 +460,9 @@
     "semantic_hash": "97fc34d11f72975571494ed064440033"
   },
   "Services/fastapi/app/main.py": {
-    "mtime": 1786532174.5942028,
-    "ast_hash": "5561327ecce86256c97e50158dc99635",
-    "semantic_hash": "5561327ecce86256c97e50158dc99635"
+    "mtime": 1787319654.8562324,
+    "ast_hash": "97b5979c0a2a6c06835376d373006c64",
+    "semantic_hash": ""
   },
   "Services/fastapi/app/models/__init__.py": {
     "mtime": 1786550707.8925083,
@@ -490,8 +490,8 @@
     "semantic_hash": "f059718742acc7e43221c52335d58b1b"
   },
   "Services/fastapi/app/models/query_history.py": {
-    "mtime": 1786550877.2627335,
-    "ast_hash": "54ef245e0f84714bf81c054d317f897e",
+    "mtime": 1787319594.623435,
+    "ast_hash": "d85af7ad7e86df69e7818f7f4e938dee",
     "semantic_hash": ""
   },
   "Services/fastapi/app/models/sample.py": {
@@ -565,8 +565,8 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "Services/fastapi/app/views/batch.py": {
-    "mtime": 1786540383.1594713,
-    "ast_hash": "e5b1c81180c5526dab3ad8ecf128765b",
+    "mtime": 1787320125.846473,
+    "ast_hash": "13a86ecfa28df15d61a75696c93fd45b",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/department.py": {
@@ -575,28 +575,28 @@
     "semantic_hash": "aa31c5d9592f51b80ff0d09134ba1905"
   },
   "Services/fastapi/app/views/protocol.py": {
-    "mtime": 1786535401.775343,
-    "ast_hash": "a9c18d78c5f5cbb1febf058f785d0281",
+    "mtime": 1787319786.3339736,
+    "ast_hash": "2c2c146b72571fe5f69f4c53a5eedca3",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/sample.py": {
-    "mtime": 1786552244.6401682,
-    "ast_hash": "2df4d0925394f33883b4ec1e2cbe6ab8",
+    "mtime": 1787321000.4779541,
+    "ast_hash": "8a9365ca8cce7b939ae3c0bcf4397156",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/stage.py": {
-    "mtime": 1786536715.4198353,
-    "ast_hash": "9bb688267d60355ad7783820bbab89ba",
+    "mtime": 1787319975.9044855,
+    "ast_hash": "1d87f14765003f50bff8c393c180b252",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/task.py": {
-    "mtime": 1786552472.578509,
-    "ast_hash": "d92a7988e5d8ca0e6bdb1865308619ad",
+    "mtime": 1787320135.130596,
+    "ast_hash": "86d39cfb503105f6d64e8d9a4cbb285d",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/user.py": {
-    "mtime": 1786536798.0888739,
-    "ast_hash": "55030b23fe984c173a7e8a161a134a45",
+    "mtime": 1787320053.0735083,
+    "ast_hash": "6a6c175f6f3188d53c94fe49d8e01c5f",
     "semantic_hash": ""
   },
   "Services/fastapi/run.py": {
@@ -620,8 +620,8 @@
     "semantic_hash": ""
   },
   "Services/fastapi/app/enums/action_type.py": {
-    "mtime": 1786550767.6932976,
-    "ast_hash": "0ae5145a33232ad4fb8d439a77cde6dd",
+    "mtime": 1787319677.944538,
+    "ast_hash": "f9e0508e5fea35e9623f802507931376",
     "semantic_hash": ""
   },
   "Services/fastapi/app/enums/material_type.py": {
@@ -640,8 +640,8 @@
     "semantic_hash": ""
   },
   "Services/fastapi/app/services/serializers.py": {
-    "mtime": 1786540546.1176956,
-    "ast_hash": "dde118f0cbb068de6ae9f59e1b6d7087",
+    "mtime": 1787319820.9744325,
+    "ast_hash": "513d95d879d465e663333c821433d636",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -675,13 +675,13 @@
     "semantic_hash": ""
   },
   "docs/DATABASE_SCHEMA.md": {
-    "mtime": 1786532174.5982027,
-    "ast_hash": "0583c13944af133ef7965ef05d93a98b",
+    "mtime": 1787320445.5667121,
+    "ast_hash": "d3fdbff229117ba9a27f3e5489038826",
     "semantic_hash": ""
   },
   "docs/FRONTEND.md": {
-    "mtime": 1786552245.6041806,
-    "ast_hash": "ccc9012181bfb2b50b354ddc086711a9",
+    "mtime": 1787320176.8711493,
+    "ast_hash": "383fb3cf2d37c55263c6da05e160b885",
     "semantic_hash": ""
   },
   "docs/STYLES.md": {
@@ -705,8 +705,33 @@
     "semantic_hash": ""
   },
   "Services/django/app/consumers/table.py": {
-    "mtime": 1787304629.3993711,
-    "ast_hash": "bb000b6bde5105115157727bb0136e10",
+    "mtime": 1787315719.4521549,
+    "ast_hash": "18fc0b735500dbd1c5af8d85b66346fe",
+    "semantic_hash": ""
+  },
+  "Frontend/react/app/src/pages/components/History/History.jsx": {
+    "mtime": 1787319976.0524874,
+    "ast_hash": "8a6ff6c91ebe2540ebd085be0e34e8d7",
+    "semantic_hash": ""
+  },
+  "Services/django/app/migrations/0014_queryhistory_generic_entity.py": {
+    "mtime": 1787319678.5085456,
+    "ast_hash": "ede9d5a8519c9a0b9fad4967c896e3d2",
+    "semantic_hash": ""
+  },
+  "Services/fastapi/app/services/history.py": {
+    "mtime": 1787319654.3402255,
+    "ast_hash": "583c47e6d4fa8fbc5213465aa205b38d",
+    "semantic_hash": ""
+  },
+  "Services/fastapi/app/views/history.py": {
+    "mtime": 1787320158.8389103,
+    "ast_hash": "fabec12a9be2ca975097049184961089",
+    "semantic_hash": ""
+  },
+  "docs/Handoff.md": {
+    "mtime": 1787320445.2987087,
+    "ast_hash": "4fbf4dbc8d7d3afce414777cdbb4dcdd",
     "semantic_hash": ""
   }
 }
