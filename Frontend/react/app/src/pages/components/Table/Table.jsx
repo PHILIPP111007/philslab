@@ -21,7 +21,10 @@ import { EditableCell, TableRow } from './TableCells'
 function renderAggregation(column, table) {
     const aggFn = column.columnDef.aggregation
     if (!aggFn) return null
-    const rows = table.getFilteredRowModel().rows.map(r => r.original)
+    const rowModel = table.getFilteredRowModel?.()
+        || table.getPrePaginationRowModel?.()
+        || table.getCoreRowModel()
+    const rows = rowModel.rows.map(r => r.original)
     if (aggFn === 'sum') {
         const sum = rows.reduce((acc, row) => acc + (Number(row[column.id]) || 0), 0)
         return <span>{sum}</span>
@@ -53,6 +56,27 @@ const numberContainsFilter = (row, columnId, filterValue) => {
     if (!filterValue) return true
     const value = row.getValue(columnId)
     return String(value).includes(filterValue)
+}
+
+const rowsAreEqual = (left, right) => {
+    if (!Array.isArray(left) || !Array.isArray(right)) return left === right
+    if (left === right) return true
+    if (left.length !== right.length) return false
+
+    return left.every((leftRow, index) => {
+        const rightRow = right[index]
+        if (leftRow === rightRow) return true
+        if (!leftRow || !rightRow) return false
+
+        const leftKeys = Object.keys(leftRow)
+        const rightKeys = Object.keys(rightRow)
+        if (leftKeys.length !== rightKeys.length) return false
+
+        return leftKeys.every((key) => (
+            Object.prototype.hasOwnProperty.call(rightRow, key)
+            && leftRow[key] === rightRow[key]
+        ))
+    })
 }
 
 // ============================================
@@ -98,8 +122,10 @@ export default function Table({
     }, [userColumns])
 
     const getNextEmptyRowId = useCallback((dataArray) => {
-        const minId = dataArray.reduce((min, item) => Math.min(min, item.id || 0), 0)
-        return minId > 0 ? -1 : minId - 1
+        const minId = dataArray.reduce((min, item) => {
+            return item.id < 0 ? Math.min(min, item.id) : min
+        }, 0)
+        return minId - 1
     }, [])
 
     const ensureEmptyRow = useCallback((dataArray) => {
@@ -113,6 +139,7 @@ export default function Table({
     }, [enableEmptyRow, createEmptyRowData, getNextEmptyRowId])
 
     // ---------- состояние ----------
+    const dataRef = useRef(null)
     const [data, setData] = useState(() => {
         if (enableEmptyRow && !infiniteScroll) {
             if (initialData.length === 0) return [createEmptyRowData(-1)]
@@ -120,6 +147,22 @@ export default function Table({
         }
         return initialData
     })
+    dataRef.current = data
+
+    // Синхронно обновляем ref до React state. Это позволяет обработчикам
+    // вычислять следующий массив без побочных эффектов внутри setState updater.
+    const setTableData = useCallback((nextDataOrUpdater) => {
+        const currentData = dataRef.current || []
+        const nextData = typeof nextDataOrUpdater === 'function'
+            ? nextDataOrUpdater(currentData)
+            : nextDataOrUpdater
+
+        if (rowsAreEqual(currentData, nextData)) return currentData
+
+        dataRef.current = nextData
+        setData(nextData)
+        return nextData
+    }, [])
 
     const [sorting, setSorting] = useState([])
     const [globalFilter, setGlobalFilter] = useState('')
@@ -131,6 +174,7 @@ export default function Table({
     const [pageIndex, setPageIndex] = useState(0)
     const [pageSize, setPageSize] = useState(initialPageSize)
     const [columnSizing, setColumnSizing] = useState({})
+    const [rowSelection, setRowSelection] = useState({})
 
     const [editModalOpen, setEditModalOpen] = useState(false)
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -143,8 +187,17 @@ export default function Table({
     const [hasMoreData, setHasMoreData] = useState(true)
     const [lastRowElement, setLastRowElement] = useState(null)
     const setLastRowRef = useCallback((node) => setLastRowElement(node), [])
+    const applyValueToSelectedCellsRef = useRef(null)
+    const batchValueInputRef = useRef(null)
+    const skipNextExternalDataSyncRef = useRef(false)
+    const tableMeta = useMemo(() => ({
+        applyValueToSelectedCells: (...args) => (
+            applyValueToSelectedCellsRef.current?.(...args)
+        ),
+    }), [])
 
     const effectiveEnableEmptyRow = infiniteScroll ? false : enableEmptyRow
+    const effectivePageIndex = enablePagination ? pageIndex : 0
 
     // ---------- эффекты ----------
     useEffect(() => {
@@ -155,44 +208,46 @@ export default function Table({
     useEffect(() => {
         setSelectedCells(new Set())
         setLastSelectedCell(null)
+        setRowSelection({})
     }, [pageIndex, pageSize, globalFilter, columnFilters])
 
     // При изменении фильтров или сортировки сбрасываем данные и загружаем первую страницу
     useEffect(() => {
         if (infiniteScroll) {
-            setData([]);
-            setPageIndex(0);
+            skipNextExternalDataSyncRef.current = true
+            setTableData([])
+            setPageIndex((currentPage) => currentPage === 0 ? currentPage : 0)
             setHasMoreData(true);
             setIsLoadingMore(false);
             onLazyLoad?.({ pageIndex: 0, pageSize, sorting, globalFilter, columnFilters });
         }
-    }, [sorting, globalFilter, columnFilters, infiniteScroll, onLazyLoad, pageSize]);
+    }, [sorting, globalFilter, columnFilters, infiniteScroll, onLazyLoad, pageSize, setTableData]);
 
     // Синхронизация внешних данных с локальным состоянием таблицы.
     useEffect(() => {
         if (lazy && infiniteScroll) {
-            setData(prev => {
-                const existingIds = new Set(prev.map(item => item.id));
-                const newItems = initialData.filter(item => !existingIds.has(item.id));
-                const newData = [...prev, ...newItems];
-                if (totalRows > 0 && newData.length >= totalRows) {
-                    setHasMoreData(false);
-                } else if (totalRows > 0) {
-                    setHasMoreData(true);
-                } else {
-                    if (initialData.length < pageSize) {
-                        setHasMoreData(false);
-                    } else {
-                        setHasMoreData(true);
-                    }
-                }
-                return newData;
-            });
-            setIsLoadingMore(false);
+            // The filter/sort effect above clears local rows in the same commit.
+            // Do not immediately append the previous query result back.
+            if (skipNextExternalDataSyncRef.current) {
+                skipNextExternalDataSyncRef.current = false
+                setIsLoadingMore(false)
+                return
+            }
+            const existingIds = new Set((dataRef.current || []).map(item => item.id))
+            const newItems = initialData.filter(item => !existingIds.has(item.id))
+            const newData = [...(dataRef.current || []), ...newItems]
+            const nextHasMore = totalRows > 0
+                ? newData.length < totalRows
+                : initialData.length >= pageSize
+
+            setTableData(newData)
+            setHasMoreData((currentValue) => currentValue === nextHasMore ? currentValue : nextHasMore)
+            setIsLoadingMore(false)
         } else {
-            setData(effectiveEnableEmptyRow ? ensureEmptyRow(initialData) : initialData);
+            const nextData = effectiveEnableEmptyRow ? ensureEmptyRow(initialData) : initialData
+            setTableData(nextData)
         }
-    }, [initialData, lazy, infiniteScroll, pageSize, totalRows, effectiveEnableEmptyRow, ensureEmptyRow]);
+    }, [initialData, lazy, infiniteScroll, pageSize, totalRows, effectiveEnableEmptyRow, ensureEmptyRow, setTableData]);
 
     // Обработчик загрузки следующей страницы
     const loadMore = useCallback(() => {
@@ -230,97 +285,114 @@ export default function Table({
     // Lazy-загрузка при изменении параметров (только для обычной пагинации)
     useEffect(() => {
         if (!lazy || infiniteScroll) return; // при infiniteScroll мы вызываем вручную
-        onLazyLoad?.({ pageIndex, pageSize, sorting, globalFilter, columnFilters });
-    }, [lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad, infiniteScroll]);
+        onLazyLoad?.({ pageIndex: effectivePageIndex, pageSize, sorting, globalFilter, columnFilters });
+    }, [lazy, effectivePageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad, infiniteScroll]);
 
     const handleEdit = useCallback((updatedItem) => {
-        setData((old) => {
-            const newData = old.map((item) => item.id === updatedItem.id ? updatedItem : item)
-            if (onDataChange) {
-                onDataChange(newData.filter(i => i.id > 0), { id: updatedItem.id, operation: 'edit', data: updatedItem })
-            } else {
-                onEditSuccess?.(updatedItem)
-            }
-            return newData
-        })
-    }, [onDataChange, onEditSuccess])
+        const newData = setTableData((old) => (
+            old.map((item) => item.id === updatedItem.id ? updatedItem : item)
+        ))
+
+        if (onDataChange) {
+            onDataChange(newData.filter(i => i.id > 0), {
+                id: updatedItem.id,
+                operation: 'edit',
+                data: updatedItem,
+            })
+        } else {
+            onEditSuccess?.(updatedItem)
+        }
+    }, [onDataChange, onEditSuccess, setTableData])
 
     const handleDelete = useCallback((item) => {
         if (item.id < 0) return
-        setData((old) => {
-            const newData = old.filter((i) => i.id !== item.id)
-            const totalItems = newData.filter(i => i.id > 0).length
-            const maxPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
-            if (pageIndex > maxPage) setPageIndex(maxPage)
-            const finalData = effectiveEnableEmptyRow ? ensureEmptyRow(newData) : newData
-            if (onDataChange) {
-                onDataChange(finalData.filter(i => i.id > 0), { id: item.id, operation: 'delete', data: item })
-            } else {
-                onDeleteSuccess?.(item)
-            }
-            return finalData
-        })
-    }, [pageSize, pageIndex, effectiveEnableEmptyRow, ensureEmptyRow, onDataChange, onDeleteSuccess])
+        const newData = (dataRef.current || []).filter((row) => row.id !== item.id)
+        const finalData = effectiveEnableEmptyRow ? ensureEmptyRow(newData) : newData
+        const totalItems = finalData.filter(row => row.id > 0).length
+        const maxPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
+
+        setTableData(finalData)
+        if (pageIndex > maxPage) setPageIndex(maxPage)
+
+        if (onDataChange) {
+            onDataChange(finalData.filter(i => i.id > 0), {
+                id: item.id,
+                operation: 'delete',
+                data: item,
+            })
+        } else {
+            onDeleteSuccess?.(item)
+        }
+    }, [pageSize, pageIndex, effectiveEnableEmptyRow, ensureEmptyRow, onDataChange, onDeleteSuccess, setTableData])
 
     const handleAdd = useCallback((newItem) => {
-        setData((old) => {
-            const dataWithoutEmpty = old.filter(item => item.id > 0)
-            const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
-            const itemWithId = { ...newItem, id: maxId + 1 }
-            const finalData = effectiveEnableEmptyRow ? ensureEmptyRow([...dataWithoutEmpty, itemWithId]) : [...dataWithoutEmpty, itemWithId]
-            if (onDataChange) {
-                onDataChange(finalData.filter(i => i.id > 0), { id: itemWithId.id, operation: 'add', data: itemWithId })
-            } else {
-                onAddSuccess?.(itemWithId)
-            }
-            const totalItems = finalData.filter(i => i.id > 0).length
-            const lastPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
-            setPageIndex(lastPage)
-            return finalData
-        })
-    }, [pageSize, effectiveEnableEmptyRow, ensureEmptyRow, onDataChange, onAddSuccess])
+        const dataWithoutEmpty = (dataRef.current || []).filter(item => item.id > 0)
+        const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
+        const itemWithId = { ...newItem, id: maxId + 1 }
+        const finalData = effectiveEnableEmptyRow
+            ? ensureEmptyRow([...dataWithoutEmpty, itemWithId])
+            : [...dataWithoutEmpty, itemWithId]
+        const totalItems = finalData.filter(i => i.id > 0).length
+        const lastPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1)
+
+        setTableData(finalData)
+        setPageIndex(lastPage)
+
+        if (onDataChange) {
+            onDataChange(finalData.filter(i => i.id > 0), {
+                id: itemWithId.id,
+                operation: 'add',
+                data: itemWithId,
+            })
+        } else {
+            onAddSuccess?.(itemWithId)
+        }
+    }, [pageSize, effectiveEnableEmptyRow, ensureEmptyRow, onDataChange, onAddSuccess, setTableData])
 
     const handleCellEdit = useCallback((row, columnId, value) => {
         if (row.id < 0) {
-            setData((old) => {
-                const dataWithoutEmpty = old.filter(item => item.id > 0)
-                const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
-                const newRow = { ...row, [columnId]: value, id: maxId + 1 }
-                const filtered = old.filter(item => item.id !== row.id)
-                const finalData = effectiveEnableEmptyRow ? ensureEmptyRow([...filtered, newRow]) : [...filtered, newRow]
-                onCellEdit?.(newRow, columnId, value)
-                if (onDataChange) {
-                    onDataChange(finalData.filter(i => i.id > 0), { id: newRow.id, operation: 'add', data: newRow })
-                } else {
-                    onAddSuccess?.(newRow)
-                }
-                return finalData
+            const currentData = dataRef.current || []
+            const dataWithoutEmpty = currentData.filter(item => item.id > 0)
+            const maxId = dataWithoutEmpty.reduce((max, item) => Math.max(max, item.id || 0), 0)
+            const newRow = { ...row, [columnId]: value, id: maxId + 1 }
+            const filtered = currentData.filter(item => item.id !== row.id)
+            const finalData = effectiveEnableEmptyRow
+                ? ensureEmptyRow([...filtered, newRow])
+                : [...filtered, newRow]
+
+            setTableData(finalData)
+            onCellEdit?.(newRow, columnId, value)
+            if (onDataChange) {
+                onDataChange(finalData.filter(i => i.id > 0), {
+                    id: newRow.id,
+                    operation: 'add',
+                    data: newRow,
+                })
+            } else {
+                onAddSuccess?.(newRow)
+            }
+            return
+        }
+
+        const currentRow = (dataRef.current || []).find(item => item.id === row.id)
+        if (!currentRow) return
+
+        const updatedItem = { ...currentRow, [columnId]: value }
+        const newData = (dataRef.current || []).map(item => item.id === row.id ? updatedItem : item)
+        setTableData(newData)
+        onCellEdit?.(updatedItem, columnId, value)
+        if (onDataChange) {
+            onDataChange(newData.filter(i => i.id > 0), {
+                id: row.id,
+                operation: 'edit',
+                data: updatedItem,
+                column: columnId,
+                value,
             })
         } else {
-            if (data.some(item => item.id === row.id)) {
-                setData((old) => {
-                    const currentRow = old.find(item => item.id === row.id)
-                    if (!currentRow) return old
-
-                    const updatedItem = { ...currentRow, [columnId]: value }
-                    const newData = old.map(item => item.id === row.id ? updatedItem : item)
-                    onCellEdit?.(updatedItem, columnId, value)
-                    if (onDataChange) {
-                        onDataChange(newData.filter(i => i.id > 0), {
-                            id: row.id,
-                            operation: 'edit',
-                            data: updatedItem,
-                            column: columnId,
-                            value,
-                        })
-                    } else {
-                        onEditSuccess?.(updatedItem)
-                    }
-                    return newData
-                })
-            }
+            onEditSuccess?.(updatedItem)
         }
-    }, [data, effectiveEnableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange, onEditSuccess])
+    }, [effectiveEnableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange, onEditSuccess, setTableData])
 
     // ---------- ФУНКЦИИ ВЫДЕЛЕНИЯ ----------
     const isCellSelected = useCallback((rowIndex, colIndex) => {
@@ -487,12 +559,22 @@ export default function Table({
             expanded,
             columnVisibility,
             columnOrder,
-            pagination: { pageIndex, pageSize },
+            pagination: { pageIndex: effectivePageIndex, pageSize },
             columnSizing,
+            rowSelection,
         },
-        onSortingChange: setSorting,
-        onGlobalFilterChange: setGlobalFilter,
-        onColumnFiltersChange: setColumnFilters,
+        onSortingChange: (updater) => {
+            setSorting(updater)
+            setPageIndex(0)
+        },
+        onGlobalFilterChange: (value) => {
+            setGlobalFilter(value)
+            setPageIndex(0)
+        },
+        onColumnFiltersChange: (updater) => {
+            setColumnFilters(updater)
+            setPageIndex(0)
+        },
         onGroupingChange: setGrouping,
         onExpandedChange: setExpanded,
         onColumnVisibilityChange: setColumnVisibility,
@@ -505,25 +587,22 @@ export default function Table({
             if (newState.pageSize !== pageSize) setPageSize(newState.pageSize)
         },
         onColumnSizingChange: setColumnSizing,
-        manualPagination: lazy,
-        manualSorting: lazy,
-        manualFiltering: lazy,
-        pageCount: lazy ? Math.ceil(totalRows / pageSize) : undefined,
+        manualPagination: lazy && enablePagination,
+        manualSorting: lazy && enableSorting,
+        manualFiltering: lazy && enableFiltering,
+        pageCount: lazy && enablePagination ? Math.max(1, Math.ceil(totalRows / pageSize)) : undefined,
+        enableRowSelection: enableSelection ? (row) => row.original.id > 0 : false,
+        onRowSelectionChange: setRowSelection,
         enableColumnResizing: true,
         columnResizeMode: 'onChange',
         getCoreRowModel: getCoreRowModel(),
-        ...(lazy
-            ? {}
-            : {
-                getSortedRowModel: getSortedRowModel(),
-                getFilteredRowModel: getFilteredRowModel(),
-                getPaginationRowModel: getPaginationRowModel(),
-            }
-        ),
-        getGroupedRowModel: getGroupedRowModel(),
-        getExpandedRowModel: getExpandedRowModel(),
+        ...(!lazy && enableSorting ? { getSortedRowModel: getSortedRowModel() } : {}),
+        ...(!lazy && enableFiltering ? { getFilteredRowModel: getFilteredRowModel() } : {}),
+        ...(!lazy && enablePagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
+        ...(enableGrouping ? { getGroupedRowModel: getGroupedRowModel() } : {}),
+        ...(enableGrouping ? { getExpandedRowModel: getExpandedRowModel() } : {}),
         filterFns: { text: textFilter, numberContains: numberContainsFilter },
-        meta: {},
+        meta: tableMeta,
         enableSorting,
         enableColumnFilters: enableFiltering,
         enableGrouping,
@@ -531,14 +610,17 @@ export default function Table({
         autoResetPageIndex: false,
         getRowId: useCallback(row => String(row.id), []),
     })
+    const pageCount = Math.max(1, table.getPageCount())
+    const loadedRowCount = data.filter(item => item.id > 0).length
+    const totalCount = lazy && totalRows > 0 ? totalRows : loadedRowCount
 
     // ---------- МАССОВОЕ ПРИМЕНЕНИЕ ----------
     const applyValueToSelectedCells = useCallback((value) => {
         if (selectedCells.size === 0) return
         const rows = table.getRowModel().rows
-        const allColumns = table.getAllColumns().filter(col => col.getIsVisible())
+        const visibleColumns = table.getVisibleLeafColumns()
         const updates = []
-        const newData = [...data]
+        const newData = [...(dataRef.current || [])]
         selectedCells.forEach(key => {
             const [rowIndexStr, colIndexStr] = key.split('-')
             const rowIndex = parseInt(rowIndexStr, 10)
@@ -547,28 +629,29 @@ export default function Table({
             if (!row) return
             const originalRow = row.original
             if (originalRow.id < 0) return
-            const column = allColumns[colIndex]
-            if (!column) return
+            const column = visibleColumns[colIndex]
+            if (!column || !column.columnDef.accessorKey) return
+            if (column.columnDef.enableEditing === false || column.columnDef.editable === false) return
             const columnId = column.id
             const dataIndex = newData.findIndex(item => item.id === originalRow.id)
             if (dataIndex === -1) return
             newData[dataIndex] = { ...newData[dataIndex], [columnId]: value }
             updates.push({ id: originalRow.id, columnId, value })
         })
-        setData(newData)
+        if (updates.length === 0) return
+
+        setTableData(newData)
+        setSelectedCells(new Set())
+        setLastSelectedCell(null)
         if (onDataChange) {
             onDataChange(newData.filter(i => i.id > 0), {
                 operation: 'batchEdit',
                 updates,
             })
         }
-    }, [selectedCells, data, table, onDataChange])
+    }, [selectedCells, table, onDataChange, setTableData])
 
-    useEffect(() => {
-        if (table && table.options.meta) {
-            table.options.meta.applyValueToSelectedCells = applyValueToSelectedCells
-        }
-    }, [table, applyValueToSelectedCells])
+    applyValueToSelectedCellsRef.current = applyValueToSelectedCells
 
     // ---------- ЭКСПОРТ ----------
     const getExportData = useCallback(async (selectedOnly = false) => {
@@ -707,7 +790,7 @@ export default function Table({
                                 type="text"
                                 placeholder="Значение для выделенных"
                                 className="table-batch-input"
-                                id="batch-value-input"
+                                ref={batchValueInputRef}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         applyValueToSelectedCells(e.currentTarget.value)
@@ -717,7 +800,7 @@ export default function Table({
                             />
                             <button
                                 onClick={() => {
-                                    const input = document.getElementById('batch-value-input')
+                                    const input = batchValueInputRef.current
                                     if (input) {
                                         applyValueToSelectedCells(input.value)
                                         input.value = ''
@@ -882,7 +965,7 @@ export default function Table({
 
             <div className="table-footer">
                 <div className="table-footer-info">
-                    Всего: <strong>{totalRows}</strong> записей
+                    Всего: <strong>{totalCount}</strong> записей
                     {enableSelection && table.getSelectedRowModel().rows.length > 0 && (
                         <span className="table-footer-selected">, выбрано: <strong>{table.getSelectedRowModel().rows.length}</strong></span>
                     )}
@@ -891,9 +974,9 @@ export default function Table({
                     <div className="table-pagination">
                         <button onClick={() => setPageIndex(0)} disabled={pageIndex === 0} className="table-page-button">⟪</button>
                         <button onClick={() => setPageIndex(p => Math.max(0, p - 1))} disabled={pageIndex === 0} className="table-page-button">⟨</button>
-                        <span className="table-page-info">Страница {pageIndex + 1} из {table.getPageCount()}</span>
-                        <button onClick={() => setPageIndex(p => Math.min(table.getPageCount() - 1, p + 1))} disabled={pageIndex >= table.getPageCount() - 1} className="table-page-button">⟩</button>
-                        <button onClick={() => setPageIndex(table.getPageCount() - 1)} disabled={pageIndex >= table.getPageCount() - 1} className="table-page-button">⟫</button>
+                        <span className="table-page-info">Страница {pageIndex + 1} из {pageCount}</span>
+                        <button onClick={() => setPageIndex(p => Math.min(pageCount - 1, p + 1))} disabled={pageIndex >= pageCount - 1} className="table-page-button">⟩</button>
+                        <button onClick={() => setPageIndex(pageCount - 1)} disabled={pageIndex >= pageCount - 1} className="table-page-button">⟫</button>
                     </div>
                 )}
                 {infiniteScroll && (
