@@ -18,6 +18,7 @@ import Button from '../components/Button/Button'
 import LinkButton from '../components/LinkButton/LinkButton'
 
 export default function Samples() {
+    const tableName = 'samples'
     const { user } = useContext(UserContext)
     const params = useParams()
     const [samples, setSamples] = useState([])
@@ -67,13 +68,14 @@ export default function Samples() {
                 ws.send(JSON.stringify({
                     type: 'authenticate',
                     token,
+                    table_name: tableName,
                 }))
             }
 
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data)
-                    if (data.table_name === 'samples') {
+                    if (data.table_name === tableName) {
                         if (data.editor === null) {
                             setEditor(null)
                         } else {
@@ -112,7 +114,7 @@ export default function Samples() {
     const sendWsMessage = useCallback((action) => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify({
-                table_name: 'samples',
+                table_name: tableName,
                 action: action,
             }))
         } else {
