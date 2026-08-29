@@ -12,6 +12,55 @@ import Badge from '../../components/Badge/Badge'
 import ProgressBar from '../../components/ProgressBar/ProgressBar'
 import LinkButton from '../../components/LinkButton/LinkButton'
 
+const UNKNOWN_DATE_KEY = 'unknown'
+
+function getTaskCreationDateKey(createdAt) {
+    if (!createdAt) return UNKNOWN_DATE_KEY
+
+    const date = new Date(createdAt)
+    if (Number.isNaN(date.getTime())) return UNKNOWN_DATE_KEY
+
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
+function formatTaskCreationDate(dateKey) {
+    if (dateKey === UNKNOWN_DATE_KEY) return 'Дата неизвестна'
+
+    const [year, month, day] = dateKey.split('-').map(Number)
+    return new Date(year, month - 1, day).toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    })
+}
+
+function groupTasksByCreationDate(tasks) {
+    const groups = new Map()
+
+    tasks.forEach((task) => {
+        const dateKey = getTaskCreationDateKey(task.created_at)
+        if (!groups.has(dateKey)) {
+            groups.set(dateKey, [])
+        }
+        groups.get(dateKey).push(task)
+    })
+
+    return [...groups.entries()]
+        .sort(([firstKey], [secondKey]) => {
+            if (firstKey === UNKNOWN_DATE_KEY) return 1
+            if (secondKey === UNKNOWN_DATE_KEY) return -1
+            return secondKey.localeCompare(firstKey)
+        })
+        .map(([dateKey, dateTasks]) => ({
+            dateKey,
+            dateTasks,
+            label: formatTaskCreationDate(dateKey),
+        }))
+}
+
 export default function TasksSection({ departmentName }) {
     const { user } = use(UserContext)
     const [assignedTasks, setAssignedTasks] = useState([])
@@ -418,6 +467,10 @@ export default function TasksSection({ departmentName }) {
     const sortedCreated = useMemo(() => applySort(createdTasks), [createdTasks, sortOptions])
     const sortedArchived = useMemo(() => applySort(archivedTasks), [archivedTasks, sortOptions])
 
+    const assignedTaskGroups = useMemo(() => groupTasksByCreationDate(sortedAssigned), [sortedAssigned])
+    const createdTaskGroups = useMemo(() => groupTasksByCreationDate(sortedCreated), [sortedCreated])
+    const archivedTaskGroups = useMemo(() => groupTasksByCreationDate(sortedArchived), [sortedArchived])
+
     // Построение элементов Accordion
     const buildAccordionItems = (tasks, isCreatedTab = false) => {
         return tasks.map((task) => {
@@ -610,6 +663,27 @@ export default function TasksSection({ departmentName }) {
         })
     }
 
+    const renderTaskGroups = (groups, isCreatedTab = false) => (
+        <div className="tasks-groups">
+            {groups.map(({ dateKey, dateTasks, label }) => (
+                <section className="tasks-group" key={dateKey}>
+                    <div className="tasks-group__header">
+                        <h4 className="tasks-group__title">{label}</h4>
+                        <span className="tasks-group__count">
+                            {dateTasks.length}
+                        </span>
+                    </div>
+                    <Accordion
+                        items={buildAccordionItems(dateTasks, isCreatedTab)}
+                        multiple
+                        defaultOpen={[]}
+                        variant="compact"
+                    />
+                </section>
+            ))}
+        </div>
+    )
+
     return (
         <div className="tasks-section">
             <div className="tasks-section__header">
@@ -684,12 +758,7 @@ export default function TasksSection({ departmentName }) {
                                 <p>Пока не назначены задачи</p>
                             </div>
                         ) : (
-                            <Accordion
-                                items={buildAccordionItems(sortedAssigned, false)}
-                                multiple
-                                defaultOpen={[]}
-                                variant="compact"
-                            />
+                            renderTaskGroups(assignedTaskGroups)
                         )
                     )}
 
@@ -700,12 +769,7 @@ export default function TasksSection({ departmentName }) {
                                 <p>Вы ещё не создали ни одной задачи</p>
                             </div>
                         ) : (
-                            <Accordion
-                                items={buildAccordionItems(sortedCreated, true)}
-                                multiple
-                                defaultOpen={[]}
-                                variant="compact"
-                            />
+                            renderTaskGroups(createdTaskGroups, true)
                         )
                     )}
 
@@ -716,12 +780,7 @@ export default function TasksSection({ departmentName }) {
                                 <p>Нет архивированных задач</p>
                             </div>
                         ) : (
-                            <Accordion
-                                items={buildAccordionItems(sortedArchived, true)}
-                                multiple
-                                defaultOpen={[]}
-                                variant="compact"
-                            />
+                            renderTaskGroups(archivedTaskGroups, true)
                         )
                     )}
                 </>

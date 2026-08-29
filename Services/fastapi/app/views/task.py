@@ -39,6 +39,34 @@ def _format_change_comment(field: str, old_value, new_value) -> str:
     return comments.get(field, f"Изменено поле '{field}'")
 
 
+def _task_response_options():
+    """Relationships required by ``serialize_task``.
+
+    Task responses must not trigger lazy loading: AsyncSession cannot perform
+    an implicit database query while a synchronous serializer accesses a
+    relationship.
+    """
+    return [
+        selectinload(Task.created_by),
+        selectinload(Task.assigned_to),
+        selectinload(Task.protocol).selectinload(Protocol.stages),
+        selectinload(Task.task_stages),
+        selectinload(Task.batches).selectinload(Batch.samples),
+        selectinload(Task.history).selectinload(QueryHistory.user),
+    ]
+
+
+async def _get_task_for_response(session: SessionDep, task_id: int):
+    """Load a fresh, fully eager-loaded task for response serialization."""
+    statement = (
+        select(Task)
+        .where(Task.id == task_id)
+        .options(*_task_response_options())
+        .execution_options(populate_existing=True)
+    )
+    return (await session.exec(statement)).one_or_none()
+
+
 # ============================================
 # GET /tasks/
 # ============================================
@@ -142,18 +170,7 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
     if not request.state.user:
         return {"ok": False, "error": "Can not authenticate."}
 
-    task = await session.get(
-        Task,
-        task_id,
-        options=[
-            selectinload(Task.created_by),
-            selectinload(Task.assigned_to),
-            selectinload(Task.protocol).selectinload(Protocol.stages),
-            selectinload(Task.task_stages),
-            selectinload(Task.batches).selectinload(Batch.samples),
-            selectinload(Task.history).selectinload(QueryHistory.user),
-        ],
-    )
+    task = await _get_task_for_response(session, task_id)
 
     if not task:
         return {"ok": False, "error": "Not found task."}
@@ -223,18 +240,7 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
     session.add(history)
     await session.commit()
 
-    result = await session.get(
-        Task,
-        task_id,
-        options=[
-            selectinload(Task.created_by),
-            selectinload(Task.assigned_to),
-            selectinload(Task.protocol).selectinload(Protocol.stages),
-            selectinload(Task.task_stages),
-            selectinload(Task.batches).selectinload(Batch.samples),
-            selectinload(Task.history).selectinload(QueryHistory.user),
-        ],
-    )
+    result = await _get_task_for_response(session, task_id)
     return {"ok": True, "data": serialize_task(result)}
 
 
@@ -366,18 +372,7 @@ async def update_task(
         session.add(task)
         await session.commit()
         # После коммита загружаем свежую задачу со связями
-        result = await session.get(
-            Task,
-            task_id_value,
-            options=[
-                selectinload(Task.created_by),
-                selectinload(Task.assigned_to),
-                selectinload(Task.protocol).selectinload(Protocol.stages),
-                selectinload(Task.task_stages),
-                selectinload(Task.batches).selectinload(Batch.samples),
-                selectinload(Task.history).selectinload(QueryHistory.user),
-            ],
-        )
+        result = await _get_task_for_response(session, task_id_value)
         # Сохраняем историю изменений
         for change in changes:
             action_type = ActionType.UPDATED
@@ -409,36 +404,14 @@ async def update_task(
             session.add(history)
         await session.commit()
         # Перезагружаем результат с историей
-        result = await session.get(
-            Task,
-            task_id_value,
-            options=[
-                selectinload(Task.created_by),
-                selectinload(Task.assigned_to),
-                selectinload(Task.protocol).selectinload(Protocol.stages),
-                selectinload(Task.task_stages),
-                selectinload(Task.batches).selectinload(Batch.samples),
-                selectinload(Task.history).selectinload(QueryHistory.user),
-            ],
-        )
+        result = await _get_task_for_response(session, task_id_value)
         return {
             "ok": True,
             "data": serialize_task(result),
         }
     else:
         # Если изменений не было, просто возвращаем задачу
-        result = await session.get(
-            Task,
-            task_id_value,
-            options=[
-                selectinload(Task.created_by),
-                selectinload(Task.assigned_to),
-                selectinload(Task.protocol).selectinload(Protocol.stages),
-                selectinload(Task.task_stages),
-                selectinload(Task.batches).selectinload(Batch.samples),
-                selectinload(Task.history).selectinload(QueryHistory.user),
-            ],
-        )
+        result = await _get_task_for_response(session, task_id_value)
         return {
             "ok": True,
             "data": serialize_task(result),
