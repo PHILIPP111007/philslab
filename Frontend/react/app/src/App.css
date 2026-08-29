@@ -540,3 +540,7 @@ body {
         min-height: 28px;
     }
 }
+
+.AppBottomBlock {
+    margin-top: 100px;
+}

@@ -62,6 +62,7 @@ export default function App() {
                                     <Route path="*" element={<ErrorPage />} />
                                 </Routes>
                             </Suspense>
+                            <div className="AppBottomBlock"></div>
                         </div>
                     </ThemeProvider>
                 </BrowserRouter>
