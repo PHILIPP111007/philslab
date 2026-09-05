@@ -16,6 +16,7 @@ export default function Statistics() {
     return (
         <>
             <Header />
+            <br />
             <section className="section section-filled">
                 <br />
                 <h3 className="section__title">📊 Статистика завершённых задач</h3>

@@ -1,8 +1,9 @@
+import './History.css'
 import { useCallback, useEffect, useState } from 'react'
 import Fetch from '../../../API/Fetch'
 import { APIVersion, HttpMethod } from '../../../data/enums'
 import { formatDate } from '../../../modules/dateTime'
-import './History.css'
+import Spinner from '../Spinner/Spinner'
 
 const ACTION_LABELS = {
     created: 'Создание',
@@ -70,7 +71,7 @@ export default function History({
     if (!enabled) return null
 
     return (
-        <section className="entity-history">
+        <section className="section section-filled">
             <div className="entity-history__header">
                 <h3 className="entity-history__title">{title}</h3>
                 <button
@@ -80,7 +81,7 @@ export default function History({
                     disabled={loading}
                     title="Обновить историю"
                 >
-                    {loading ? '⏳' : '↻'}
+                    {loading ? <Spinner /> : '↻'}
                 </button>
             </div>
 

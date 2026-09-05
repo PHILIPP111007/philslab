@@ -133,12 +133,6 @@ export default function User() {
                     </div>
                 </div>
 
-                <History
-                    entityType="user"
-                    entityId={displayedUser?.id}
-                    refreshKey={historyRefresh}
-                />
-
                 {isEditing && (
                     <div className="user-modal-overlay" onClick={handleCancel}>
                         <div className="user-modal" onClick={(e) => e.stopPropagation()}>
@@ -212,7 +206,16 @@ export default function User() {
                     </div>
                 )}
 
-                <TasksSection />
+                <br />
+                <section className="section section-filled">
+                    <TasksSection />
+                </section>
+
+                <History
+                    entityType="user"
+                    entityId={displayedUser?.id}
+                    refreshKey={historyRefresh}
+                />
             </div>
         </>
     )
