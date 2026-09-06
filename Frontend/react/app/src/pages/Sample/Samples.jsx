@@ -22,7 +22,13 @@ export default function Samples() {
     const { user } = useContext(UserContext)
     const params = useParams()
     const [samples, setSamples] = useState([])
-    const [lazyParams, setLazyParams] = useState(null)
+    const [lazyParams, setLazyParams] = useState(() => ({
+        pageIndex: 0,
+        pageSize: 10,
+        sorting: [],
+        globalFilter: '',
+        columnFilters: [],
+    }))
     const [totalRows, setTotalRows] = useState(0)
     const [loading, setLoading] = useState(true)
     const [materialTypeOptions, setMaterialTypeOptions] = useState([])
@@ -476,26 +482,9 @@ export default function Samples() {
 
     // ---------- ЭФФЕКТЫ ----------
     const handleLazyLoad = useCallback((params) => {
-        setLazyParams(params);
-    }, []);
-
-    useEffect(() => {
-        setLoading(true)
-        const initialParams = {
-            pageIndex: 0,
-            pageSize: 10,
-            sorting: [],
-            globalFilter: '',
-            columnFilters: [],
-        }
-        setLazyParams(initialParams)
-    }, [])
-
-    useEffect(() => {
-        if (lazyParams) {
-            fetchSamples(lazyParams)
-        }
-    }, [lazyParams, fetchSamples])
+        setLazyParams(params)
+        fetchSamples(params)
+    }, [fetchSamples]);
 
     // ---------- РЕНДЕР ----------
     return (

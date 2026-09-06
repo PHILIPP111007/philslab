@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import Fetch from '../../../API/Fetch'
 import { notify_error } from '../../../modules/notify'
 import { useDepartments } from '../../../hooks/useDepartments'
@@ -161,6 +161,7 @@ export default function Batches({ department = null, username = '' }) {
             setBatches(res.data || [])
             setTotalRows(res.total || 0)
         }
+        setLoading(false)
     }, [department])
 
     // ---------- ОБРАБОТЧИКИ CRUD (с учётом department) ----------
@@ -218,19 +219,10 @@ export default function Batches({ department = null, username = '' }) {
     }
 
     // ---------- ЭФФЕКТЫ ----------
-    useEffect(() => {
-        if (lazyParams) {
-            fetchBatches(lazyParams)
-        }
-    }, [lazyParams, fetchBatches])
-
-    useEffect(() => {
-        loadBatches()
-    }, [loadBatches])
-
     const handleLazyLoad = useCallback((params) => {
         setLazyParams(params)
-    }, [])
+        fetchBatches(params)
+    }, [fetchBatches])
 
     // ---------- СТАТИСТИКА ----------
     const totalSamples = batches.reduce((sum, b) => sum + (b.sample_count || 0), 0)

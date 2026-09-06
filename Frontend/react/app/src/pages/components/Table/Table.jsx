@@ -190,6 +190,7 @@ export default function Table({
     const applyValueToSelectedCellsRef = useRef(null)
     const batchValueInputRef = useRef(null)
     const skipNextExternalDataSyncRef = useRef(false)
+    const lastLazyRequestKeyRef = useRef(null)
     const tableMeta = useMemo(() => ({
         applyValueToSelectedCells: (...args) => (
             applyValueToSelectedCellsRef.current?.(...args)
@@ -198,6 +199,27 @@ export default function Table({
 
     const effectiveEnableEmptyRow = infiniteScroll ? false : enableEmptyRow
     const effectivePageIndex = enablePagination ? pageIndex : 0
+
+    // Не отправляем одинаковый lazy-запрос повторно. Это также защищает от
+    // повторного запуска эффектов при монтировании в React Strict Mode.
+    const requestLazyLoad = useCallback((params) => {
+        if (!onLazyLoad) return
+
+        const requestKey = JSON.stringify({
+            lazy,
+            infiniteScroll,
+            pageIndex: params.pageIndex,
+            pageSize: params.pageSize,
+            sorting: params.sorting,
+            globalFilter: params.globalFilter,
+            columnFilters: params.columnFilters,
+        })
+
+        if (lastLazyRequestKeyRef.current === requestKey) return
+
+        lastLazyRequestKeyRef.current = requestKey
+        onLazyLoad(params)
+    }, [infiniteScroll, lazy, onLazyLoad])
 
     // ---------- эффекты ----------
     useEffect(() => {
@@ -219,9 +241,9 @@ export default function Table({
             setPageIndex((currentPage) => currentPage === 0 ? currentPage : 0)
             setHasMoreData(true);
             setIsLoadingMore(false);
-            onLazyLoad?.({ pageIndex: 0, pageSize, sorting, globalFilter, columnFilters });
+            requestLazyLoad({ pageIndex: 0, pageSize, sorting, globalFilter, columnFilters });
         }
-    }, [sorting, globalFilter, columnFilters, infiniteScroll, onLazyLoad, pageSize, setTableData]);
+    }, [sorting, globalFilter, columnFilters, infiniteScroll, pageSize, requestLazyLoad, setTableData]);
 
     // Синхронизация внешних данных с локальным состоянием таблицы.
     useEffect(() => {
@@ -257,8 +279,8 @@ export default function Table({
         // Обновляем pageIndex, чтобы отображать текущую страницу (опционально)
         setPageIndex(nextPage);
         // И сразу вызываем загрузку
-        onLazyLoad?.({ pageIndex: nextPage, pageSize, sorting, globalFilter, columnFilters });
-    }, [isLoadingMore, hasMoreData, lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad]);
+        requestLazyLoad({ pageIndex: nextPage, pageSize, sorting, globalFilter, columnFilters });
+    }, [isLoadingMore, hasMoreData, lazy, pageIndex, pageSize, sorting, globalFilter, columnFilters, requestLazyLoad]);
 
     // Наблюдаем за последней строкой через callback ref: изменение ref.current
     // само по себе не вызывает ререндер и не может быть dependency effect.
@@ -285,8 +307,8 @@ export default function Table({
     // Lazy-загрузка при изменении параметров (только для обычной пагинации)
     useEffect(() => {
         if (!lazy || infiniteScroll) return; // при infiniteScroll мы вызываем вручную
-        onLazyLoad?.({ pageIndex: effectivePageIndex, pageSize, sorting, globalFilter, columnFilters });
-    }, [lazy, effectivePageIndex, pageSize, sorting, globalFilter, columnFilters, onLazyLoad, infiniteScroll]);
+        requestLazyLoad({ pageIndex: effectivePageIndex, pageSize, sorting, globalFilter, columnFilters });
+    }, [lazy, effectivePageIndex, pageSize, sorting, globalFilter, columnFilters, requestLazyLoad, infiniteScroll]);
 
     const handleEdit = useCallback((updatedItem) => {
         const newData = setTableData((old) => (

@@ -12,7 +12,8 @@ import Badge from '../components/Badge/Badge';
 
 export default function AdminPage() {
     const params = useParams();
-    const [loading, setLoading] = useState(true);
+    // Начальная загрузка запускается самой lazy-таблицей.
+    const [loading, setLoading] = useState(false);
     const [protocols, setProtocols] = useState([]);
     const [totalRows, setTotalRows] = useState(0);
 
@@ -74,10 +75,6 @@ export default function AdminPage() {
             setTotalRows(res.total || 0);
         }
     }, []); // ← пустой массив
-
-    useEffect(() => {
-        loadProtocols();
-    }, [loadProtocols]);
 
     // ---------- CRUD протоколов ----------
     const handleCreateProtocol = async () => {
@@ -338,7 +335,7 @@ export default function AdminPage() {
     ], []);
 
     // ---------- Рендер ----------
-    if (loading) {
+    if (loading && protocols.length === 0) {
         return (
             <>
                 <Header />
