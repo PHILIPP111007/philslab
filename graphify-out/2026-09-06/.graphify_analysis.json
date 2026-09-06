@@ -1,0 +1,702 @@
+{
+  "communities": {
+    "0": [
+      "frontend_react_app_src_api_fetch",
+      "frontend_react_app_src_api_fetch_fetch",
+      "frontend_react_app_src_data_constants",
+      "frontend_react_app_src_data_context",
+      "frontend_react_app_src_data_enums",
+      "frontend_react_app_src_data_routes",
+      "frontend_react_app_src_hooks_useauth",
+      "frontend_react_app_src_hooks_useauth_usesetuser",
+      "frontend_react_app_src_hooks_usedepartments",
+      "frontend_react_app_src_hooks_usedepartments_usedepartments",
+      "frontend_react_app_src_modules_datetime",
+      "frontend_react_app_src_modules_datetime_formatdate",
+      "frontend_react_app_src_modules_notify",
+      "frontend_react_app_src_modules_rememberpage",
+      "frontend_react_app_src_modules_rememberpage_rememberpage",
+      "frontend_react_app_src_modules_token",
+      "frontend_react_app_src_modules_token_deletetoken",
+      "frontend_react_app_src_modules_token_gettoken",
+      "frontend_react_app_src_modules_token_settoken",
+      "frontend_react_app_src_pages_adminpage_adminpage",
+      "frontend_react_app_src_pages_adminpage_adminpage_adminpage",
+      "frontend_react_app_src_pages_batch_allbatches",
+      "frontend_react_app_src_pages_batch_allbatches_allbatches",
+      "frontend_react_app_src_pages_batch_batch",
+      "frontend_react_app_src_pages_batch_batch_batch",
+      "frontend_react_app_src_pages_components_accordion_accordion",
+      "frontend_react_app_src_pages_components_accordion_accordion_accordion",
+      "frontend_react_app_src_pages_components_alert_alert",
+      "frontend_react_app_src_pages_components_alert_alert_alert",
+      "frontend_react_app_src_pages_components_badge_badge",
+      "frontend_react_app_src_pages_components_badge_badge_badge",
+      "frontend_react_app_src_pages_components_batch_batches",
+      "frontend_react_app_src_pages_components_batch_batches_batches",
+      "frontend_react_app_src_pages_components_button_button",
+      "frontend_react_app_src_pages_components_button_button_button",
+      "frontend_react_app_src_pages_components_completedtaskschart_completedtaskschart",
+      "frontend_react_app_src_pages_components_completedtaskschart_completedtaskschart_completedtaskschart",
+      "frontend_react_app_src_pages_components_header_header",
+      "frontend_react_app_src_pages_components_header_header_header",
+      "frontend_react_app_src_pages_components_linkbutton_linkbutton",
+      "frontend_react_app_src_pages_components_linkbutton_linkbutton_linkbutton",
+      "frontend_react_app_src_pages_components_list_list",
+      "frontend_react_app_src_pages_components_list_list_list",
+      "frontend_react_app_src_pages_components_progressbar_progressbar",
+      "frontend_react_app_src_pages_components_progressbar_progressbar_progressbar",
+      "frontend_react_app_src_pages_components_spinner_spinner",
+      "frontend_react_app_src_pages_components_spinner_spinner_spinner",
+      "frontend_react_app_src_pages_components_statcard_statcard",
+      "frontend_react_app_src_pages_components_statcard_statcard_statcard",
+      "frontend_react_app_src_pages_components_table_table",
+      "frontend_react_app_src_pages_components_table_table_addmodal",
+      "frontend_react_app_src_pages_components_table_table_deletemodal",
+      "frontend_react_app_src_pages_components_table_table_editablecell",
+      "frontend_react_app_src_pages_components_table_table_editmodal",
+      "frontend_react_app_src_pages_components_table_table_numbercontainsfilter",
+      "frontend_react_app_src_pages_components_table_table_renderaggregation",
+      "frontend_react_app_src_pages_components_table_table_table",
+      "frontend_react_app_src_pages_components_table_table_tablerow",
+      "frontend_react_app_src_pages_components_table_table_textfilter",
+      "frontend_react_app_src_pages_components_taskssection_taskssection",
+      "frontend_react_app_src_pages_components_taskssection_taskssection_taskssection",
+      "frontend_react_app_src_pages_components_usercard_usercard",
+      "frontend_react_app_src_pages_components_usercard_usercard_usercard",
+      "frontend_react_app_src_pages_department_department",
+      "frontend_react_app_src_pages_department_department_department",
+      "frontend_react_app_src_pages_hello_hello",
+      "frontend_react_app_src_pages_login_login",
+      "frontend_react_app_src_pages_login_login_login",
+      "frontend_react_app_src_pages_mainpage_mainpage",
+      "frontend_react_app_src_pages_mainpage_mainpage_mainpage",
+      "frontend_react_app_src_pages_protocol_protocols",
+      "frontend_react_app_src_pages_protocol_protocols_protocols",
+      "frontend_react_app_src_pages_sample_sample",
+      "frontend_react_app_src_pages_sample_sample_sample",
+      "frontend_react_app_src_pages_sample_samples",
+      "frontend_react_app_src_pages_sample_samples_samples",
+      "frontend_react_app_src_pages_statistics_statistics",
+      "frontend_react_app_src_pages_statistics_statistics_statistics",
+      "frontend_react_app_src_pages_task_task",
+      "frontend_react_app_src_pages_task_task_task",
+      "frontend_react_app_src_pages_user_user",
+      "frontend_react_app_src_pages_user_user_user"
+    ],
+    "1": [
+      "services_fastapi_app_models_batch",
+      "services_fastapi_app_models_batch_batch",
+      "services_fastapi_app_models_batch_batch_subsample_count",
+      "services_fastapi_app_models_batch_py_sqlmodel",
+      "services_fastapi_app_models_batch_rationale_18",
+      "services_fastapi_app_models_batch_rationale_53",
+      "services_fastapi_app_models_batch_sample_link",
+      "services_fastapi_app_models_batch_sample_link_batchsamplelink",
+      "services_fastapi_app_models_batch_sample_link_py_sqlmodel",
+      "services_fastapi_app_models_batch_sample_link_rationale_7",
+      "services_fastapi_app_models_enums",
+      "services_fastapi_app_models_enums_actiontype",
+      "services_fastapi_app_models_enums_priority",
+      "services_fastapi_app_models_enums_py_enum",
+      "services_fastapi_app_models_enums_rationale_16",
+      "services_fastapi_app_models_init",
+      "services_fastapi_app_models_protocol",
+      "services_fastapi_app_models_protocol_protocol",
+      "services_fastapi_app_models_protocol_py_sqlmodel",
+      "services_fastapi_app_models_protocol_rationale_15",
+      "services_fastapi_app_models_protocol_stage_link",
+      "services_fastapi_app_models_protocol_stage_link_protocolstagelink",
+      "services_fastapi_app_models_protocol_stage_link_py_sqlmodel",
+      "services_fastapi_app_models_protocol_stage_link_rationale_7",
+      "services_fastapi_app_models_query_history",
+      "services_fastapi_app_models_query_history_py_sqlmodel",
+      "services_fastapi_app_models_query_history_queryhistory",
+      "services_fastapi_app_models_query_history_rationale_16",
+      "services_fastapi_app_models_sample",
+      "services_fastapi_app_models_sample_py_sqlmodel",
+      "services_fastapi_app_models_sample_rationale_15",
+      "services_fastapi_app_models_sample_sample",
+      "services_fastapi_app_models_stage",
+      "services_fastapi_app_models_stage_py_sqlmodel",
+      "services_fastapi_app_models_stage_rationale_13",
+      "services_fastapi_app_models_stage_stage",
+      "services_fastapi_app_models_task",
+      "services_fastapi_app_models_task_batch_link",
+      "services_fastapi_app_models_task_batch_link_py_sqlmodel",
+      "services_fastapi_app_models_task_batch_link_rationale_7",
+      "services_fastapi_app_models_task_batch_link_taskbatchlink",
+      "services_fastapi_app_models_task_py_sqlmodel",
+      "services_fastapi_app_models_task_rationale_85",
+      "services_fastapi_app_models_task_rationale_93",
+      "services_fastapi_app_models_task_stage",
+      "services_fastapi_app_models_task_stage_link",
+      "services_fastapi_app_models_task_stage_link_py_sqlmodel",
+      "services_fastapi_app_models_task_stage_link_rationale_7",
+      "services_fastapi_app_models_task_stage_link_taskstagelink",
+      "services_fastapi_app_models_task_stage_py_sqlmodel",
+      "services_fastapi_app_models_task_stage_rationale_13",
+      "services_fastapi_app_models_task_stage_taskstage",
+      "services_fastapi_app_models_task_task",
+      "services_fastapi_app_models_task_task_get_progress",
+      "services_fastapi_app_models_task_task_is_overdue",
+      "services_fastapi_app_models_token",
+      "services_fastapi_app_models_token_py_sqlmodel",
+      "services_fastapi_app_models_token_token",
+      "services_fastapi_app_models_user",
+      "services_fastapi_app_models_user_py_sqlmodel",
+      "services_fastapi_app_models_user_user",
+      "str"
+    ],
+    "2": [
+      "abstractbaseuser",
+      "permissionsmixin",
+      "register",
+      "services_django_app_admin",
+      "services_django_app_admin_batchadmin",
+      "services_django_app_admin_historyinline",
+      "services_django_app_admin_historyinline_has_add_permission",
+      "services_django_app_admin_protocoladmin",
+      "services_django_app_admin_protocoladmin_tasks_count",
+      "services_django_app_admin_queryhistoryadmin",
+      "services_django_app_admin_rationale_115",
+      "services_django_app_admin_rationale_40",
+      "services_django_app_admin_rationale_88",
+      "services_django_app_admin_sampleadmin",
+      "services_django_app_admin_stageadmin",
+      "services_django_app_admin_stageadmin_tasks_count",
+      "services_django_app_admin_taskadmin",
+      "services_django_app_admin_taskstageadmin",
+      "services_django_app_models_batch",
+      "services_django_app_models_batch_batch",
+      "services_django_app_models_batch_rationale_5",
+      "services_django_app_models_init",
+      "services_django_app_models_protocol",
+      "services_django_app_models_protocol_protocol",
+      "services_django_app_models_protocol_protocol_str",
+      "services_django_app_models_query_history",
+      "services_django_app_models_query_history_actiontype",
+      "services_django_app_models_query_history_queryhistory",
+      "services_django_app_models_sample",
+      "services_django_app_models_sample_rationale_5",
+      "services_django_app_models_sample_sample",
+      "services_django_app_models_sample_sample_str",
+      "services_django_app_models_stage",
+      "services_django_app_models_stage_rationale_5",
+      "services_django_app_models_stage_stage",
+      "services_django_app_models_task",
+      "services_django_app_models_task_priority",
+      "services_django_app_models_task_rationale_77",
+      "services_django_app_models_task_stage",
+      "services_django_app_models_task_stage_rationale_6",
+      "services_django_app_models_task_stage_taskstage",
+      "services_django_app_models_task_stage_taskstage_str",
+      "services_django_app_models_task_task",
+      "services_django_app_models_task_task_get_progress",
+      "services_django_app_models_task_task_is_overdue",
+      "services_django_app_models_task_task_str",
+      "services_django_app_models_user",
+      "services_django_app_models_user_user"
+    ],
+    "3": [
+      "services_fastapi_app_request_body_init",
+      "services_fastapi_app_request_body_task",
+      "services_fastapi_app_request_body_task_protocolcreate",
+      "services_fastapi_app_request_body_task_protocolupdate",
+      "services_fastapi_app_request_body_task_py_basemodel",
+      "services_fastapi_app_request_body_task_samplecreatefull",
+      "services_fastapi_app_request_body_task_sampleupdatefull",
+      "services_fastapi_app_request_body_task_stagecreate",
+      "services_fastapi_app_request_body_task_stageupdate",
+      "services_fastapi_app_request_body_task_taskcreate",
+      "services_fastapi_app_request_body_task_taskupdate",
+      "services_fastapi_app_views_protocol",
+      "services_fastapi_app_views_protocol_create_protocol",
+      "services_fastapi_app_views_protocol_create_protocol_stage",
+      "services_fastapi_app_views_protocol_delete_protocol",
+      "services_fastapi_app_views_protocol_get_protocol",
+      "services_fastapi_app_views_protocol_get_protocol_stages",
+      "services_fastapi_app_views_protocol_get_protocols",
+      "services_fastapi_app_views_protocol_py_delete",
+      "services_fastapi_app_views_protocol_py_get",
+      "services_fastapi_app_views_protocol_py_post",
+      "services_fastapi_app_views_protocol_py_put",
+      "services_fastapi_app_views_protocol_py_request",
+      "services_fastapi_app_views_protocol_py_sessiondep",
+      "services_fastapi_app_views_protocol_update_protocol",
+      "services_fastapi_app_views_stage",
+      "services_fastapi_app_views_stage_create_stage",
+      "services_fastapi_app_views_stage_delete_stage",
+      "services_fastapi_app_views_stage_get_stage",
+      "services_fastapi_app_views_stage_get_stages",
+      "services_fastapi_app_views_stage_py_delete",
+      "services_fastapi_app_views_stage_py_get",
+      "services_fastapi_app_views_stage_py_post",
+      "services_fastapi_app_views_stage_py_put",
+      "services_fastapi_app_views_stage_py_request",
+      "services_fastapi_app_views_stage_py_sessiondep",
+      "services_fastapi_app_views_stage_update_stage"
+    ],
+    "4": [
+      "middleware",
+      "response",
+      "services_fastapi_app_constants",
+      "services_fastapi_app_database",
+      "services_fastapi_app_database_get_session",
+      "services_fastapi_app_enums_department",
+      "services_fastapi_app_enums_department_departments",
+      "services_fastapi_app_enums_department_py_enum",
+      "services_fastapi_app_main",
+      "services_fastapi_app_main_attach_user_to_request",
+      "services_fastapi_app_main_py_request",
+      "services_fastapi_app_main_rationale_40",
+      "services_fastapi_app_main_rationale_57",
+      "services_fastapi_app_request_body_user",
+      "services_fastapi_app_request_body_user_py_basemodel",
+      "services_fastapi_app_request_body_user_userbody",
+      "services_fastapi_app_views_department",
+      "services_fastapi_app_views_department_get_departments",
+      "services_fastapi_app_views_department_py_get",
+      "services_fastapi_app_views_department_py_request",
+      "services_fastapi_app_views_department_rationale_11",
+      "services_fastapi_app_views_user",
+      "services_fastapi_app_views_user_get_user",
+      "services_fastapi_app_views_user_get_users",
+      "services_fastapi_app_views_user_put_user",
+      "services_fastapi_app_views_user_py_get",
+      "services_fastapi_app_views_user_py_put",
+      "services_fastapi_app_views_user_py_request",
+      "services_fastapi_app_views_user_py_sessiondep"
+    ],
+    "5": [
+      "exceljs",
+      "frontend_react_app_package",
+      "frontend_react_app_package_dependencies",
+      "frontend_react_app_package_dependencies_exceljs",
+      "frontend_react_app_package_dependencies_react",
+      "frontend_react_app_package_dependencies_react_dom",
+      "frontend_react_app_package_dependencies_react_hot_toast",
+      "frontend_react_app_package_dependencies_react_plotly_js",
+      "frontend_react_app_package_dependencies_react_router_dom",
+      "frontend_react_app_package_dependencies_tanstack_react_table",
+      "frontend_react_app_package_name",
+      "frontend_react_app_package_overrides",
+      "frontend_react_app_package_overrides_uuid",
+      "frontend_react_app_package_private",
+      "frontend_react_app_package_scripts",
+      "frontend_react_app_package_scripts_build",
+      "frontend_react_app_package_scripts_dev",
+      "frontend_react_app_package_scripts_lint",
+      "frontend_react_app_package_scripts_preview",
+      "frontend_react_app_package_type",
+      "frontend_react_app_package_version",
+      "react",
+      "react_dom",
+      "react_hot_toast",
+      "react_plotly_js",
+      "react_router_dom",
+      "tanstack_react_table"
+    ],
+    "6": [
+      "babel_core",
+      "babel_plugin_react_compiler",
+      "eslint",
+      "eslint_js",
+      "eslint_plugin_react_hooks",
+      "eslint_plugin_react_refresh",
+      "frontend_react_app_package_devdependencies",
+      "frontend_react_app_package_devdependencies_babel_core",
+      "frontend_react_app_package_devdependencies_babel_plugin_react_compiler",
+      "frontend_react_app_package_devdependencies_eslint",
+      "frontend_react_app_package_devdependencies_eslint_js",
+      "frontend_react_app_package_devdependencies_eslint_plugin_react_hooks",
+      "frontend_react_app_package_devdependencies_eslint_plugin_react_refresh",
+      "frontend_react_app_package_devdependencies_globals",
+      "frontend_react_app_package_devdependencies_rolldown_plugin_babel",
+      "frontend_react_app_package_devdependencies_types_react",
+      "frontend_react_app_package_devdependencies_types_react_dom",
+      "frontend_react_app_package_devdependencies_vite",
+      "frontend_react_app_package_devdependencies_vitejs_plugin_react",
+      "globals",
+      "rolldown_plugin_babel",
+      "types_react",
+      "types_react_dom",
+      "vite",
+      "vitejs_plugin_react"
+    ],
+    "7": [
+      "batch",
+      "services_fastapi_app_request_body_batch",
+      "services_fastapi_app_request_body_batch_batchcreate",
+      "services_fastapi_app_request_body_batch_batchupdate",
+      "services_fastapi_app_request_body_batch_py_basemodel",
+      "services_fastapi_app_views_batch",
+      "services_fastapi_app_views_batch_add_sample_to_batch",
+      "services_fastapi_app_views_batch_add_task_to_batch",
+      "services_fastapi_app_views_batch_create_batch",
+      "services_fastapi_app_views_batch_delete_batch",
+      "services_fastapi_app_views_batch_get_batch",
+      "services_fastapi_app_views_batch_get_batch_samples",
+      "services_fastapi_app_views_batch_get_batches",
+      "services_fastapi_app_views_batch_load_batch_relations",
+      "services_fastapi_app_views_batch_put_batch",
+      "services_fastapi_app_views_batch_py_delete",
+      "services_fastapi_app_views_batch_py_get",
+      "services_fastapi_app_views_batch_py_post",
+      "services_fastapi_app_views_batch_py_put",
+      "services_fastapi_app_views_batch_py_request",
+      "services_fastapi_app_views_batch_py_sessiondep",
+      "services_fastapi_app_views_batch_rationale_60",
+      "services_fastapi_app_views_batch_remove_sample_from_batch",
+      "services_fastapi_app_views_batch_remove_task_from_batch",
+      "services_fastapi_app_views_batch_serialize_batch"
+    ],
+    "8": [
+      "sample",
+      "services_fastapi_app_request_body_sample",
+      "services_fastapi_app_request_body_sample_py_basemodel",
+      "services_fastapi_app_request_body_sample_rationale_23",
+      "services_fastapi_app_request_body_sample_rationale_7",
+      "services_fastapi_app_request_body_sample_samplecreate",
+      "services_fastapi_app_request_body_sample_sampleupdate",
+      "services_fastapi_app_views_sample",
+      "services_fastapi_app_views_sample_create_sample",
+      "services_fastapi_app_views_sample_delete_sample",
+      "services_fastapi_app_views_sample_export_samples",
+      "services_fastapi_app_views_sample_get_sample",
+      "services_fastapi_app_views_sample_get_samples",
+      "services_fastapi_app_views_sample_put_sample",
+      "services_fastapi_app_views_sample_py_delete",
+      "services_fastapi_app_views_sample_py_get",
+      "services_fastapi_app_views_sample_py_post",
+      "services_fastapi_app_views_sample_py_put",
+      "services_fastapi_app_views_sample_py_request",
+      "services_fastapi_app_views_sample_py_sessiondep",
+      "services_fastapi_app_views_sample_rationale_13",
+      "services_fastapi_app_views_sample_serialize_sample"
+    ],
+    "9": [
+      "services_fastapi_app_views_task",
+      "services_fastapi_app_views_task_archive_task",
+      "services_fastapi_app_views_task_create_task",
+      "services_fastapi_app_views_task_delete_task",
+      "services_fastapi_app_views_task_format_change_comment",
+      "services_fastapi_app_views_task_get_archived_tasks",
+      "services_fastapi_app_views_task_get_completed_stats",
+      "services_fastapi_app_views_task_get_task",
+      "services_fastapi_app_views_task_get_task_history",
+      "services_fastapi_app_views_task_get_tasks",
+      "services_fastapi_app_views_task_py_delete",
+      "services_fastapi_app_views_task_py_get",
+      "services_fastapi_app_views_task_py_post",
+      "services_fastapi_app_views_task_py_put",
+      "services_fastapi_app_views_task_py_request",
+      "services_fastapi_app_views_task_py_sessiondep",
+      "services_fastapi_app_views_task_toggle_task_stage",
+      "services_fastapi_app_views_task_unarchive_task",
+      "services_fastapi_app_views_task_update_task"
+    ],
+    "10": [
+      "frontend_react_app_src_app",
+      "frontend_react_app_src_app_app",
+      "frontend_react_app_src_hooks_useauth_useauth",
+      "frontend_react_app_src_main",
+      "frontend_react_app_src_modules_protectedroute",
+      "frontend_react_app_src_modules_protectedroute_protectedroute",
+      "frontend_react_app_src_pages_components_suspenseloading_suspenseloading",
+      "frontend_react_app_src_pages_components_suspenseloading_suspenseloading_suspenseloading",
+      "frontend_react_app_src_pages_components_theme_themecontext",
+      "frontend_react_app_src_pages_components_theme_themecontext_themecontext",
+      "frontend_react_app_src_pages_components_theme_themecontext_themeprovider",
+      "frontend_react_app_src_pages_components_theme_themecontext_usetheme",
+      "frontend_react_app_src_pages_components_theme_themetoggle",
+      "frontend_react_app_src_pages_components_theme_themetoggle_themetoggle",
+      "frontend_react_app_src_pages_errorpage_errorpage",
+      "frontend_react_app_src_pages_errorpage_errorpage_errorpage",
+      "frontend_react_app_src_pages_hello_hello_hello"
+    ],
+    "11": [
+      "services_django_app_urls",
+      "services_django_app_urls_rationale_1",
+      "services_django_app_views_token",
+      "services_django_app_views_token_rationale_59",
+      "services_django_app_views_token_tokencreateview",
+      "services_django_app_views_token_tokencreateview_action",
+      "services_django_app_views_token_tokencreateview_post",
+      "services_django_app_views_token_tokendestroyview",
+      "services_django_app_views_token_tokendestroyview_post"
+    ],
+    "12": [
+      "appconfig",
+      "services_django_app_apps",
+      "services_django_app_apps_apiconfig"
+    ],
+    "13": [
+      "services_django_manage",
+      "services_django_manage_main",
+      "services_django_manage_rationale_9"
+    ],
+    "14": [
+      "services_django_uvicorn",
+      "services_django_uvicorn_sh__entry",
+      "services_fastapi_run"
+    ],
+    "15": [
+      "services_django_app_migrations_0001_initial",
+      "services_django_app_migrations_0001_initial_migration"
+    ],
+    "16": [
+      "services_django_app_migrations_0002_task_department",
+      "services_django_app_migrations_0002_task_department_migration"
+    ],
+    "17": [
+      "services_django_app_migrations_0003_alter_queryhistory_action_type",
+      "services_django_app_migrations_0003_alter_queryhistory_action_type_migration"
+    ],
+    "18": [
+      "services_django_app_migrations_0004_alter_task_options_remove_task_stages_taskstage",
+      "services_django_app_migrations_0004_alter_task_options_remove_task_stages_taskstage_migration"
+    ],
+    "19": [
+      "services_django_app_migrations_0005_alter_taskstage_options",
+      "services_django_app_migrations_0005_alter_taskstage_options_migration"
+    ],
+    "20": [
+      "services_django_app_migrations_0006_remove_sample_zlims_id_sample_material_type_and_more",
+      "services_django_app_migrations_0006_remove_sample_zlims_id_sample_material_type_and_more_migration"
+    ],
+    "21": [
+      "services_django_app_migrations_0007_alter_task_options",
+      "services_django_app_migrations_0007_alter_task_options_migration"
+    ],
+    "22": [
+      "services_django_app_migrations_0008_alter_sample_sample_index",
+      "services_django_app_migrations_0008_alter_sample_sample_index_migration"
+    ],
+    "23": [
+      "services_django_app_migrations_0009_task_batches",
+      "services_django_app_migrations_0009_task_batches_migration"
+    ],
+    "24": [
+      "services_django_app_migrations_0010_batchsubsample_subsample",
+      "services_django_app_migrations_0010_batchsubsample_subsample_migration"
+    ],
+    "25": [
+      "services_django_app_migrations_0011_batch_subsamples_delete_batchsubsample",
+      "services_django_app_migrations_0011_batch_subsamples_delete_batchsubsample_migration"
+    ],
+    "26": [
+      "services_django_app_migrations_0012_remove_task_samples",
+      "services_django_app_migrations_0012_remove_task_samples_migration"
+    ],
+    "27": [
+      "services_django_app_migrations_0013_remove_batch_subsamples_remove_sample_name_and_more",
+      "services_django_app_migrations_0013_remove_batch_subsamples_remove_sample_name_and_more_migration"
+    ],
+    "28": [
+      "services_django_app_services_init",
+      "services_django_app_services_init_rationale_1"
+    ],
+    "29": [
+      "services_django_granian",
+      "services_django_granian_sh__entry"
+    ],
+    "30": [
+      "frontend_react_app_eslint_config"
+    ],
+    "31": [
+      "frontend_react_app_vite_config"
+    ],
+    "32": [
+      "services_django_app_enums"
+    ],
+    "33": [
+      "services_django_app_init"
+    ],
+    "34": [
+      "services_django_app_migrations_init"
+    ],
+    "35": [
+      "services_django_app_views_init"
+    ],
+    "36": [
+      "services_django_settings_asgi"
+    ],
+    "37": [
+      "services_django_settings_init"
+    ],
+    "38": [
+      "services_django_settings_settings"
+    ],
+    "39": [
+      "services_django_settings_urls"
+    ],
+    "40": [
+      "services_fastapi_app_enums_init"
+    ],
+    "41": [
+      "services_fastapi_app_init"
+    ],
+    "42": [
+      "services_fastapi_app_views_init"
+    ]
+  },
+  "cohesion": {
+    "0": 0.10870219813309244,
+    "1": 0.08038075092543628,
+    "2": 0.07446808510638298,
+    "3": 0.12762762762762764,
+    "4": 0.09359605911330049,
+    "5": 0.07407407407407407,
+    "6": 0.08,
+    "7": 0.22333333333333333,
+    "8": 0.17316017316017315,
+    "9": 0.26900584795321636,
+    "10": 0.17647058823529413,
+    "11": 0.25,
+    "12": 0.6666666666666666,
+    "13": 0.6666666666666666,
+    "14": 0.6666666666666666,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0
+  },
+  "gods": [
+    {
+      "id": "frontend_react_app_src_api_fetch_fetch",
+      "label": "Fetch()",
+      "degree": 32
+    },
+    {
+      "id": "frontend_react_app_src_modules_rememberpage_rememberpage",
+      "label": "rememberPage()",
+      "degree": 23
+    },
+    {
+      "id": "services_fastapi_app_models_task_task",
+      "label": "Task",
+      "degree": 20
+    },
+    {
+      "id": "services_fastapi_app_models_user_user",
+      "label": "User",
+      "degree": 16
+    },
+    {
+      "id": "frontend_react_app_src_pages_components_header_header_header",
+      "label": "Header()",
+      "degree": 15
+    },
+    {
+      "id": "frontend_react_app_src_hooks_usedepartments_usedepartments",
+      "label": "useDepartments()",
+      "degree": 14
+    },
+    {
+      "id": "services_django_app_models_user_user",
+      "label": "User",
+      "degree": 14
+    },
+    {
+      "id": "services_fastapi_app_models_query_history_queryhistory",
+      "label": "QueryHistory",
+      "degree": 14
+    },
+    {
+      "id": "frontend_react_app_src_pages_components_spinner_spinner_spinner",
+      "label": "Spinner()",
+      "degree": 13
+    },
+    {
+      "id": "services_django_app_models_sample_sample",
+      "label": "Sample",
+      "degree": 13
+    }
+  ],
+  "surprises": [
+    {
+      "source": "useAuth()",
+      "target": "getToken()",
+      "source_files": [
+        "Frontend/react/app/src/hooks/useAuth.js",
+        "Frontend/react/app/src/modules/token.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "AllBatches()",
+      "target": "rememberPage()",
+      "source_files": [
+        "Frontend/react/app/src/pages/Batch/AllBatches.jsx",
+        "Frontend/react/app/src/modules/rememberPage.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `AllBatches()` unexpectedly reaches hub `rememberPage()`"
+    },
+    {
+      "source": "MainPage()",
+      "target": "rememberPage()",
+      "source_files": [
+        "Frontend/react/app/src/pages/MainPage/MainPage.jsx",
+        "Frontend/react/app/src/modules/rememberPage.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `MainPage()` unexpectedly reaches hub `rememberPage()`"
+    },
+    {
+      "source": "Statistics()",
+      "target": "rememberPage()",
+      "source_files": [
+        "Frontend/react/app/src/pages/Statistics/Statistics.jsx",
+        "Frontend/react/app/src/modules/rememberPage.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `Statistics()` unexpectedly reaches hub `rememberPage()`"
+    },
+    {
+      "source": "Hello()",
+      "target": "useTheme()",
+      "source_files": [
+        "Frontend/react/app/src/pages/Hello/Hello.jsx",
+        "Frontend/react/app/src/pages/components/Theme/ThemeContext.jsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `Hello()` unexpectedly reaches hub `useTheme()`"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

@@ -5,9 +5,9 @@
     "semantic_hash": "3aa4b57d7f08181d86bde52a4dcb7f22"
   },
   "Frontend/react/app/package.json": {
-    "mtime": 1787322779.2001934,
-    "ast_hash": "9068030560425dade097e2541efa3401",
-    "semantic_hash": ""
+    "mtime": 1786532174.5822024,
+    "ast_hash": "45424f590e39f1109d7dd474ce62921e",
+    "semantic_hash": "45424f590e39f1109d7dd474ce62921e"
   },
   "Frontend/react/app/src/API/Fetch.js": {
     "mtime": 1786552245.3841777,
@@ -15,8 +15,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/App.jsx": {
-    "mtime": 1788004320.729855,
-    "ast_hash": "8e2c22282b47521581adb9bc370acd87",
+    "mtime": 1787304629.395371,
+    "ast_hash": "49939258a988691b34d8bca0c7e48b3d",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/data/constants.js": {
@@ -135,9 +135,9 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Statistics/Statistics.jsx": {
-    "mtime": 1788631045.8990536,
-    "ast_hash": "250f11fd0025f77ae2e9661a25bcbca2",
-    "semantic_hash": ""
+    "mtime": 1786532174.5862026,
+    "ast_hash": "db0a337be7adfabdc3269244ca6bbdc0",
+    "semantic_hash": "db0a337be7adfabdc3269244ca6bbdc0"
   },
   "Frontend/react/app/src/pages/Task/Task.jsx": {
     "mtime": 1787319920.7597547,
@@ -145,8 +145,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/User/User.jsx": {
-    "mtime": 1788630849.4850101,
-    "ast_hash": "a44e96d8db68d334e69e847baec7d566",
+    "mtime": 1787320053.3175113,
+    "ast_hash": "88e2f5150bb276313a202183cd9189fb",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/Accordion/Accordion.jsx": {
@@ -220,8 +220,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/TasksSection/TasksSection.jsx": {
-    "mtime": 1788630476.3452024,
-    "ast_hash": "b75a6b08bc8d161ada58c63b52c17f7b",
+    "mtime": 1786551521.7150164,
+    "ast_hash": "918eb0353b8f392b870dfaf8404d7509",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/Theme/ThemeContext.jsx": {
@@ -240,9 +240,9 @@
     "semantic_hash": "60bf82e19f3fe554d4fbb4e7977fcb95"
   },
   "Frontend/react/app/vite.config.js": {
-    "mtime": 1787322376.2430093,
-    "ast_hash": "be176f6acded14f351e92e00f97165d8",
-    "semantic_hash": ""
+    "mtime": 1786532174.5942028,
+    "ast_hash": "d1bc84d991228ada9b2918b3425aed96",
+    "semantic_hash": "d1bc84d991228ada9b2918b3425aed96"
   },
   "Services/django/app/__init__.py": {
     "mtime": 1786532174.5942028,
@@ -590,8 +590,8 @@
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/task.py": {
-    "mtime": 1788004013.6065822,
-    "ast_hash": "09afb9a505627cdda860c910bed99cbc",
+    "mtime": 1787320135.130596,
+    "ast_hash": "86d39cfb503105f6d64e8d9a4cbb285d",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/user.py": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/History/History.jsx": {
-    "mtime": 1788630895.0614824,
-    "ast_hash": "244140ca38e15f5cafbd65a0bc88e40f",
+    "mtime": 1787319976.0524874,
+    "ast_hash": "8a6ff6c91ebe2540ebd085be0e34e8d7",
     "semantic_hash": ""
   },
   "Services/django/app/migrations/0014_queryhistory_generic_entity.py": {
