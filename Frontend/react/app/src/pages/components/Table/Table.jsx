@@ -15,6 +15,19 @@ import { notify_error } from '../../../modules/notify'
 import { AddModal, DeleteModal, EditModal } from './TableModals'
 import { EditableCell, TableRow } from './TableCells'
 
+const createCellSelectionKey = (rowId, columnId) => (
+    JSON.stringify([String(rowId), String(columnId)])
+)
+
+const parseCellSelectionKey = (key) => {
+    try {
+        const [rowId, columnId] = JSON.parse(key)
+        return { rowId, columnId }
+    } catch {
+        return null
+    }
+}
+
 // ============================================
 // АГРЕГАЦИИ
 // ============================================
@@ -226,12 +239,24 @@ export default function Table({
         setColumnSizing({})
     }, [columnVisibility])
 
-    // Сброс выделения при смене страницы/фильтров
+    // Сброс выделения при изменении представления таблицы. Само выделение
+    // хранится по стабильным id, но после этих изменений диапазон уже может
+    // относиться к другому набору видимых строк или колонок.
     useEffect(() => {
         setSelectedCells(new Set())
         setLastSelectedCell(null)
         setRowSelection({})
-    }, [pageIndex, pageSize, globalFilter, columnFilters])
+    }, [
+        pageIndex,
+        pageSize,
+        globalFilter,
+        columnFilters,
+        sorting,
+        grouping,
+        columnVisibility,
+        columnOrder,
+        enableCellSelection,
+    ])
 
     // При изменении фильтров или сортировки сбрасываем данные и загружаем первую страницу
     useEffect(() => {
@@ -416,44 +441,6 @@ export default function Table({
         }
     }, [effectiveEnableEmptyRow, ensureEmptyRow, onCellEdit, onAddSuccess, onDataChange, onEditSuccess, setTableData])
 
-    // ---------- ФУНКЦИИ ВЫДЕЛЕНИЯ ----------
-    const isCellSelected = useCallback((rowIndex, colIndex) => {
-        return selectedCells.has(`${rowIndex}-${colIndex}`)
-    }, [selectedCells])
-
-    const toggleCellSelection = useCallback((rowIndex, colIndex, event) => {
-        if (!enableCellSelection) return
-        const key = `${rowIndex}-${colIndex}`
-        if (event.ctrlKey || event.metaKey) {
-            setSelectedCells(prev => {
-                const newSet = new Set(prev)
-                if (newSet.has(key)) newSet.delete(key)
-                else newSet.add(key)
-                return newSet
-            })
-            setLastSelectedCell({ rowIndex, colIndex })
-            return
-        }
-        if (event.shiftKey && lastSelectedCell) {
-            const { rowIndex: lastRow, colIndex: lastCol } = lastSelectedCell
-            const minRow = Math.min(rowIndex, lastRow)
-            const maxRow = Math.max(rowIndex, lastRow)
-            const minCol = Math.min(colIndex, lastCol)
-            const maxCol = Math.max(colIndex, lastCol)
-            const newSet = new Set()
-            for (let r = minRow; r <= maxRow; r++) {
-                for (let c = minCol; c <= maxCol; c++) {
-                    newSet.add(`${r}-${c}`)
-                }
-            }
-            setSelectedCells(newSet)
-            setLastSelectedCell({ rowIndex, colIndex })
-            return
-        }
-        setSelectedCells(new Set([key]))
-        setLastSelectedCell({ rowIndex, colIndex })
-    }, [enableCellSelection, lastSelectedCell])
-
     // ---------- КОНТЕКСТНОЕ МЕНЮ ----------
     const handleRowContextMenu = useCallback((e, rowData) => {
         e.preventDefault()
@@ -636,6 +623,63 @@ export default function Table({
     const loadedRowCount = data.filter(item => item.id > 0).length
     const totalCount = lazy && totalRows > 0 ? totalRows : loadedRowCount
 
+    // ---------- ФУНКЦИИ ВЫДЕЛЕНИЯ ----------
+    const isCellSelected = useCallback((rowId, columnId) => (
+        selectedCells.has(createCellSelectionKey(rowId, columnId))
+    ), [selectedCells])
+
+    const toggleCellSelection = useCallback((rowIndex, colIndex, event, rowId, columnId) => {
+        if (!enableCellSelection || Number(rowId) < 0) return
+
+        const key = createCellSelectionKey(rowId, columnId)
+        const rows = table.getRowModel().rows
+        const visibleColumns = table.getVisibleLeafColumns()
+        const selectedCell = { rowId: String(rowId), columnId: String(columnId) }
+
+        if (event.ctrlKey || event.metaKey) {
+            setSelectedCells(prev => {
+                const next = new Set(prev)
+                if (next.has(key)) next.delete(key)
+                else next.add(key)
+                return next
+            })
+            setLastSelectedCell(selectedCell)
+            return
+        }
+
+        if (event.shiftKey && lastSelectedCell) {
+            const anchorRowIndex = rows.findIndex(row => String(row.id) === lastSelectedCell.rowId)
+            const anchorColumnIndex = visibleColumns.findIndex(
+                column => String(column.id) === lastSelectedCell.columnId,
+            )
+
+            if (anchorRowIndex >= 0 && anchorColumnIndex >= 0) {
+                const minRow = Math.min(rowIndex, anchorRowIndex)
+                const maxRow = Math.max(rowIndex, anchorRowIndex)
+                const minColumn = Math.min(colIndex, anchorColumnIndex)
+                const maxColumn = Math.max(colIndex, anchorColumnIndex)
+                const next = new Set()
+
+                for (let currentRow = minRow; currentRow <= maxRow; currentRow++) {
+                    for (let currentColumn = minColumn; currentColumn <= maxColumn; currentColumn++) {
+                        const row = rows[currentRow]
+                        const column = visibleColumns[currentColumn]
+                        if (row && column) {
+                            next.add(createCellSelectionKey(row.id, column.id))
+                        }
+                    }
+                }
+
+                setSelectedCells(next)
+                setLastSelectedCell(selectedCell)
+                return
+            }
+        }
+
+        setSelectedCells(new Set([key]))
+        setLastSelectedCell(selectedCell)
+    }, [enableCellSelection, lastSelectedCell, table])
+
     // ---------- МАССОВОЕ ПРИМЕНЕНИЕ ----------
     const applyValueToSelectedCells = useCallback((value) => {
         if (selectedCells.size === 0) return
@@ -644,14 +688,14 @@ export default function Table({
         const updates = []
         const newData = [...(dataRef.current || [])]
         selectedCells.forEach(key => {
-            const [rowIndexStr, colIndexStr] = key.split('-')
-            const rowIndex = parseInt(rowIndexStr, 10)
-            const colIndex = parseInt(colIndexStr, 10)
-            const row = rows[rowIndex]
+            const selectedCell = parseCellSelectionKey(key)
+            if (!selectedCell) return
+
+            const row = rows.find(item => String(item.id) === selectedCell.rowId)
             if (!row) return
             const originalRow = row.original
             if (originalRow.id < 0) return
-            const column = visibleColumns[colIndex]
+            const column = visibleColumns.find(item => String(item.id) === selectedCell.columnId)
             if (!column || !column.columnDef.accessorKey) return
             if (column.columnDef.enableEditing === false || column.columnDef.editable === false) return
             const columnId = column.id

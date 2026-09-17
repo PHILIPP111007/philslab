@@ -4,13 +4,13 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
+from app.backend.history import add_history, snapshot
+from app.backend.serializers import serialize_sample
 from app.database import SessionDep
 from app.enums.action_type import ActionType
 from app.enums.material_type import MATERIAL_TYPE_LABELS
 from app.models import Batch, Sample
 from app.request_body.sample import SampleCreate, SampleUpdate
-from app.services.history import add_history, snapshot
-from app.services.serializers import serialize_sample
 
 router = APIRouter(tags=["sample"])
 

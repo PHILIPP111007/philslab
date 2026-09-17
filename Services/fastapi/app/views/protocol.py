@@ -4,11 +4,11 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
+from app.backend.history import add_history, snapshot
 from app.database import SessionDep
 from app.enums.action_type import ActionType
 from app.models import Protocol, Stage
 from app.request_body import ProtocolCreate, ProtocolUpdate, StageCreate
-from app.services.history import add_history, snapshot
 
 router = APIRouter(tags=["protocol"])
 

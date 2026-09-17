@@ -220,7 +220,7 @@ export const TableRow = forwardRef(function TableRow(
                         background: row.getIsSelected() ? 'var(--bg-selected)' : 'var(--bg)',
                     }
                     : {}
-                const isSelected = enableCellSelection && isCellSelected(rowIndex, colIndex)
+                const isSelected = enableCellSelection && isCellSelected(row.id, cell.column.id)
 
                 return (
                     <td
@@ -232,7 +232,7 @@ export const TableRow = forwardRef(function TableRow(
                         onClick={(event) => {
                             if (!enableCellSelection) return
                             if (event.target.closest('input, select, textarea')) return
-                            onCellClick(rowIndex, colIndex, event)
+                            onCellClick(rowIndex, colIndex, event, row.id, cell.column.id)
                         }}
                     >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

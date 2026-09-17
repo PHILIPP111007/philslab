@@ -3,11 +3,11 @@ from datetime import datetime
 from fastapi import APIRouter, Request
 from sqlmodel import select
 
+from app.backend.history import add_history, snapshot
 from app.database import SessionDep
 from app.enums.action_type import ActionType
 from app.models import Protocol, Stage
 from app.request_body import StageCreate, StageUpdate
-from app.services.history import add_history, snapshot
 
 router = APIRouter(tags=["stage"])
 

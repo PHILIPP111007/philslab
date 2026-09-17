@@ -5,6 +5,8 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
+from app.backend.history import add_history
+from app.backend.serializers import serialize_task
 from app.database import SessionDep
 from app.enums.action_type import ActionType
 from app.models import (
@@ -15,8 +17,6 @@ from app.models import (
     TaskStage,
 )
 from app.request_body import TaskCreate, TaskUpdate
-from app.services.history import add_history
-from app.services.serializers import serialize_task
 
 router = APIRouter(tags=["task"])
 
@@ -533,7 +533,8 @@ async def get_task_history(session: SessionDep, request: Request, task_id: int):
 
     history = (
         await session.exec(
-            select(QueryHistory).options(selectinload(QueryHistory.user))
+            select(QueryHistory)
+            .options(selectinload(QueryHistory.user))
             .where(QueryHistory.task_id == task_id)
             .order_by(QueryHistory.created_at.desc())
         )

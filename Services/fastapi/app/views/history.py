@@ -2,10 +2,9 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
+from app.backend.history import ENTITY_TYPES, serialize_history_entry
 from app.database import SessionDep
 from app.models import QueryHistory
-from app.services.history import ENTITY_TYPES, serialize_history_entry
-
 
 router = APIRouter(tags=["history"])
 
@@ -24,9 +23,8 @@ async def get_entity_history(
     if entity_type not in ENTITY_TYPES:
         return {"ok": False, "error": "Unsupported history entity type."}
 
-    entity_filter = (
-        (QueryHistory.entity_type == entity_type)
-        & (QueryHistory.entity_id == entity_id)
+    entity_filter = (QueryHistory.entity_type == entity_type) & (
+        QueryHistory.entity_id == entity_id
     )
     if entity_type == "task":
         entity_filter = entity_filter | (QueryHistory.task_id == entity_id)
