@@ -1,16 +1,16 @@
-# Graph Report - philslab  (2026-09-17)
+# Graph Report - philslab  (2026-09-06)
 
 ## Corpus Check
-- 142 files · ~46,373 words
+- 144 files · ~46,274 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 630 nodes · 1439 edges · 59 communities (36 shown, 23 thin omitted)
+- 635 nodes · 1442 edges · 62 communities (37 shown, 25 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 49 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `24d8e046`
+- Built from commit: `04fbff2b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,13 +22,14 @@
 - views/department.py
 - dependencies
 - devDependencies
-- views/task.py
+- views/batch.py
 - request_body/__init__.py
-- eslint-plugin-react-hooks
+- put_user
 - App.jsx
 - TableEditorConsumer
 - ApiConfig
 - main
+- uvicorn.sh
 - 0001_initial.py
 - 0002_task_department.py
 - 0003_alter_queryhistory_action_type.py
@@ -43,6 +44,7 @@
 - 0012_remove_task_samples.py
 - 0013_remove_batch_subsamples_remove_sample_name_and_more.py
 - django/app/services/__init__.py
+- granian.sh
 - package.json
 - scripts
 - AGENTS.md — Instructions for Working with PhilsLab
@@ -50,6 +52,7 @@
 - Table.jsx
 - fastapi/app/services/__init__.py
 - babel-plugin-react-compiler
+- @babel/core
 - @types/react-dom
 - vite
 - 📘 Документация по фронтенду (React + Vite)
@@ -76,21 +79,21 @@
 10. `Batch` - 15 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `QueryHistory` --uses--> `ActionType`  [INFERRED]
-  Services/fastapi/app/models/query_history.py → Services/fastapi/app/enums/action_type.py
 - `Sample` --uses--> `MaterialType`  [INFERRED]
   Services/fastapi/app/models/sample.py → Services/fastapi/app/enums/material_type.py
-- `SampleCreate` --uses--> `MaterialType`  [INFERRED]
-  Services/fastapi/app/request_body/sample.py → Services/fastapi/app/enums/material_type.py
 - `Task` --uses--> `Priority`  [INFERRED]
   Services/fastapi/app/models/task.py → Services/fastapi/app/enums/priority.py
+- `QueryHistory` --uses--> `Task`  [INFERRED]
+  Services/fastapi/app/models/query_history.py → Services/fastapi/app/models/task.py
+- `QueryHistory` --uses--> `User`  [INFERRED]
+  Services/fastapi/app/models/query_history.py → Services/fastapi/app/models/user.py
 - `useAuth()` --calls--> `getToken()`  [EXTRACTED]
   Frontend/react/app/src/hooks/useAuth.js → Frontend/react/app/src/modules/token.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (59 total, 23 thin omitted)
+## Communities (62 total, 25 thin omitted)
 
 ### Community 0 - "Fetch"
 Cohesion: 0.09
@@ -98,15 +101,15 @@ Nodes (56): Fetch(), parseResponse(), reportApiError(), buildSamplePayload(), nu
 
 ### Community 1 - "fastapi/app/models/__init__.py"
 Cohesion: 0.09
-Nodes (39): Batch, SQLModel, Батч (партия) образцов., Количество подобразцов в батче., BatchSampleLink, SQLModel, Связь Batch - Subsample (многие ко многим), Protocol (+31 more)
+Nodes (37): Batch, SQLModel, Батч (партия) образцов., Количество подобразцов в батче., BatchSampleLink, SQLModel, Связь Batch - Subsample (многие ко многим), Protocol (+29 more)
 
 ### Community 2 - "admin.py"
 Cohesion: 0.07
 Nodes (30): AbstractBaseUser, PermissionsMixin, register, BatchAdmin, HistoryInline, ProtocolAdmin, QueryHistoryAdmin, Inline для истории задачи (+22 more)
 
 ### Community 3 - "add_history"
-Cohesion: 0.06
-Nodes (81): ActionType, QueryHistory, ActionType, Enum, str, Тип действия в истории, # TODO: add, BatchCreate (+73 more)
+Cohesion: 0.05
+Nodes (77): ActionType, QueryHistory, ActionType, Enum, str, Тип действия в истории, MaterialType, Enum (+69 more)
 
 ### Community 4 - "views/department.py"
 Cohesion: 0.32
@@ -118,15 +121,19 @@ Nodes (15): exceljs, dependencies, exceljs, react, react-dom, react-hot-toast, r
 
 ### Community 6 - "devDependencies"
 Cohesion: 0.13
-Nodes (15): @babel/core, eslint, @eslint/js, eslint-plugin-react-refresh, devDependencies, @babel/core, eslint, @eslint/js (+7 more)
+Nodes (15): eslint, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, devDependencies, eslint, @eslint/js, eslint-plugin-react-hooks (+7 more)
 
-### Community 7 - "views/task.py"
+### Community 7 - "views/batch.py"
 Cohesion: 0.13
-Nodes (36): Batch, Sample, _iso(), Any, Stable response serializers for the FastAPI API. Keeping response construction…, Serialize a task and its already-loaded relationships. Samples are derived from…, serialize_batch_summary(), serialize_sample() (+28 more)
+Nodes (36): Batch, Sample, BatchCreate, BatchUpdate, BaseModel, _iso(), Any, Stable response serializers for the FastAPI API. Keeping response construction… (+28 more)
 
 ### Community 8 - "request_body/__init__.py"
-Cohesion: 0.11
-Nodes (28): MaterialType, Enum, str, Допустимые типы биоматериала образца., Priority, Enum, str, BaseModel (+20 more)
+Cohesion: 0.16
+Nodes (27): Priority, Enum, str, ProtocolCreate, ProtocolUpdate, BaseModel, SampleCreateFull, SampleUpdateFull (+19 more)
+
+### Community 9 - "put_user"
+Cohesion: 0.43
+Nodes (7): get_user(), get_users(), put_user(), get, put, Request, SessionDep
 
 ### Community 10 - "App.jsx"
 Cohesion: 0.19
@@ -189,24 +196,24 @@ Cohesion: 0.67
 Nodes (3): Как использовать компонент:, Основные компоненты:, 🧩 Переиспользуемые компоненты (UI Kit)
 
 ## Knowledge Gaps
-- **106 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+101 more)
+- **108 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+103 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **25 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `add_history()` connect `add_history` to `request_body/__init__.py`, `fastapi/app/models/__init__.py`, `views/task.py`?**
+- **Why does `add_history()` connect `add_history` to `request_body/__init__.py`, `put_user`, `views/batch.py`?**
   _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Why does `Task` connect `fastapi/app/models/__init__.py` to `request_body/__init__.py`, `add_history`, `views/task.py`?**
+- **Why does `Task` connect `fastapi/app/models/__init__.py` to `request_body/__init__.py`, `add_history`, `views/batch.py`?**
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **Why does `User` connect `admin.py` to `TableEditorConsumer`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Are the 7 inferred relationships involving `Task` (e.g. with `Batch` and `Protocol`) actually correct?**
   _`Task` has 7 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `name`, `private`, `version` to the rest of the system?**
-  _106 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _108 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Fetch` be split into smaller, more focused modules?**
   _Cohesion score 0.09035087719298246 - nodes in this community are weakly interconnected._
 - **Should `fastapi/app/models/__init__.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.08766233766233766 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08874912648497554 - nodes in this community are weakly interconnected._

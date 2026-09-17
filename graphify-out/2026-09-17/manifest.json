@@ -80,8 +80,8 @@
     "semantic_hash": "23e0c825a216b1679384b9125c8603c3"
   },
   "Frontend/react/app/src/pages/AdminPage/AdminPage.jsx": {
-    "mtime": 1788698982.9236767,
-    "ast_hash": "861cd18c9dca47729b6e32cc6932ce9d",
+    "mtime": 1786552333.061057,
+    "ast_hash": "8be5b7d5bde4d302f525ed9325b6df7a",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Batch/AllBatches.jsx": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Sample/Samples.jsx": {
-    "mtime": 1788699042.4283469,
-    "ast_hash": "19ab65e40fd43d12d9a2c1dda8ecf13d",
+    "mtime": 1787315733.5563383,
+    "ast_hash": "1cf9a9e12a8ef46172c167f7ab72b1df",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/Statistics/Statistics.jsx": {
@@ -165,8 +165,8 @@
     "semantic_hash": "a4489d30186e8750dd708fb41b0bb14c"
   },
   "Frontend/react/app/src/pages/components/Batch/Batches.jsx": {
-    "mtime": 1788699043.1403549,
-    "ast_hash": "e493ef4f3dc60060d99f20a9d0342acf",
+    "mtime": 1786552333.4770615,
+    "ast_hash": "ab66dd2c6811e88d827cc21b5c825c30",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/Button/Button.jsx": {
@@ -215,8 +215,8 @@
     "semantic_hash": "3c1eb1ecad5aacde2b13471968e1ab20"
   },
   "Frontend/react/app/src/pages/components/Table/Table.jsx": {
-    "mtime": 1788699002.4998972,
-    "ast_hash": "ba9f4b979b00863a0d355e2c04ae9baa",
+    "mtime": 1787317185.3554919,
+    "ast_hash": "2e5a40a0357ef60d364191b5277b7c31",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/TasksSection/TasksSection.jsx": {
@@ -399,6 +399,11 @@
     "ast_hash": "b8ee17c374bcbbe67b8886e8ed9e8958",
     "semantic_hash": "b8ee17c374bcbbe67b8886e8ed9e8958"
   },
+  "Services/django/granian.sh": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "ca0585e9ec6c7b0c3cc4193fde407fc6",
+    "semantic_hash": "ca0585e9ec6c7b0c3cc4193fde407fc6"
+  },
   "Services/django/manage.py": {
     "mtime": 1786532174.5942028,
     "ast_hash": "8f655cdfbfd0370f3df42c45aa6cc125",
@@ -423,6 +428,11 @@
     "mtime": 1786532174.5942028,
     "ast_hash": "2b1a97b935bea2f16cc918c192b0cab9",
     "semantic_hash": "2b1a97b935bea2f16cc918c192b0cab9"
+  },
+  "Services/django/uvicorn.sh": {
+    "mtime": 1786532174.5942028,
+    "ast_hash": "a43d9af62f066fd736a78b4b4647dae2",
+    "semantic_hash": "a43d9af62f066fd736a78b4b4647dae2"
   },
   "Services/fastapi/app/__init__.py": {
     "mtime": 1786532174.5942028,
@@ -450,8 +460,8 @@
     "semantic_hash": "97fc34d11f72975571494ed064440033"
   },
   "Services/fastapi/app/main.py": {
-    "mtime": 1789661319.0799007,
-    "ast_hash": "86b0bf0eedd09237e38754b6a52529a5",
+    "mtime": 1787319654.8562324,
+    "ast_hash": "97b5979c0a2a6c06835376d373006c64",
     "semantic_hash": ""
   },
   "Services/fastapi/app/models/__init__.py": {
@@ -589,6 +599,11 @@
     "ast_hash": "6a6c175f6f3188d53c94fe49d8e01c5f",
     "semantic_hash": ""
   },
+  "Services/fastapi/run.py": {
+    "mtime": 1786534567.1769016,
+    "ast_hash": "1d08f1fa00244ba5e15d7227b3ca8d67",
+    "semantic_hash": ""
+  },
   "Frontend/react/app/src/API/payloads.js": {
     "mtime": 1786535243.305356,
     "ast_hash": "9addb4ca5efe82efbec76f54276c9fb5",
@@ -640,8 +655,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1789661366.9124773,
-    "ast_hash": "bd34379f219a7d883846bb26f02f7c5d",
+    "mtime": 1786532220.8068516,
+    "ast_hash": "48775e841e1ef9cb3b3232a7b781f0ad",
     "semantic_hash": ""
   },
   "Services/django/requirements.txt": {
@@ -650,13 +665,13 @@
     "semantic_hash": ""
   },
   "Services/fastapi/requirements.txt": {
-    "mtime": 1789661639.6797256,
-    "ast_hash": "dce9cc81b6027b8103ce587fb79e5796",
+    "mtime": 1786532174.5982027,
+    "ast_hash": "7e39fab3c2469cb8a89fed33d5845a2e",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
-    "mtime": 1789660160.6725116,
-    "ast_hash": "970b8720890afe5f613fd5342c529ed5",
+    "mtime": 1786532174.5982027,
+    "ast_hash": "dd2b864e8a621edb0776161e0e6230cf",
     "semantic_hash": ""
   },
   "docs/DATABASE_SCHEMA.md": {
