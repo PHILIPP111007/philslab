@@ -638,13 +638,18 @@ export default function Batch() {
                         )}
                     </div>
                 </div>
+                <br />
+                <br />
+
+                <div className="section section-filled">
+                    <History
+                        entityType="batch"
+                        entityId={batch.id}
+                        refreshKey={batch.updated_at}
+                    />
+                </div>
             </div>
 
-            <History
-                entityType="batch"
-                entityId={batch.id}
-                refreshKey={batch.updated_at}
-            />
 
             {/* Модалка добавления задачи */}
             {showAddTaskModal && (
