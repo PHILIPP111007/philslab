@@ -215,8 +215,8 @@
     "semantic_hash": "3c1eb1ecad5aacde2b13471968e1ab20"
   },
   "Frontend/react/app/src/pages/components/Table/Table.jsx": {
-    "mtime": 1788699002.4998972,
-    "ast_hash": "ba9f4b979b00863a0d355e2c04ae9baa",
+    "mtime": 1789662877.176494,
+    "ast_hash": "3455cf7a31c93ecee0a08d563ed3dd8c",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/TasksSection/TasksSection.jsx": {
@@ -555,8 +555,8 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "Services/fastapi/app/views/batch.py": {
-    "mtime": 1787320125.846473,
-    "ast_hash": "13a86ecfa28df15d61a75696c93fd45b",
+    "mtime": 1789663100.462748,
+    "ast_hash": "6b5f0b0b16a8bd6523a17db9af27bb89",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/department.py": {
@@ -565,28 +565,28 @@
     "semantic_hash": "aa31c5d9592f51b80ff0d09134ba1905"
   },
   "Services/fastapi/app/views/protocol.py": {
-    "mtime": 1787319786.3339736,
-    "ast_hash": "2c2c146b72571fe5f69f4c53a5eedca3",
+    "mtime": 1789663095.970702,
+    "ast_hash": "a1cf519e33bb02c0f592da8c8aaf9e63",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/sample.py": {
-    "mtime": 1787321000.4779541,
-    "ast_hash": "8a9365ca8cce7b939ae3c0bcf4397156",
+    "mtime": 1789663092.0066612,
+    "ast_hash": "e1dd1a3d76e8c4e5377b6e2710a16951",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/stage.py": {
-    "mtime": 1787319975.9044855,
-    "ast_hash": "1d87f14765003f50bff8c393c180b252",
+    "mtime": 1789663086.250602,
+    "ast_hash": "3d1f54d907834f75dd5fddcddd72879d",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/task.py": {
-    "mtime": 1788004013.6065822,
-    "ast_hash": "09afb9a505627cdda860c910bed99cbc",
+    "mtime": 1789663080.8545468,
+    "ast_hash": "4e2c1dbc3ecb83a9a42cf4810944ca6e",
     "semantic_hash": ""
   },
   "Services/fastapi/app/views/user.py": {
-    "mtime": 1787320053.0735083,
-    "ast_hash": "6a6c175f6f3188d53c94fe49d8e01c5f",
+    "mtime": 1789663077.9705172,
+    "ast_hash": "066c51fd5355c47552afe77a1eefbf19",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/API/payloads.js": {
@@ -595,8 +595,8 @@
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/Table/TableCells.jsx": {
-    "mtime": 1786550592.0709665,
-    "ast_hash": "fb6e78ff41e75029b9b81e4e8daff986",
+    "mtime": 1789662877.4244962,
+    "ast_hash": "f54ebca128ac1d72164976824d62686e",
     "semantic_hash": ""
   },
   "Frontend/react/app/src/pages/components/Table/TableModals.jsx": {
@@ -617,16 +617,6 @@
   "Services/fastapi/app/enums/priority.py": {
     "mtime": 1786550740.2369356,
     "ast_hash": "40a5effe9503da39c65f19a6ee8ae199",
-    "semantic_hash": ""
-  },
-  "Services/fastapi/app/services/__init__.py": {
-    "mtime": 1786540288.2901456,
-    "ast_hash": "73140357283aa75079addcf7a1f8c9de",
-    "semantic_hash": ""
-  },
-  "Services/fastapi/app/services/serializers.py": {
-    "mtime": 1787319820.9744325,
-    "ast_hash": "513d95d879d465e663333c821433d636",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -704,19 +694,29 @@
     "ast_hash": "ede9d5a8519c9a0b9fad4967c896e3d2",
     "semantic_hash": ""
   },
-  "Services/fastapi/app/services/history.py": {
-    "mtime": 1787319654.3402255,
-    "ast_hash": "583c47e6d4fa8fbc5213465aa205b38d",
-    "semantic_hash": ""
-  },
   "Services/fastapi/app/views/history.py": {
-    "mtime": 1787320158.8389103,
-    "ast_hash": "fabec12a9be2ca975097049184961089",
+    "mtime": 1789663071.5984519,
+    "ast_hash": "8a782460cd9eccf7bda24fd6c14b7b81",
     "semantic_hash": ""
   },
   "docs/Handoff.md": {
     "mtime": 1787320445.2987087,
     "ast_hash": "4fbf4dbc8d7d3afce414777cdbb4dcdd",
+    "semantic_hash": ""
+  },
+  "Services/fastapi/app/backend/__init__.py": {
+    "mtime": 1786540288.2901456,
+    "ast_hash": "73140357283aa75079addcf7a1f8c9de",
+    "semantic_hash": ""
+  },
+  "Services/fastapi/app/backend/history.py": {
+    "mtime": 1787319654.3402255,
+    "ast_hash": "583c47e6d4fa8fbc5213465aa205b38d",
+    "semantic_hash": ""
+  },
+  "Services/fastapi/app/backend/serializers.py": {
+    "mtime": 1787319820.9744325,
+    "ast_hash": "513d95d879d465e663333c821433d636",
     "semantic_hash": ""
   }
 }
