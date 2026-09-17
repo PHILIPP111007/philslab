@@ -63,7 +63,7 @@ fastapi:
 	. ./.venv/bin/activate && \
 	export DEVELOPMENT=1 && \
 	export TESTING=0 && \
-	granian app.main:app --reload --interface asgi --host 0.0.0.0 --port 1974 --workers 1
+	granian app.main:app --reload --interface asgi --host 0.0.0.0 --port 1974 --workers 1 --log-config logging_config.json
 
 react:
 	@echo "Starting react..."

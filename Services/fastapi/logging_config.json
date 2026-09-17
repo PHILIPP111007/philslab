@@ -1,0 +1,52 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "colored_runtime": {
+            "()": "colorlog.ColoredFormatter",
+            "format": "%(log_color)s[%(asctime)s] [%(levelname)s]: %(message)s",
+            "log_colors": {
+                "DEBUG": "cyan",
+                "INFO": "cyan",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red"
+            }
+        },
+        "colored_access": {
+            "()": "colorlog.ColoredFormatter",
+            "format": "%(log_color)s[%(asctime)s] %(message)s",
+            "log_colors": {
+                "INFO": "purple"
+            }
+        }
+    },
+    "handlers": {
+        "console_runtime": {
+            "class": "logging.StreamHandler",
+            "formatter": "colored_runtime",
+            "stream": "ext://sys.stderr"
+        },
+        "console_access": {
+            "class": "logging.StreamHandler",
+            "formatter": "colored_access",
+            "stream": "ext://sys.stdout"
+        }
+    },
+    "loggers": {
+        "_granian": {
+            "handlers": [
+                "console_runtime"
+            ],
+            "level": "INFO",
+            "propagate": false
+        },
+        "granian.access": {
+            "handlers": [
+                "console_access"
+            ],
+            "level": "INFO",
+            "propagate": false
+        }
+    }
+}
