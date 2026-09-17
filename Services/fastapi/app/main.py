@@ -1,7 +1,8 @@
-from typing import Awaitable, Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -103,3 +104,5 @@ routers = [
 
 for router in routers:
     app.include_router(router, prefix=API_PREFIX)
+
+Instrumentator().instrument(app).expose(app)

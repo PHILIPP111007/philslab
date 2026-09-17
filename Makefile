@@ -55,7 +55,7 @@ django:
 	export DEBUG=1 && \
 	python manage.py makemigrations && \
 	python manage.py migrate && \
-	uvicorn settings.asgi:application --host localhost --port 1972 --workers 1 --reload --loop uvloop
+	granian settings.asgi:application --interface asginl --ws --host 0.0.0.0 --port 1972 --workers 1 --log --reload
 
 fastapi:
 	@echo "Starting fastapi..."
@@ -63,7 +63,7 @@ fastapi:
 	. ./.venv/bin/activate && \
 	export DEVELOPMENT=1 && \
 	export TESTING=0 && \
-	python run.py
+	granian app.main:app --reload --interface asgi --host 0.0.0.0 --port 1974 --workers 1
 
 react:
 	@echo "Starting react..."
