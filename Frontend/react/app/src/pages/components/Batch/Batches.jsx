@@ -50,19 +50,7 @@ export default function Batches({ department = null, username = '' }) {
                 // Если фильтр по отделу активен – запрещаем редактирование и скрываем колонку
                 enableEditing: !department,          // 🆕
                 visible: !department,                // 🆕 (можно также использовать enableHiding, но этот флаг скрывает колонку)
-                editComponent: ({ value, onChange }) => (
-                    <select
-                        value={value || ''}
-                        onChange={(e) => onChange(e.target.value)}
-                        className="table-edit-select"
-                        style={{ width: '100%', padding: '4px 8px' }}
-                    >
-                        <option value="">Не выбран</option>
-                        {departments.map(dept => (
-                            <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                    </select>
-                ),
+                options: departments,
             },
             {
                 accessorKey: 'descr',
