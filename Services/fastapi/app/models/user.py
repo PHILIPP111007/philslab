@@ -1,15 +1,18 @@
 __all__ = ["User"]
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from .group import Group
     from .protocol import Protocol
     from .query_history import QueryHistory
     from .sample import Sample
     from .task import Task
     from .token import Token
+
+from .group import UserGroupLink
 
 
 class User(SQLModel, table=True):
@@ -24,28 +27,34 @@ class User(SQLModel, table=True):
     department: str = Field(default="")
 
     # Связи
-    tokens: List["Token"] = Relationship(back_populates="user")
+    tokens: list["Token"] = Relationship(back_populates="user")
 
     # Образцы
-    samples: List["Sample"] = Relationship(back_populates="user")
+    samples: list["Sample"] = Relationship(back_populates="user")
 
     # Батчи
-    batches: List["Batch"] = Relationship(back_populates="user")
+    batches: list["Batch"] = Relationship(back_populates="user")
 
     # Протоколы, созданные пользователем
-    created_protocols: List["Protocol"] = Relationship(back_populates="created_by")
+    created_protocols: list["Protocol"] = Relationship(back_populates="created_by")
 
     # Задачи, созданные пользователем
-    created_tasks: List["Task"] = Relationship(
+    created_tasks: list["Task"] = Relationship(
         back_populates="created_by",
         sa_relationship_kwargs={"foreign_keys": "[Task.created_by_id]"},
     )
 
     # Задачи, назначенные пользователю
-    assigned_tasks: List["Task"] = Relationship(
+    assigned_tasks: list["Task"] = Relationship(
         back_populates="assigned_to",
         sa_relationship_kwargs={"foreign_keys": "[Task.assigned_to_id]"},
     )
 
     # История изменений
-    history_entries: List["QueryHistory"] = Relationship(back_populates="user")
+    history_entries: list["QueryHistory"] = Relationship(back_populates="user")
+
+    # Django auth groups (User.groups)
+    groups: list["Group"] = Relationship(
+        back_populates="users",
+        link_model=UserGroupLink,
+    )

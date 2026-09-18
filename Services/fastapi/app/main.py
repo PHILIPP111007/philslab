@@ -3,6 +3,7 @@ from collections.abc import Awaitable, Callable
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -81,7 +82,9 @@ async def attach_user_to_request(
 
         # Безопасно: one_or_none вместо one, чтобы не было 500 при отсутствии юзера
         user_result = await session.exec(
-            select(User).where(User.id == token_obj.user_id)
+            select(User)
+            .options(selectinload(User.groups))
+            .where(User.id == token_obj.user_id)
         )
         user = user_result.one_or_none()
 

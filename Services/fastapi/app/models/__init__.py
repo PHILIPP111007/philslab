@@ -1,5 +1,6 @@
 from app.models.batch import Batch
 from app.models.batch_sample_link import BatchSampleLink
+from app.models.group import Group, UserGroupLink
 from app.models.protocol import Protocol
 from app.models.protocol_stage_link import ProtocolStageLink
 from app.models.query_history import QueryHistory
