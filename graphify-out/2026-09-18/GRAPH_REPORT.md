@@ -1,16 +1,16 @@
-# Graph Report - philslab  (2026-09-18)
+# Graph Report - philslab  (2026-09-17)
 
 ## Corpus Check
-- 144 files · ~46,825 words
+- 142 files · ~46,488 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 648 nodes · 1529 edges · 60 communities (37 shown, 23 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 51 edges (avg confidence: 0.5)
+- 632 nodes · 1441 edges · 59 communities (36 shown, 23 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 49 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8916940f`
+- Built from commit: `a28df6e4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -18,11 +18,11 @@
 - Fetch
 - fastapi/app/models/__init__.py
 - admin.py
-- require_authenticated
+- add_history
 - views/department.py
 - dependencies
 - devDependencies
-- views/sample.py
+- views/task.py
 - request_body/__init__.py
 - eslint-plugin-react-hooks
 - App.jsx
@@ -51,7 +51,6 @@
 - PhilsLab — Handoff
 - Table.jsx
 - backend/__init__.py
-- attach_user_to_request
 - @types/react-dom
 - vite
 - 📘 Документация по фронтенду (React + Vite)
@@ -65,49 +64,49 @@
 - @rolldown/plugin-babel
 
 ## God Nodes (most connected - your core abstractions)
-1. `require_authenticated()` - 56 edges
-2. `Fetch()` - 36 edges
-3. `add_history()` - 32 edges
-4. `rememberPage()` - 26 edges
-5. `Task` - 21 edges
-6. `User` - 20 edges
-7. `TableEditorConsumer` - 19 edges
-8. `QueryHistory` - 17 edges
-9. `snapshot()` - 16 edges
-10. `Header()` - 15 edges
+1. `Fetch()` - 36 edges
+2. `add_history()` - 32 edges
+3. `rememberPage()` - 26 edges
+4. `Task` - 21 edges
+5. `TableEditorConsumer` - 19 edges
+6. `QueryHistory` - 17 edges
+7. `User` - 17 edges
+8. `snapshot()` - 16 edges
+9. `Header()` - 15 edges
+10. `serialize_batch()` - 15 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Sample` --uses--> `MaterialType`  [INFERRED]
-  Services/fastapi/app/models/sample.py → Services/fastapi/app/enums/material_type.py
+- `QueryHistory` --uses--> `ActionType`  [INFERRED]
+  Services/fastapi/app/models/query_history.py → Services/fastapi/app/enums/action_type.py
 - `Task` --uses--> `Priority`  [INFERRED]
   Services/fastapi/app/models/task.py → Services/fastapi/app/enums/priority.py
-- `QueryHistory` --uses--> `Task`  [INFERRED]
-  Services/fastapi/app/models/query_history.py → Services/fastapi/app/models/task.py
-- `QueryHistory` --uses--> `User`  [INFERRED]
-  Services/fastapi/app/models/query_history.py → Services/fastapi/app/models/user.py
+- `Protocol` --uses--> `Stage`  [INFERRED]
+  Services/fastapi/app/models/protocol.py → Services/fastapi/app/models/stage.py
 - `useAuth()` --calls--> `getToken()`  [EXTRACTED]
   Frontend/react/app/src/hooks/useAuth.js → Frontend/react/app/src/modules/token.js
+- `AllBatches()` --calls--> `rememberPage()`  [EXTRACTED]
+  Frontend/react/app/src/pages/Batch/AllBatches.jsx → Frontend/react/app/src/modules/rememberPage.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (60 total, 23 thin omitted)
+## Communities (59 total, 23 thin omitted)
 
 ### Community 0 - "Fetch"
 Cohesion: 0.09
 Nodes (56): Fetch(), parseResponse(), reportApiError(), buildSamplePayload(), nullableNumber(), nullableText(), DEVELOPMENT, DEVELOPMENT_DJANGO_FETCH_URL (+48 more)
 
 ### Community 1 - "fastapi/app/models/__init__.py"
-Cohesion: 0.08
-Nodes (43): Batch, SQLModel, Батч (партия) образцов., Количество подобразцов в батче., BatchSampleLink, SQLModel, Связь Batch - Subsample (многие ко многим), Group (+35 more)
+Cohesion: 0.07
+Nodes (46): MaterialType, Enum, str, Допустимые типы биоматериала образца., Batch, SQLModel, Батч (партия) образцов., Количество подобразцов в батче. (+38 more)
 
 ### Community 2 - "admin.py"
 Cohesion: 0.07
 Nodes (30): AbstractBaseUser, PermissionsMixin, register, BatchAdmin, HistoryInline, ProtocolAdmin, QueryHistoryAdmin, Inline для истории задачи (+22 more)
 
-### Community 3 - "require_authenticated"
+### Community 3 - "add_history"
 Cohesion: 0.06
-Nodes (82): ActionType, QueryHistory, _get_request(), Any, Request, Decorators shared by FastAPI endpoint functions., Allow an endpoint to run only when middleware resolved the user. The project…, Require the authenticated user to belong to every given Django group. Example::… (+74 more)
+Nodes (64): ActionType, middleware, QueryHistory, Response, add_history(), json_value(), Any, Convert common model values to JSON-safe values for history snapshots. (+56 more)
 
 ### Community 4 - "views/department.py"
 Cohesion: 0.32
@@ -121,13 +120,13 @@ Nodes (15): exceljs, dependencies, exceljs, react, react-dom, react-hot-toast, r
 Cohesion: 0.13
 Nodes (15): babel-plugin-react-compiler, eslint, @eslint/js, eslint-plugin-react-refresh, devDependencies, babel-plugin-react-compiler, eslint, @eslint/js (+7 more)
 
-### Community 7 - "views/sample.py"
-Cohesion: 0.09
-Nodes (36): Batch, Sample, _iso(), Any, Stable response serializers for the FastAPI API. Keeping response construction…, serialize_batch_summary(), serialize_sample(), serialize_sample_summary() (+28 more)
+### Community 7 - "views/task.py"
+Cohesion: 0.13
+Nodes (36): Batch, Sample, _iso(), Any, Stable response serializers for the FastAPI API. Keeping response construction…, Serialize a task and its already-loaded relationships. Samples are derived from…, serialize_batch_summary(), serialize_sample() (+28 more)
 
 ### Community 8 - "request_body/__init__.py"
-Cohesion: 0.28
-Nodes (14): Priority, Enum, str, ProtocolCreate, ProtocolUpdate, BaseModel, SampleCreateFull, SampleUpdateFull (+6 more)
+Cohesion: 0.18
+Nodes (21): Priority, Enum, str, ProtocolCreate, ProtocolUpdate, BaseModel, SampleCreateFull, SampleUpdateFull (+13 more)
 
 ### Community 10 - "App.jsx"
 Cohesion: 0.19
@@ -138,8 +137,8 @@ Cohesion: 0.10
 Nodes (9): AsyncWebsocketConsumer, database_sync_to_async, TableEditorConsumer, Enum, WebSocketGroup, Create user: POST http://127.0.0.1:1972/api/v1/auth/users/ {"username":…, Use this endpoint to logout user (remove user authentication token)., TokenCreateView (+1 more)
 
 ### Community 14 - "views/batch.py"
-Cohesion: 0.22
-Nodes (23): serialize_batch(), BatchCreate, BatchUpdate, BaseModel, add_sample_to_batch(), add_task_to_batch(), create_batch(), delete_batch() (+15 more)
+Cohesion: 0.24
+Nodes (22): serialize_batch(), BatchCreate, BatchUpdate, BaseModel, add_sample_to_batch(), add_task_to_batch(), create_batch(), delete_batch() (+14 more)
 
 ### Community 32 - "package.json"
 Cohesion: 0.29
@@ -160,10 +159,6 @@ Nodes (26): 10. Правила безопасных изменений, 11. Пр
 ### Community 45 - "Table.jsx"
 Cohesion: 0.16
 Nodes (20): createCellSelectionKey(), numberContainsFilter(), parseCellSelectionKey(), renderAggregation(), rowsAreEqual(), Table(), textFilter(), EditableCell (+12 more)
-
-### Community 47 - "attach_user_to_request"
-Cohesion: 0.40
-Nodes (5): middleware, Response, attach_user_to_request(), Request, Middleware to store user in request context
 
 ### Community 52 - "📘 Документация по фронтенду (React + Vite)"
 Cohesion: 0.18
@@ -201,12 +196,12 @@ Nodes (3): Как использовать компонент:, Основные
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `require_authenticated()` connect `require_authenticated` to `views/department.py`, `views/batch.py`, `views/sample.py`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
-- **Why does `add_history()` connect `require_authenticated` to `views/batch.py`, `views/sample.py`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **Why does `Task` connect `fastapi/app/models/__init__.py` to `request_body/__init__.py`, `require_authenticated`, `views/batch.py`, `views/sample.py`?**
+- **Why does `add_history()` connect `add_history` to `request_body/__init__.py`, `fastapi/app/models/__init__.py`, `views/batch.py`, `views/task.py`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `Task` connect `fastapi/app/models/__init__.py` to `request_body/__init__.py`, `views/batch.py`, `views/task.py`?**
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **Why does `User` connect `admin.py` to `TableEditorConsumer`?**
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
 - **Are the 7 inferred relationships involving `Task` (e.g. with `Batch` and `Protocol`) actually correct?**
   _`Task` has 7 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `name`, `private`, `version` to the rest of the system?**
@@ -214,4 +209,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Fetch` be split into smaller, more focused modules?**
   _Cohesion score 0.09035087719298246 - nodes in this community are weakly interconnected._
 - **Should `fastapi/app/models/__init__.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.07868852459016394 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.068997668997669 - nodes in this community are weakly interconnected._
