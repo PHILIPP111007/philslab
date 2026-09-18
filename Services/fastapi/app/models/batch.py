@@ -1,7 +1,7 @@
 __all__ = ["Batch"]
 
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -21,14 +21,14 @@ class Batch(SQLModel, table=True):
 
     id: int = Field(primary_key=True)
 
-    name: Optional[str] = Field(default=None, max_length=255)
-    department: Optional[str] = Field(default=None, max_length=150)
-    descr: Optional[str] = Field(default=None, max_length=5000)
+    name: str | None = Field(default=None, max_length=255)
+    department: str | None = Field(default=None, max_length=150)
+    descr: str | None = Field(default=None, max_length=5000)
 
     timestamp: datetime = Field(default_factory=lambda: datetime.now())
     updated_at: datetime = Field(default_factory=lambda: datetime.now())
 
-    user_id: Optional[int] = Field(foreign_key="app_user.id", index=True, default=None)
+    user_id: int | None = Field(foreign_key="app_user.id", index=True, default=None)
 
     # Связи
     user: Optional["User"] = Relationship(
@@ -37,13 +37,13 @@ class Batch(SQLModel, table=True):
     )
 
     # ✅ ManyToMany связь с Subsample
-    samples: List["Sample"] = Relationship(
+    samples: list["Sample"] = Relationship(
         back_populates="batches",
         link_model=BatchSampleLink,
     )
 
     # Связь с задачами (остаётся)
-    tasks: List["Task"] = Relationship(
+    tasks: list["Task"] = Relationship(
         back_populates="batches",
         link_model=TaskBatchLink,
     )

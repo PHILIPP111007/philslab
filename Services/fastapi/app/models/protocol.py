@@ -1,7 +1,7 @@
 __all__ = ["Protocol"]
 
 from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -31,7 +31,7 @@ class Protocol(SQLModel, table=True):
     created_by: "User" = Relationship(back_populates="created_protocols")
 
     # ✅ Этапы принадлежат протоколу
-    stages: List["Stage"] = Relationship(back_populates="protocol")
+    stages: list["Stage"] = Relationship(back_populates="protocol")
 
     # Задачи, использующие этот протокол
-    tasks: List["Task"] = Relationship(back_populates="protocol")
+    tasks: list["Task"] = Relationship(back_populates="protocol")
