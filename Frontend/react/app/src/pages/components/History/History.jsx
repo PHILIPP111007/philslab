@@ -37,7 +37,7 @@ export default function History({
     entityId,
     refreshKey,
     enabled = true,
-    title = '📜 История изменений',
+    title = 'История изменений',
 }) {
     const [entries, setEntries] = useState([])
     const [loading, setLoading] = useState(false)
