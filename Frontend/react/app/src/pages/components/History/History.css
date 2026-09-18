@@ -30,7 +30,7 @@
 .entity-history__toggle:hover:not(:disabled) {
     background: var(--bg-hover);
     border-color: var(--border-light);
-    color: var(--text-white);
+    color: var(--text);
 }
 
 .entity-history__toggle:disabled {
@@ -46,7 +46,7 @@
 
 .entity-history__title {
     margin: 0;
-    color: var(--text-white);
+    color: var(--text);
     font-size: 18px;
 }
 
@@ -62,7 +62,7 @@
 
 .entity-history__refresh:hover:not(:disabled) {
     background: var(--bg-hover);
-    color: var(--text-white);
+    color: var(--text);
 }
 
 .entity-history__refresh:disabled {
@@ -72,7 +72,7 @@
 
 .entity-history__status {
     margin: 0;
-    color: var(--text-dark);
+    color: var(--text);
 }
 
 .entity-history__status--error {
@@ -99,14 +99,14 @@
 }
 
 .entity-history__action {
-    color: var(--text-white);
+    color: var(--text);
     font-weight: 600;
 }
 
 .entity-history__date,
 .entity-history__user,
 .entity-history__field {
-    color: var(--text-dark);
+    color: var(--text);
     font-size: 12px;
 }
 
