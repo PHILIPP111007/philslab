@@ -36,6 +36,8 @@ export default function Samples() {
     // WebSocket состояние
     const [editor, setEditor] = useState(null) // { id, username }
     const wsRef = useRef(null)
+    const reconnectTimerRef = useRef(null)
+    const keepLockRef = useRef(false)
 
     // Модалка батча
     const [showBatchModal, setShowBatchModal] = useState(false)
@@ -46,8 +48,19 @@ export default function Samples() {
 
     const { departments, loading: deptLoading } = useDepartments()
 
-    const isEditing = editor !== null && editor.id === user.id
-    const isTableLocked = editor !== null && editor.id !== user.id
+    // The WebSocket authenticates the connection by username, so username is
+    // the reliable owner identity. IDs can come from different API layers
+    // with different types or can be unavailable while the user context is
+    // still loading.
+    const hasMatchingUsername = Boolean(
+        editor?.username && user?.username && editor.username === user.username
+    )
+    const hasMatchingId = Boolean(
+        editor?.id != null && user?.id != null
+        && String(editor.id) === String(user.id)
+    )
+    const isEditing = editor !== null && (hasMatchingUsername || hasMatchingId)
+    const isTableLocked = editor !== null && !isEditing
     const canEdit = isEditing  // Только когда текущий пользователь нажал "Редактировать"
 
     useEffect(() => {
@@ -56,7 +69,12 @@ export default function Samples() {
 
     // ---------- WebSocket (пересоздаётся при изменении user.id) ----------
     useEffect(() => {
-        if (user.username) {
+        if (!user.username) return undefined
+
+        let disposed = false
+
+        const connect = () => {
+            if (disposed) return
 
             const wsUrl = `${WEBSOCKET_DJANGO_URL}table/${user.username}/`
             console.log('🔌 WebSocket URL:', wsUrl)
@@ -65,6 +83,11 @@ export default function Samples() {
             wsRef.current = ws
 
             ws.onopen = () => {
+                // React can leave an old socket closing while a new one is
+                // already active. Never send or process events for that old
+                // socket.
+                if (wsRef.current !== ws) return
+
                 const token = getToken()
                 if (!token) {
                     ws.close(4401, 'Authentication required')
@@ -76,12 +99,35 @@ export default function Samples() {
                     token,
                     table_name: tableName,
                 }))
+
+                // Restore the lock after a transient reconnect if the user
+                // had already enabled editing.
+                if (keepLockRef.current) {
+                    setTimeout(() => {
+                        if (
+                            !disposed
+                            && wsRef.current === ws
+                            && ws.readyState === WebSocket.OPEN
+                            && keepLockRef.current
+                        ) {
+                            ws.send(JSON.stringify({
+                                table_name: tableName,
+                                action: 'lock',
+                            }))
+                        }
+                    }, 0)
+                }
             }
 
             ws.onmessage = (event) => {
+                if (wsRef.current !== ws) return
+
                 try {
                     const data = JSON.parse(event.data)
-                    if (data.table_name === tableName) {
+                    // The authentication acknowledgement has table_name but
+                    // does not contain an editor. Only table-status messages
+                    // are allowed to change the lock state.
+                    if (data.table_name === tableName && Object.prototype.hasOwnProperty.call(data, 'editor')) {
                         if (data.editor === null) {
                             setEditor(null)
                         } else {
@@ -94,24 +140,43 @@ export default function Samples() {
             }
 
             ws.onerror = (error) => {
+                if (wsRef.current !== ws) return
                 console.error('❌ WebSocket error:', error)
             }
 
             ws.onclose = (event) => {
-                if (wsRef.current === ws) {
-                    wsRef.current = null
-                }
+                // A stale socket must not clear the lock state received by
+                // the currently active socket.
+                if (wsRef.current !== ws) return
+
+                wsRef.current = null
                 setEditor(null)
                 console.log('🔴 WebSocket disconnected, code:', event.code, 'reason:', event.reason)
+
+                // Authentication/protocol errors require user action. For a
+                // transient disconnect, restore the connection automatically.
+                if (!disposed && ![4400, 4401, 4403].includes(event.code)) {
+                    reconnectTimerRef.current = setTimeout(connect, 1000)
+                }
+            }
+        }
+
+        connect()
+
+        return () => {
+            disposed = true
+            keepLockRef.current = false
+            if (reconnectTimerRef.current) {
+                clearTimeout(reconnectTimerRef.current)
+                reconnectTimerRef.current = null
             }
 
-            return () => {
-                if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-                    ws.close()
-                }
-                if (wsRef.current === ws) {
-                    wsRef.current = null
-                }
+            const ws = wsRef.current
+            if (ws?.readyState === WebSocket.OPEN || ws?.readyState === WebSocket.CONNECTING) {
+                ws.close()
+            }
+            if (wsRef.current === ws) {
+                wsRef.current = null
             }
         }
     }, [user.username]) // ← ключевое исправление: зависимость от user.id
@@ -128,8 +193,15 @@ export default function Samples() {
         }
     }, [])
 
-    const handleStartEdit = () => sendWsMessage('lock')
-    const handleStopEdit = () => sendWsMessage('release')
+    const handleStartEdit = () => {
+        keepLockRef.current = true
+        sendWsMessage('lock')
+    }
+
+    const handleStopEdit = () => {
+        keepLockRef.current = false
+        sendWsMessage('release')
+    }
 
     // ---------- Загрузка типов материалов ----------
     useEffect(() => {
@@ -497,12 +569,12 @@ export default function Samples() {
                         label="Статус редактирования"
                         value={
                             editor === null ? 'Свободно' :
-                                editor.id === user.id ? 'Вы редактируете' :
+                                isEditing ? 'Вы редактируете' :
                                     `Редактирует: ${editor.username}`
                         }
                         color={
                             editor === null ? 'var(--green)' :
-                                editor.id === user.id ? 'var(--blue)' :
+                                isEditing ? 'var(--blue)' :
                                     'var(--orange)'
                         }
                     />
@@ -520,7 +592,7 @@ export default function Samples() {
                                 >
                                     🔒 Редактировать
                                 </Button>
-                            ) : editor.id === user.id ? (
+                            ) : isEditing ? (
                                 <Button
                                     variant="secondary"
                                     onClick={handleStopEdit}
