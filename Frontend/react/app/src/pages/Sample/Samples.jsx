@@ -38,6 +38,7 @@ export default function Samples() {
     const wsRef = useRef(null)
     const reconnectTimerRef = useRef(null)
     const keepLockRef = useRef(false)
+    const ownedEditorRef = useRef(null)
 
     // Модалка батча
     const [showBatchModal, setShowBatchModal] = useState(false)
@@ -129,9 +130,29 @@ export default function Samples() {
                     // are allowed to change the lock state.
                     if (data.table_name === tableName && Object.prototype.hasOwnProperty.call(data, 'editor')) {
                         if (data.editor === null) {
-                            setEditor(null)
+                            // A disconnect broadcasts `editor: null` shortly
+                            // before the replacement socket is established.
+                            // Keep the last confirmed owner in the UI while
+                            // reconnecting so the edit controls do not blink.
+                            if (!keepLockRef.current || !ownedEditorRef.current) {
+                                ownedEditorRef.current = null
+                                setEditor(null)
+                            }
                         } else {
-                            setEditor({ id: data.editor.id, username: data.editor.username })
+                            const nextEditor = {
+                                id: data.editor.id,
+                                username: data.editor.username,
+                            }
+                            const belongsToCurrentUser = (
+                                nextEditor.username === user.username
+                                || (
+                                    nextEditor.id != null
+                                    && user.id != null
+                                    && String(nextEditor.id) === String(user.id)
+                                )
+                            )
+                            ownedEditorRef.current = belongsToCurrentUser ? nextEditor : null
+                            setEditor(nextEditor)
                         }
                     }
                 } catch (e) {
@@ -150,7 +171,14 @@ export default function Samples() {
                 if (wsRef.current !== ws) return
 
                 wsRef.current = null
-                setEditor(null)
+                if (
+                    !keepLockRef.current
+                    || !ownedEditorRef.current
+                    || [4400, 4401, 4403].includes(event.code)
+                ) {
+                    ownedEditorRef.current = null
+                    setEditor(null)
+                }
                 console.log('🔴 WebSocket disconnected, code:', event.code, 'reason:', event.reason)
 
                 // Authentication/protocol errors require user action. For a
@@ -200,6 +228,8 @@ export default function Samples() {
 
     const handleStopEdit = () => {
         keepLockRef.current = false
+        ownedEditorRef.current = null
+        setEditor(null)
         sendWsMessage('release')
     }
 
