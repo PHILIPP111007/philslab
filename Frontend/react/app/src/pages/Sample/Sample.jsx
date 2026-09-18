@@ -315,6 +315,8 @@ export default function Sample() {
                     </div>
                 </div>
 
+                <br />
+
                 <History
                     entityType="sample"
                     entityId={sample.id}
