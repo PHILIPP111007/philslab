@@ -29,40 +29,36 @@ export default function App() {
     return (
         <AuthContext.Provider value={{ isAuth, setIsAuth }}>
             <UserContext.Provider value={{ user, setUser }}>
-                <BrowserRouter>
+                <BrowserRouter useTransitions>
                     <ThemeProvider>
                         <div className="App">
                             <Toaster />
-                            {/* <Suspense fallback={<SuspenseLoading />}> */}
-                            <Suspense fallback={<ViewTransition><SuspenseLoading /></ViewTransition>}>
-                                {/* 
-                                    <Suspense fallback={<ViewTransition><SuspenseLoading /></ViewTransition>}>
+                            <ViewTransition>
+                                <Suspense fallback={<SuspenseLoading />}>
+                                    <Routes>
+                                        {PrivateRoutes.map((route) =>
+                                            <Route
+                                                key={route.path}
+                                                path={route.path}
+                                                errorElement={<ErrorPage />}
+                                                element={<ProtectedRoute>{route.element}</ProtectedRoute>}
+                                                exact
+                                            />
+                                        )}
 
-                                    https://react.dev/reference/react/ViewTransition
-                                */}
-                                <Routes>
-                                    {PrivateRoutes.map((route) =>
-                                        <Route
-                                            key={route.path}
-                                            path={route.path}
-                                            errorElement={<ErrorPage />}
-                                            element={<ProtectedRoute>{route.element}</ProtectedRoute>}
-                                            exact
-                                        />
-                                    )}
-
-                                    {PublicRoutes.map((route) =>
-                                        <Route
-                                            key={route.path}
-                                            path={route.path}
-                                            errorElement={<ErrorPage />}
-                                            element={route.element}
-                                            exact
-                                        />
-                                    )}
-                                    <Route path="*" element={<ErrorPage />} />
-                                </Routes>
-                            </Suspense>
+                                        {PublicRoutes.map((route) =>
+                                            <Route
+                                                key={route.path}
+                                                path={route.path}
+                                                errorElement={<ErrorPage />}
+                                                element={route.element}
+                                                exact
+                                            />
+                                        )}
+                                        <Route path="*" element={<ErrorPage />} />
+                                    </Routes>
+                                </Suspense>
+                            </ViewTransition>
                             <div className="AppBottomBlock"></div>
                         </div>
                     </ThemeProvider>
