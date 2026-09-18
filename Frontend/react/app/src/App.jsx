@@ -1,6 +1,6 @@
 import './pages/components/Theme/Theme.css'
 import './App.css'
-import { Suspense, useState } from "react"
+import { Suspense, useState, ViewTransition } from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { Toaster } from "react-hot-toast"
 import { AuthContext, UserContext } from "./data/context.js"
@@ -33,7 +33,8 @@ export default function App() {
                     <ThemeProvider>
                         <div className="App">
                             <Toaster />
-                            <Suspense fallback={<SuspenseLoading />}>
+                            {/* <Suspense fallback={<SuspenseLoading />}> */}
+                            <Suspense fallback={<ViewTransition><SuspenseLoading /></ViewTransition>}>
                                 {/* 
                                     <Suspense fallback={<ViewTransition><SuspenseLoading /></ViewTransition>}>
 
