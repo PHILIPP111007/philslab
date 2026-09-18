@@ -6,6 +6,7 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
+from app.backend.decorators import require_authenticated
 from app.backend.history import add_history, snapshot
 from app.backend.serializers import serialize_batch
 from app.database import SessionDep
@@ -46,6 +47,7 @@ async def _load_batch_relations(session, batch_id):
 
 
 @router.get("/batches/")
+@require_authenticated
 async def get_batches(
     session: SessionDep,
     request: Request,
@@ -55,9 +57,6 @@ async def get_batches(
     sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     search: str = Query(None),
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     # Для списка без коммита можно использовать selectinload
 
     statement = select(Batch).options(
@@ -105,10 +104,8 @@ async def get_batches(
 
 
 @router.get("/batch/{batch_id}/")
+@require_authenticated
 async def get_batch(session: SessionDep, request: Request, batch_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     batch = await session.get(
         Batch,
         batch_id,
@@ -124,10 +121,8 @@ async def get_batch(session: SessionDep, request: Request, batch_id: int):
 
 
 @router.post("/batch/")
+@require_authenticated
 async def create_batch(session: SessionDep, request: Request, batch_data: BatchCreate):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     batch = Batch(
         name=batch_data.name,
         department=batch_data.department or "",
@@ -155,12 +150,10 @@ async def create_batch(session: SessionDep, request: Request, batch_data: BatchC
 
 
 @router.put("/batch/{batch_id}/")
+@require_authenticated
 async def put_batch(
     session: SessionDep, request: Request, batch_id: int, batch_data: BatchUpdate
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     batch = await session.get(Batch, batch_id)
     if not batch:
         return {"ok": False, "error": "Batch not found."}
@@ -199,10 +192,8 @@ async def put_batch(
 
 
 @router.delete("/batch/{batch_id}/")
+@require_authenticated
 async def delete_batch(session: SessionDep, request: Request, batch_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     batch = await session.get(Batch, batch_id)
     if not batch:
         return {"ok": False, "error": "Batch not found."}
@@ -225,12 +216,10 @@ async def delete_batch(session: SessionDep, request: Request, batch_id: int):
 
 
 @router.post("/batch/{batch_id}/sample/{sample_id}/")
+@require_authenticated
 async def add_sample_to_batch(
     session: SessionDep, request: Request, batch_id: int, sample_id: int
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     batch = await session.get(Batch, batch_id)
     sample = await session.get(Sample, sample_id)
     if not batch or not sample:
@@ -278,12 +267,10 @@ async def add_sample_to_batch(
 
 
 @router.delete("/batch/{batch_id}/sample/{sample_id}/")
+@require_authenticated
 async def remove_sample_from_batch(
     session: SessionDep, request: Request, batch_id: int, sample_id: int
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     link = await session.exec(
         select(BatchSampleLink).where(
             BatchSampleLink.batch_id == batch_id,
@@ -328,10 +315,8 @@ async def remove_sample_from_batch(
 
 
 @router.get("/batch/{batch_id}/samples/")
+@require_authenticated
 async def get_batch_samples(session: SessionDep, request: Request, batch_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     batch = await session.get(Batch, batch_id)
     if not batch:
         return {"ok": False, "error": "Batch not found."}
@@ -346,12 +331,10 @@ async def get_batch_samples(session: SessionDep, request: Request, batch_id: int
 
 
 @router.post("/batch/{batch_id}/task/{task_id}/")
+@require_authenticated
 async def add_task_to_batch(
     session: SessionDep, request: Request, batch_id: int, task_id: int
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     batch = await session.get(Batch, batch_id)
     task = await session.get(Task, task_id)
     if not batch or not task:
@@ -398,12 +381,10 @@ async def add_task_to_batch(
 
 
 @router.delete("/batch/{batch_id}/task/{task_id}/")
+@require_authenticated
 async def remove_task_from_batch(
     session: SessionDep, request: Request, batch_id: int, task_id: int
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     link = await session.exec(
         select(TaskBatchLink).where(
             TaskBatchLink.batch_id == batch_id,

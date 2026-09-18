@@ -3,6 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Request
 from sqlmodel import select
 
+from app.backend.decorators import require_authenticated
 from app.backend.history import add_history, snapshot
 from app.database import SessionDep
 from app.enums.action_type import ActionType
@@ -15,19 +16,15 @@ STAGE_HISTORY_FIELDS = ["name", "description", "order", "is_completed"]
 
 
 @router.get("/stages/")
+@require_authenticated
 async def get_stages(session: SessionDep, request: Request):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     stages = (await session.exec(select(Stage))).all()
     return {"ok": True, "data": stages}
 
 
 @router.get("/stage/{stage_id}/")
+@require_authenticated
 async def get_stage(session: SessionDep, request: Request, stage_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     stage = await session.get(Stage, stage_id)
     if not stage:
         return {"ok": False, "error": "Not found stage."}
@@ -36,10 +33,8 @@ async def get_stage(session: SessionDep, request: Request, stage_id: int):
 
 
 @router.post("/stage/")
+@require_authenticated
 async def create_stage(session: SessionDep, request: Request, stage_data: StageCreate):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     if not stage_data.protocol_id:
         return {"ok": False, "error": "protocol_id is required."}
 
@@ -72,12 +67,10 @@ async def create_stage(session: SessionDep, request: Request, stage_data: StageC
 
 
 @router.put("/stage/{stage_id}/")
+@require_authenticated
 async def update_stage(
     session: SessionDep, request: Request, stage_id: int, stage_data: StageUpdate
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     stage = await session.get(Stage, stage_id)
     if not stage:
         return {"ok": False, "error": "Not found stage."}
@@ -115,10 +108,8 @@ async def update_stage(
 
 
 @router.delete("/stage/{stage_id}/")
+@require_authenticated
 async def delete_stage(session: SessionDep, request: Request, stage_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     stage = await session.get(Stage, stage_id)
     if not stage:
         return {"ok": False, "error": "Not found stage."}

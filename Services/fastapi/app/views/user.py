@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Query, Request
 from sqlmodel import func, select
 
+from app.backend.decorators import require_authenticated
 from app.backend.history import add_history
 from app.database import SessionDep
 from app.models import User
@@ -11,10 +12,8 @@ router = APIRouter(tags=["user"])
 
 
 @router.get("/user/{username}/")
+@require_authenticated
 async def get_user(session: SessionDep, request: Request, username: str):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     query = await session.exec(select(User).where(User.id == request.state.user.id))
     query = query.first()
     if not query:
@@ -52,12 +51,10 @@ async def get_user(session: SessionDep, request: Request, username: str):
 
 
 @router.put("/user/{username}/")
+@require_authenticated
 async def put_user(
     session: SessionDep, request: Request, username: str, user_body: UserBody
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     if request.state.user.username != username:
         return {"ok": False, "error": "Can only update your own profile."}
 
@@ -99,6 +96,7 @@ async def put_user(
 
 
 @router.get("/users/")
+@require_authenticated
 async def get_users(
     session: SessionDep,
     request: Request,
@@ -107,9 +105,6 @@ async def get_users(
     search: str = Query(None),
     department: str = Query(None),
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     statement = select(User)
 
     # Поиск по username, first_name, last_name, email

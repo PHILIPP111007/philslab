@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
+from app.backend.decorators import require_authenticated
 from app.backend.history import ENTITY_TYPES, serialize_history_entry
 from app.database import SessionDep
 from app.models import QueryHistory
@@ -10,6 +11,7 @@ router = APIRouter(tags=["history"])
 
 
 @router.get("/history/{entity_type}/{entity_id}/")
+@require_authenticated
 async def get_entity_history(
     session: SessionDep,
     request: Request,
@@ -17,9 +19,6 @@ async def get_entity_history(
     entity_id: int,
     limit: int = Query(100, ge=1, le=500),
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     if entity_type not in ENTITY_TYPES:
         return {"ok": False, "error": "Unsupported history entity type."}
 

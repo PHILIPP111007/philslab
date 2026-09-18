@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
+from app.backend.decorators import require_authenticated
 from app.backend.history import add_history, snapshot
 from app.database import SessionDep
 from app.enums.action_type import ActionType
@@ -17,15 +18,13 @@ STAGE_HISTORY_FIELDS = ["name", "description", "order"]
 
 
 @router.get("/protocols/")
+@require_authenticated
 async def get_protocols(
     session: SessionDep,
     request: Request,
     page: int = Query(1, ge=1),
     page_size: int = Query(100, ge=1, le=500),
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     # Загружаем stages и created_by сразу
     statement = select(Protocol).options(
         selectinload(Protocol.stages), selectinload(Protocol.created_by)
@@ -75,10 +74,8 @@ async def get_protocols(
 
 
 @router.get("/protocol/{protocol_id}/")
+@require_authenticated
 async def get_protocol(session: SessionDep, request: Request, protocol_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     protocol = await session.get(Protocol, protocol_id)
     if not protocol:
         return {"ok": False, "error": "Not found protocol."}
@@ -87,12 +84,10 @@ async def get_protocol(session: SessionDep, request: Request, protocol_id: int):
 
 
 @router.post("/protocol/")
+@require_authenticated
 async def create_protocol(
     session: SessionDep, request: Request, protocol_data: ProtocolCreate
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     protocol = Protocol(
         name=protocol_data.name,
         code=protocol_data.code,
@@ -120,15 +115,13 @@ async def create_protocol(
 
 
 @router.put("/protocol/{protocol_id}/")
+@require_authenticated
 async def update_protocol(
     session: SessionDep,
     request: Request,
     protocol_id: int,
     protocol_data: ProtocolUpdate,
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     protocol = await session.get(Protocol, protocol_id)
     if not protocol:
         return {"ok": False, "error": "Not found protocol."}
@@ -166,10 +159,8 @@ async def update_protocol(
 
 
 @router.delete("/protocol/{protocol_id}/")
+@require_authenticated
 async def delete_protocol(session: SessionDep, request: Request, protocol_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     protocol = await session.get(Protocol, protocol_id)
     if not protocol:
         return {"ok": False, "error": "Not found protocol."}
@@ -190,9 +181,8 @@ async def delete_protocol(session: SessionDep, request: Request, protocol_id: in
 
 # Новые эндпоинты для этапов:
 @router.get("/protocol/{protocol_id}/stages/")
+@require_authenticated
 async def get_protocol_stages(session: SessionDep, request: Request, protocol_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
     protocol = await session.get(Protocol, protocol_id)
     if not protocol:
         return {"ok": False, "error": "Protocol not found."}
@@ -203,14 +193,13 @@ async def get_protocol_stages(session: SessionDep, request: Request, protocol_id
 
 
 @router.post("/protocol/{protocol_id}/stage/")
+@require_authenticated
 async def create_protocol_stage(
     session: SessionDep,
     request: Request,
     protocol_id: int,
     stage_data: StageCreate,
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
     protocol = await session.get(Protocol, protocol_id)
     if not protocol:
         return {"ok": False, "error": "Protocol not found."}

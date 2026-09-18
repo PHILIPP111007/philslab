@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
+from app.backend.decorators import require_authenticated
 from app.backend.history import add_history, snapshot
 from app.backend.serializers import serialize_sample
 from app.database import SessionDep
@@ -30,11 +31,9 @@ SAMPLE_HISTORY_FIELDS = [
 
 
 @router.get("/sample/material_types/")
+@require_authenticated
 async def get_material_types(request: Request):
     """Возвращает варианты типа материала для select на фронтенде."""
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     return {
         "ok": True,
         "data": [
@@ -60,10 +59,8 @@ def sample_search_condition(search: str):
 
 
 @router.get("/sample/{sample_id}/")
+@require_authenticated
 async def get_sample(session: SessionDep, request: Request, sample_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     sample = await session.get(
         Sample,
         sample_id,
@@ -81,6 +78,7 @@ async def get_sample(session: SessionDep, request: Request, sample_id: int):
 
 
 @router.get("/samples/")
+@require_authenticated
 async def get_samples(
     session: SessionDep,
     request: Request,
@@ -90,9 +88,6 @@ async def get_samples(
     sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     search: str = Query(None),
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     # Извлекаем все параметры запроса, начинающиеся с 'filter['
     filters = {}
     for key, value in request.query_params.items():
@@ -139,14 +134,12 @@ async def get_samples(
 
 
 @router.post("/sample/")
+@require_authenticated
 async def create_sample(
     session: SessionDep,
     request: Request,
     sample_data: SampleCreate,
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     sample = Sample(
         sample_code=sample_data.sample_code,
         sample_group_code=sample_data.sample_group_code,
@@ -181,12 +174,10 @@ async def create_sample(
 
 
 @router.put("/sample/{sample_id}/")
+@require_authenticated
 async def put_sample(
     session: SessionDep, request: Request, sample_id: int, sample_data: SampleUpdate
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     # Мгновенный поиск по первичному ключу
     sample = await session.get(Sample, sample_id)
     if not sample:
@@ -225,10 +216,8 @@ async def put_sample(
 
 
 @router.delete("/sample/{sample_id}/")
+@require_authenticated
 async def delete_sample(session: SessionDep, request: Request, sample_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     query = await session.exec(select(Sample).where(Sample.id == sample_id))
     sample = query.first()
     if not sample:
@@ -249,14 +238,12 @@ async def delete_sample(session: SessionDep, request: Request, sample_id: int):
 
 
 @router.get("/samples/export/")
+@require_authenticated
 async def export_samples(
     session: SessionDep,
     request: Request,
     search: str = Query(None),
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     # Извлекаем все фильтры из query params
     filters = {}
     for key, value in request.query_params.items():

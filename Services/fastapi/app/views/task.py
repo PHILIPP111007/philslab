@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query, Request
 from sqlalchemy.orm import selectinload
 from sqlmodel import func, select
 
+from app.backend.decorators import require_authenticated
 from app.backend.history import add_history
 from app.backend.serializers import serialize_task
 from app.database import SessionDep
@@ -74,6 +75,7 @@ async def _get_task_for_response(session: SessionDep, task_id: int):
 
 
 @router.get("/tasks/")
+@require_authenticated
 async def get_tasks(
     session: SessionDep,
     request: Request,
@@ -88,9 +90,6 @@ async def get_tasks(
     priority: str = Query(None),
     department: str = Query(None),  # <-- НОВЫЙ ПАРАМЕТР
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     # Базовый запрос с загрузкой всех необходимых связей
     statement = select(Task).options(
         selectinload(Task.created_by),
@@ -166,10 +165,8 @@ async def get_tasks(
 
 
 @router.get("/task/{task_id}/")
+@require_authenticated
 async def get_task(session: SessionDep, request: Request, task_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task = await _get_task_for_response(session, task_id)
 
     if not task:
@@ -182,10 +179,8 @@ async def get_task(session: SessionDep, request: Request, task_id: int):
 # POST /tasks/
 # ============================================
 @router.post("/tasks/")
+@require_authenticated
 async def create_task(session: SessionDep, request: Request, task_data: TaskCreate):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task = Task(
         name=task_data.name,
         description=task_data.description,
@@ -251,12 +246,10 @@ async def create_task(session: SessionDep, request: Request, task_data: TaskCrea
 
 
 @router.put("/task/{task_id}/")
+@require_authenticated
 async def update_task(
     session: SessionDep, request: Request, task_id: int, task_data: TaskUpdate
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task = await session.get(Task, task_id, options=[selectinload(Task.batches)])
     if not task:
         return {"ok": False, "error": "Not found task."}
@@ -422,10 +415,8 @@ async def update_task(
 # DELETE /task/{task_id}/
 # ============================================
 @router.delete("/task/{task_id}/")
+@require_authenticated
 async def delete_task(session: SessionDep, request: Request, task_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task = await session.get(Task, task_id)
     if not task:
         return {"ok": False, "error": "Not found task."}
@@ -452,6 +443,7 @@ async def delete_task(session: SessionDep, request: Request, task_id: int):
 # (переключение состояния TaskStage)
 # ============================================
 @router.put("/task/{task_id}/stage/{stage_id}/")
+@require_authenticated
 async def toggle_task_stage(
     session: SessionDep,
     request: Request,
@@ -459,9 +451,6 @@ async def toggle_task_stage(
     stage_id: int,
     stage_data: dict,  # {"is_completed": bool}
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task_stage = await session.get(TaskStage, stage_id)
     if not task_stage or task_stage.task_id != task_id:
         return {"ok": False, "error": "Stage not found for this task."}
@@ -523,10 +512,8 @@ async def toggle_task_stage(
 # GET /task/{task_id}/history/
 # ============================================
 @router.get("/task/{task_id}/history/")
+@require_authenticated
 async def get_task_history(session: SessionDep, request: Request, task_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task = await session.get(Task, task_id)
     if not task:
         return {"ok": False, "error": "Not found task."}
@@ -562,10 +549,8 @@ async def get_task_history(session: SessionDep, request: Request, task_id: int):
 # POST /task/{task_id}/archive/
 # ============================================
 @router.post("/task/{task_id}/archive/")
+@require_authenticated
 async def archive_task(session: SessionDep, request: Request, task_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task = await session.get(Task, task_id)
     if not task:
         return {"ok": False, "error": "Not found task."}
@@ -603,10 +588,8 @@ async def archive_task(session: SessionDep, request: Request, task_id: int):
 # POST /task/{task_id}/unarchive/
 # ============================================
 @router.post("/task/{task_id}/unarchive/")
+@require_authenticated
 async def unarchive_task(session: SessionDep, request: Request, task_id: int):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     task = await session.get(Task, task_id)
     if not task:
         return {"ok": False, "error": "Not found task."}
@@ -644,6 +627,7 @@ async def unarchive_task(session: SessionDep, request: Request, task_id: int):
 # GET /tasks/archived/
 # ============================================
 @router.get("/tasks/archived/")
+@require_authenticated
 async def get_archived_tasks(
     session: SessionDep,
     request: Request,
@@ -651,9 +635,6 @@ async def get_archived_tasks(
     page_size: int = Query(10, ge=1, le=100),
     department: str = Query(None),  # <-- НОВЫЙ ПАРАМЕТР
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     statement = (
         select(Task)
         .where(Task.is_archived == True)
@@ -685,15 +666,13 @@ async def get_archived_tasks(
 
 
 @router.get("/tasks/completed_stats/")
+@require_authenticated
 async def get_completed_stats(
     session: SessionDep,
     request: Request,
     department: str = Query(...),
     days: int = Query(30, ge=1, le=365),
 ):
-    if not request.state.user:
-        return {"ok": False, "error": "Can not authenticate."}
-
     # Получаем дату начала периода
     start_date = datetime.now() - timedelta(days=days)
     start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
