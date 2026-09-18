@@ -29,7 +29,7 @@ export default function App() {
     return (
         <AuthContext.Provider value={{ isAuth, setIsAuth }}>
             <UserContext.Provider value={{ user, setUser }}>
-                <BrowserRouter useTransitions>
+                <BrowserRouter>
                     <ThemeProvider>
                         <div className="App">
                             <Toaster />
