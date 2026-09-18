@@ -1,5 +1,6 @@
 # views/user.py
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, status
+from fastapi.responses import JSONResponse
 from sqlmodel import func, select
 
 from app.backend.decorators import require_authenticated
@@ -56,12 +57,18 @@ async def put_user(
     session: SessionDep, request: Request, username: str, user_body: UserBody
 ):
     if request.state.user.username != username:
-        return {"ok": False, "error": "Can only update your own profile."}
+        return JSONResponse(
+            content={"ok": False, "error": "Can only update your own profile."},
+            # status_code=status.HTTP_404_NOT_FOUND, # TODO
+        )
 
     user = await session.exec(select(User).where(User.id == request.state.user.id))
     user = user.first()
     if not user:
-        return {"ok": False, "error": "Not found user."}
+        return JSONResponse(
+            content={"ok": False, "error": "Not found user."},
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
     # Обновляем только переданные поля и сохраняем изменения профиля.
     update_data = user_body.model_dump(exclude_unset=True)
