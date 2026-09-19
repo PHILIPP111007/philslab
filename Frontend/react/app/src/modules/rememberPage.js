@@ -22,7 +22,17 @@ export function getRememberedPage(username) {
 
     const pathname = rememberedPath.split(/[?#]/, 1)[0]
     const pathParts = pathname.split('/').filter(Boolean)
-    if (!username || pathParts.at(-1) !== username) return null
+    // Current private routes use the common format:
+    // /users/:username/<page>/[<id>/]
+    // The username is therefore the second segment, not the last one.
+    if (
+        !username
+        || pathParts.length < 3
+        || pathParts[0] !== 'users'
+        || pathParts[1] !== username
+    ) {
+        return null
+    }
 
     return rememberedPath
 }
