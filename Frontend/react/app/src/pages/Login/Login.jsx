@@ -29,8 +29,7 @@ export default function Login() {
                 setUser({ ...user, ...data })
                 setIsAuth(true)
 
-                var path = getRememberedPage(data.username)
-                    || `/users/${data.username}/user_page/`
+                var path = getRememberedPage(data.username) || `/users/${data.username}/user_page/`
                 navigate(path)
             } else if (!token) {
                 setIsAuth(false)

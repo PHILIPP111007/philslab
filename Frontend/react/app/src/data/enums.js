@@ -12,6 +12,7 @@ export var Theme = {
 
 export var CacheKeys = {
     TOKEN: "token",
+    TABLE: "table",
     REMEMBER_PAGE: "rememberPage",
 }
 

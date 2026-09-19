@@ -648,6 +648,7 @@ export default function Samples() {
                         <Spinner />
                     ) : (
                         <Table
+                            name="samples"
                             lazy
                             data={samples}
                             totalRows={totalRows}

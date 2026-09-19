@@ -12,6 +12,7 @@ import {
 import ExcelJS from 'exceljs'
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { notify_error } from '../../../modules/notify'
+import { setTableVisibleColumns, getTableVisibleColumns } from '../../../modules/table'
 import { AddModal, DeleteModal, EditModal } from './TableModals'
 import { EditableCell, TableRow } from './TableCells'
 
@@ -96,6 +97,7 @@ const rowsAreEqual = (left, right) => {
 // ОСНОВНОЙ КОМПОНЕНТ ТАБЛИЦЫ
 // ============================================
 export default function Table({
+    name = "table",
     data: initialData = [],
     columns: userColumns = [],
     pageSize: initialPageSize = 10,
@@ -212,6 +214,29 @@ export default function Table({
 
     const effectiveEnableEmptyRow = infiniteScroll ? false : enableEmptyRow
     const effectivePageIndex = enablePagination ? pageIndex : 0
+
+
+    // Column visibility
+    useEffect(() => {
+        const stored = getTableVisibleColumns({ name })
+
+        if (typeof stored === "string") {
+            try {
+                setColumnVisibility(JSON.parse(stored))
+            } catch (e) {
+                console.error("Failed to parse stored column visibility:", e)
+            }
+        }
+    }, [name])
+
+    // Column visibility
+    useEffect(() => {
+        if (name && columnVisibility) {
+            var visibleColumns = JSON.stringify(columnVisibility)
+            setTableVisibleColumns({ name: name, visibleColumns: visibleColumns })
+        }
+    }, [columnVisibility, name])
+
 
     // Не отправляем одинаковый lazy-запрос повторно. Это также защищает от
     // повторного запуска эффектов при монтировании в React Strict Mode.
