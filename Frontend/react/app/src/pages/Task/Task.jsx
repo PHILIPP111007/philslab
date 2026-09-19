@@ -423,7 +423,7 @@ export default function Task() {
                                 <h3>📦 Связанные батчи</h3>
                                 <div className="task-detail__batches-list">
                                     {task.batches.map(batch => (
-                                        <LinkButton key={batch.id} to={`/batch/${batch.id}/${username}/`}>
+                                        <LinkButton key={batch.id} to={`/users/${username}/batch/${batch.id}/`}>
                                             {batch.name || `Батч #${batch.id}`}
                                         </LinkButton>
                                     ))}
@@ -437,7 +437,7 @@ export default function Task() {
                                 <h3>🧪 Образцы</h3>
                                 <div className="task-detail__samples-list">
                                     {task.samples.map(sample => (
-                                        <LinkButton key={sample.id} to={`/sample/${sample.id}/${username}/`}>
+                                        <LinkButton key={sample.id} to={`/users/${username}/sample/${sample.id}/`}>
                                             {sample.sample_code || `Образец #${sample.id}`}
                                         </LinkButton>
                                     ))}

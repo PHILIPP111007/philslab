@@ -242,7 +242,7 @@ export default function Samples() {
                 const id = getValue()
                 if (id > 0) {
                     return (
-                        <LinkButton to={`/sample/${id}/${params.username}/`}>{id}</LinkButton>
+                        <LinkButton to={`/users/${params.username}/sample/${id}/`}>{id}</LinkButton>
                     )
                 }
                 return id

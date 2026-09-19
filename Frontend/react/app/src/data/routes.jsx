@@ -31,57 +31,57 @@ export var PrivateRoutes = [
         element: <User />
     },
     {
-        path: "/hello/:username/",
+        path: "/users/:username/hello/",
         name: "Hello",
         element: <Hello />
     },
     {
-        path: "/samples/:username/",
+        path: "/users/:username/samples/",
         name: "Samples",
         element: <Samples />
     },
     {
-        path: "/protocols/:username/",
+        path: "/users/:username/protocols/",
         name: "Protocols",
         element: <Protocols />
     },
     {
-        path: "/department/:username/",
+        path: "/users/:username/department/",
         name: "Department",
         element: <Department />
     },
     {
-        path: "/batches/:username/",
+        path: "/users/:username/batches/",
         name: "AllBatches",
         element: <AllBatches />
     },
     {
-        path: "/batch/:id/:username/",
+        path: "/users/:username/batch/:id/",
         name: "Batch",
         element: <Batch />
     },
     {
-        path: "/main_page/:username/",
+        path: "/users/:username/main_page/",
         name: "MainPage",
         element: <MainPage />
     },
     {
-        path: "/admin_page/:username/",
+        path: "/users/:username/admin_page/",
         name: "AdminPage",
         element: <AdminPage />
     },
     {
-        path: "/task/:id/:username/",
+        path: "/users/:username/task/:id/",
         name: "Task",
         element: <Task />
     },
     {
-        path: "/sample/:id/:username/",
+        path: "/users/:username/sample/:id/",
         name: "Sample",
         element: <Sample />
     },
     {
-        path: "/statistics/:username/",
+        path: "/users/:username/statistics/",
         name: "Statistics",
         element: <Statistics />
     },

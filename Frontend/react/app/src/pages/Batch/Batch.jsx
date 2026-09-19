@@ -376,7 +376,7 @@ export default function Batch() {
                 const id = getValue()
                 if (id > 0) {
                     return (
-                        <LinkButton to={`/sample/${id}/${username}/`}>{id}</LinkButton>
+                        <LinkButton to={`/users/${username}/sample/${id}/`}>{id}</LinkButton>
                     )
                 }
                 return id
@@ -461,7 +461,7 @@ export default function Batch() {
             size: 70,
             cell: ({ getValue }) => {
                 const id = getValue()
-                return id ? <LinkButton to={`/task/${id}/${username}/`}>{id}</LinkButton> : '—'
+                return id ? <LinkButton to={`/users/${username}/task/${id}/`}>{id}</LinkButton> : '—'
             },
         },
         { accessorKey: 'name', header: 'Название', size: 200 },
@@ -521,7 +521,7 @@ export default function Batch() {
                 <div className="batch-detail__container">
                     {/* Навигация */}
                     <div className="batch-detail__nav">
-                        <LinkButton to={`/batches/${user.username}/`} variant="secondary" size="sm">
+                        <LinkButton to={`/users/${user.username}/batches/`} variant="secondary" size="sm">
                             ← Все батчи
                         </LinkButton>
                     </div>

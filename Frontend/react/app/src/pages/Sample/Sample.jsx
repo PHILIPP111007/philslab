@@ -133,7 +133,7 @@ export default function Sample() {
             size: 70,
             cell: ({ getValue }) => {
                 const id = getValue()
-                return id ? <LinkButton to={`/batch/${id}/${username}/`}>{id}</LinkButton> : '—'
+                return id ? <LinkButton to={`/users/${username}/batch/${id}/`}>{id}</LinkButton> : '—'
             },
         },
         { accessorKey: 'name', header: 'Название', size: 200 },
@@ -182,7 +182,7 @@ export default function Sample() {
                 <div className="sample-detail__container">
                     {/* Навигация */}
                     <div className="sample-detail__nav">
-                        <LinkButton to={`/samples/${user.username}/`} variant="secondary" size="sm">
+                        <LinkButton to={`/users/${user.username}/samples/`} variant="secondary" size="sm">
                             ← Все образцы
                         </LinkButton>
                     </div>

@@ -562,7 +562,7 @@ export default function TasksSection({ departmentName }) {
                                     task.batches.map(batch => (
                                         <LinkButton
                                             key={batch.id}
-                                            to={`/batch/${batch.id}/${user.username}/`}
+                                            to={`/users/${user.username}/batch/${batch.id}/`}
                                             style={{ marginRight: '8px' }}
                                         >
                                             {batch.name || `#${batch.id}`}
@@ -602,7 +602,7 @@ export default function TasksSection({ departmentName }) {
                             </Button>
 
                             <LinkButton
-                                to={`/samples/${user.username}/`}
+                                to={`/users/${user.username}/samples/`}
                             >
                                 📎 Образцы ({task.samples?.length || 0})
                             </LinkButton>

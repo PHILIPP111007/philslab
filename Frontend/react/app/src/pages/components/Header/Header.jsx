@@ -68,13 +68,13 @@ export default function Header() {
                                     <div className="sticky-header__setting-group">
                                         <LinkButton to={`/users/${user.username}/`} variant="secondary">Личный кабинет</LinkButton>
                                         <br />
-                                        <LinkButton to={`/main_page/${user.username}/`} variant="secondary">Главная страница</LinkButton>
+                                        <LinkButton to={`/users/${user.username}/main_page/`} variant="secondary">Главная страница</LinkButton>
                                         <br />
-                                        <LinkButton to={`/samples/${user.username}/`} variant="secondary">Все образцы</LinkButton>
+                                        <LinkButton to={`/users/${user.username}/samples/`} variant="secondary">Все образцы</LinkButton>
                                         <br />
-                                        <LinkButton to={`/batches/${user.username}/`} variant="secondary">Все батчи</LinkButton>
+                                        <LinkButton to={`/users/${user.username}/batches/`} variant="secondary">Все батчи</LinkButton>
                                         <br />
-                                        <LinkButton to={`/hello/${user.username}/`} variant="secondary">Страница со стилями</LinkButton>
+                                        <LinkButton to={`/users/${user.username}/hello/`} variant="secondary">Страница со стилями</LinkButton>
                                     </div>
 
                                     <div className="sticky-header__setting-group sticky-header__setting-group--theme">
