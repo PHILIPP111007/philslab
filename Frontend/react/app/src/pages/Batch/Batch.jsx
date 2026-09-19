@@ -587,6 +587,7 @@ export default function Batch() {
                             </div>
                         ) : (
                             <Table
+                                name="batch_samples"
                                 data={samples}
                                 columns={sampleColumns}
                                 pageSize={10}
@@ -621,6 +622,7 @@ export default function Batch() {
                             </div>
                         ) : (
                             <Table
+                                name="batch_tasks"
                                 data={tasks}
                                 columns={taskColumns}
                                 pageSize={10}

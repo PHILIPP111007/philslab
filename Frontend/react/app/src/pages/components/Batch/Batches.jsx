@@ -245,6 +245,7 @@ export default function Batches({ department = null, username = '' }) {
                         <Spinner />
                     ) : (
                         <Table
+                            name="batches"
                             lazy
                             data={batches}
                             totalRows={totalRows}

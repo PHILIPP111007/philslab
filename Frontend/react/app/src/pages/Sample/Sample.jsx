@@ -295,6 +295,7 @@ export default function Sample() {
                                 <p className="sample-detail__empty">Нет связанных батчей</p>
                             ) : (
                                 <Table
+                                    name="sample_batches"
                                     data={batches}
                                     columns={batchColumns}
                                     pageSize={10}

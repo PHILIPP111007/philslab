@@ -359,6 +359,7 @@ export default function AdminPage() {
 
                 <section className="section">
                     <Table
+                        name="admin_page_protocols"
                         lazy
                         data={protocols}
                         totalRows={totalRows}

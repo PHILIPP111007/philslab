@@ -417,6 +417,7 @@ export default function Hello() {
                 <section className="section">
                     <h2 className="section__title">📊 Таблица</h2>
                     <Table
+                        name="hello_users"
                         data={users}
                         columns={columns}
                         pageSize={10}
