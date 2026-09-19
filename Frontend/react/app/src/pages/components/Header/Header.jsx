@@ -66,7 +66,7 @@ export default function Header() {
 
                                 <div className="sticky-header__settings-body">
                                     <div className="sticky-header__setting-group">
-                                        <LinkButton to={`/users/${user.username}/`} variant="secondary">Личный кабинет</LinkButton>
+                                        <LinkButton to={`/users/${user.username}/user_page/`} variant="secondary">Личный кабинет</LinkButton>
                                         <br />
                                         <LinkButton to={`/users/${user.username}/main_page/`} variant="secondary">Главная страница</LinkButton>
                                         <br />

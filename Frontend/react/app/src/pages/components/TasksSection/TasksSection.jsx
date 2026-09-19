@@ -512,6 +512,18 @@ export default function TasksSection({ departmentName }) {
                 content: (
                     <div className="tasks-accordion__content">
                         <div className="tasks-accordion__row">
+                            <span className="tasks-accordion__label">Подробнее:</span>
+                            <span>
+                                <LinkButton
+                                    key={task.id}
+                                    to={`/users/${user.username}/task/${task.id}/`}
+                                    style={{ marginRight: '8px' }}
+                                >
+                                    {task.name || `#${task.id}`}
+                                </LinkButton>
+                            </span>
+                        </div>
+                        <div className="tasks-accordion__row">
                             <span className="tasks-accordion__label">📝 Описание:</span>
                             <span>{task.description || '—'}</span>
                         </div>

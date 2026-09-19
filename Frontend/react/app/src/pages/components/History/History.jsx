@@ -112,7 +112,7 @@ export default function History({
                                 disabled={loading}
                                 title="Обновить историю"
                             >
-                                {loading ? <Spinner /> : '↻'}
+                                {loading ? <Spinner /> : 'Обновить'}
                             </button>
                             <button
                                 type="button"
@@ -121,7 +121,7 @@ export default function History({
                                 disabled={loading}
                                 title="Скрыть историю"
                             >
-                                ×
+                                Скрыть
                             </button>
                         </div>
                     </div>
