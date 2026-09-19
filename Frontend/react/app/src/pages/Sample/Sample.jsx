@@ -46,7 +46,7 @@ export default function Sample() {
 
     // Запоминаем страницу
     useEffect(() => {
-        rememberPage(`sample/${sampleId}/${username}`)
+        rememberPage(`users/${username}/sample/${sampleId}/`)
     }, [sampleId, username])
 
     // Загрузка данных
@@ -119,7 +119,7 @@ export default function Sample() {
         })
         if (data?.ok) {
             notify_success('Образец удалён')
-            navigate(`/samples/${username}/`)
+            navigate(`/users/${username}/samples/`)
         } else {
             notify_error(data?.error || 'Ошибка удаления')
         }
@@ -169,7 +169,7 @@ export default function Sample() {
                 <Header />
                 <div className="sample-detail" style={{ padding: '2rem' }}>
                     <h2>Образец не найден</h2>
-                    <Button onClick={() => navigate(`/samples/${username}/`)}>← К списку</Button>
+                    <Button onClick={() => navigate(`/users/${username}/samples/`)}>← К списку</Button>
                 </div>
             </>
         )

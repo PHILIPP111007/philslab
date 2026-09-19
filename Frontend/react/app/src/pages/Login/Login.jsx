@@ -30,7 +30,7 @@ export default function Login() {
                 setIsAuth(true)
 
                 var path = getRememberedPage(data.username)
-                    || `/users/${data.username}/`
+                    || `/users/${data.username}/user_page/`
                 navigate(path)
             } else if (!token) {
                 setIsAuth(false)

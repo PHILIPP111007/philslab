@@ -40,7 +40,7 @@ export default function AdminPage() {
 
     // Запоминаем страницу
     useEffect(() => {
-        rememberPage(`admin_page/${params.username}`);
+        rememberPage(`users/${params.username}/admin_page/`);
     }, [params.username]);
 
     // ---------- Загрузка протоколов ----------

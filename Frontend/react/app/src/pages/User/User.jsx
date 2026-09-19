@@ -81,7 +81,7 @@ export default function User() {
     }
 
     useEffect(() => {
-        rememberPage(`users/${params.username}/`)
+        rememberPage(`users/${params.username}/user_page/`)
     }, [params.username])
 
     return (

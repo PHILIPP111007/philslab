@@ -10,7 +10,7 @@ export default function Statistics() {
     const params = useParams()
 
     useEffect(() => {
-        rememberPage(`statistics/${params.username}`)
+        rememberPage(`users/${params.username}/statistics/`)
     }, [params.username])
 
     return (

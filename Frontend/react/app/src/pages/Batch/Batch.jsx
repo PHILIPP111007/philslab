@@ -73,7 +73,7 @@ export default function Batch() {
     const { departments } = useDepartments();
 
     useEffect(() => {
-        rememberPage(`batch/${batchId}/${username}`)
+        rememberPage(`users/${username}/batch/${batchId}/`)
     }, [batchId, username])
 
     // ---------- ЗАГРУЗКА БАТЧА ----------
@@ -90,7 +90,7 @@ export default function Batch() {
             setTasks(data.data.tasks || [])
         } else {
             notify_error(data?.error || 'Батч не найден')
-            navigate(`/batches/${username}/`)
+            navigate(`/users/${username}/batches/`)
         }
         setLoading(false)
     }, [batchId, navigate, username])
@@ -358,7 +358,7 @@ export default function Batch() {
         })
         if (res?.ok) {
             notify_success('Батч удален!')
-            navigate(`/batches/${username}/`)
+            navigate(`/users/${username}/batches/`)
         } else {
             notify_error(res?.error || 'Ошибка удаления')
         }
@@ -505,7 +505,7 @@ export default function Batch() {
                 <div className="batch-detail">
                     <div className="batch-detail__not-found">
                         <h2>Батч не найден</h2>
-                        <Button onClick={() => navigate(`/batches/${username}/`)}>
+                        <Button onClick={() => navigate(`/users/${username}/batches/`)}>
                             ← Вернуться к списку
                         </Button>
                     </div>

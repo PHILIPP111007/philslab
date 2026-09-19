@@ -8,7 +8,7 @@ export default function AllBatches() {
     const params = useParams();
 
     useEffect(() => {
-        rememberPage(`batches/${params.username}/`);
+        rememberPage(`users/${params.username}/batches/`);
     }, [params.username]);
 
     return (

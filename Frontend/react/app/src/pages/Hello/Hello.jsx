@@ -32,7 +32,7 @@ export default function Hello() {
     ])
 
     useEffect(() => {
-        rememberPage(`hello/${username}`)
+        rememberPage(`users/${username}/hello/`)
     }, [username])
 
     // ============================================

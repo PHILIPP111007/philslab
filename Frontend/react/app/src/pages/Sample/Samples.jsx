@@ -65,7 +65,7 @@ export default function Samples() {
     const canEdit = isEditing  // Только когда текущий пользователь нажал "Редактировать"
 
     useEffect(() => {
-        rememberPage(`samples/${user.username}/`)
+        rememberPage(`users/${user.username}/samples/`)
     }, [user.username])
 
     // ---------- WebSocket (пересоздаётся при изменении user.id) ----------
@@ -78,7 +78,7 @@ export default function Samples() {
             if (disposed) return
 
             const wsUrl = `${WEBSOCKET_DJANGO_URL}table/${user.username}/`
-            console.log('🔌 WebSocket URL:', wsUrl)
+            console.log('WebSocket URL:', wsUrl)
 
             const ws = new WebSocket(wsUrl)
             wsRef.current = ws

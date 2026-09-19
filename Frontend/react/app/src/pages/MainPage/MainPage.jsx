@@ -10,7 +10,7 @@ export default function MainPage() {
 
 
     useEffect(() => {
-        rememberPage(`main_page/${params.username}`)
+        rememberPage(`users/${params.username}/main_page/`)
     }, [params.username])
 
 

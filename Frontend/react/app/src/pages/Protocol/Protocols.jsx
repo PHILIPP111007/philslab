@@ -44,7 +44,7 @@ export default function Protocols() {
     }, [loadProtocols])
 
     useEffect(() => {
-        rememberPage(`protocols/${params.username}`)
+        rememberPage(`users/${params.username}/protocols/`)
     }, [params.username])
 
     const formatDate = (dateStr) => {

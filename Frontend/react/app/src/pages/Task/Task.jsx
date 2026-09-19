@@ -51,7 +51,7 @@ export default function Task() {
 
     // Запоминаем страницу
     useEffect(() => {
-        rememberPage(`task/${taskId}/${username}`)
+        rememberPage(`users/${username}/task/${taskId}/`)
     }, [taskId, username])
 
     // ---------- Загрузка данных ----------
@@ -266,7 +266,7 @@ export default function Task() {
                 <Header />
                 <div className="task-detail" style={{ padding: '2rem' }}>
                     <h2>Задача не найдена</h2>
-                    <Button onClick={() => navigate(`/main_page/${username}/`)}>← На главную</Button>
+                    <Button onClick={() => navigate(`users/${username}/main_page/`)}>← На главную</Button>
                 </div>
             </>
         )

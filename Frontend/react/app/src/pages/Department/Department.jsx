@@ -20,7 +20,7 @@ export default function Department() {
     const targetUsername = params.username || user?.username;
 
     useEffect(() => {
-        rememberPage(`department/${params.username || ''}`);
+        rememberPage(`users/${params.username}/department/`);
     }, [params.username]);
 
     useEffect(() => {
